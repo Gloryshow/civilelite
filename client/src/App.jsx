@@ -548,7 +548,15 @@ const AuthPage = ({ mode, onAuth, onNavigate }) => {
 };
 
 // ── APPLICANT DASHBOARD ───────────────────────────────────────────────────────
-const ApplicantDashboard = ({ user, onLogout }) => {
+const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
+  const t = getTheme(theme);
+  const isLight = theme === "light";
+  const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
+  const surfaceBorder = isLight ? "rgba(15,23,42,0.1)" : "rgba(255,255,255,0.07)";
+  const sidebarBg = isLight ? "#ffffff" : "#060a12";
+  const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
+  const softText = isLight ? "#475569" : "#8899aa";
+  const faintText = isLight ? "#64748b" : "#556";
   const [tab, setTab] = useState("overview");
   const [toast, setToast] = useState(null);
   const [appData, setAppData] = useState({
@@ -587,18 +595,18 @@ const ApplicantDashboard = ({ user, onLogout }) => {
   ];
 
   const S2 = {
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 24 },
-    label: { color: "#8899aa", fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 6 },
+    card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
+    label: { color: t.muted, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 6 },
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0e1a", fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
+    <div style={{ minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Sidebar */}
       <div style={{
         width: sidebarOpen ? 240 : 0, minHeight: "100vh", overflow: "hidden",
-        background: "#060a12", borderRight: "1px solid rgba(201,168,76,0.1)",
+        background: sidebarBg, borderRight: `1px solid ${t.border}`,
         transition: "width .3s", flexShrink: 0,
       }}>
         <div style={{ padding: "24px 20px", minWidth: 240 }}>
@@ -614,7 +622,7 @@ const ApplicantDashboard = ({ user, onLogout }) => {
               borderRadius: 10, marginBottom: 4, width: "100%", textAlign: "left",
               background: tab === m.id ? "rgba(201,168,76,0.1)" : "transparent",
               border: tab === m.id ? "1px solid rgba(201,168,76,0.25)" : "1px solid transparent",
-              color: tab === m.id ? "#c9952a" : "#8899aa", cursor: "pointer",
+              color: tab === m.id ? "#c9952a" : softText, cursor: "pointer",
               fontSize: 14, fontWeight: tab === m.id ? 700 : 400, whiteSpace: "nowrap",
               transition: "all .2s",
             }}>
@@ -625,7 +633,7 @@ const ApplicantDashboard = ({ user, onLogout }) => {
             display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
             borderRadius: 10, marginTop: 20, width: "100%", textAlign: "left",
             background: "transparent", border: "1px solid transparent",
-            color: "#667", cursor: "pointer", fontSize: 14, transition: "color .2s",
+            color: softText, cursor: "pointer", fontSize: 14, transition: "color .2s",
           }}
             onMouseEnter={e => e.currentTarget.style.color = "#f87171"}
             onMouseLeave={e => e.currentTarget.style.color = "#667"}
@@ -639,21 +647,21 @@ const ApplicantDashboard = ({ user, onLogout }) => {
       <div style={{ flex: 1, overflow: "auto" }}>
         {/* Top bar */}
         <div style={{
-          background: "rgba(6,10,18,0.9)", borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: topBarBg, borderBottom: `1px solid ${t.border}`,
           padding: "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between",
           position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", color: "#aab", cursor: "pointer" }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", color: softText, cursor: "pointer" }}>
               <MenuIcon />
             </button>
             <div>
-              <div style={{ fontWeight: 700, color: "#fff", fontSize: 16 }}>Applicant Portal</div>
-              <div style={{ color: "#556", fontSize: 12 }}>Welcome back, {user.name}</div>
+              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Applicant Portal</div>
+              <div style={{ color: faintText, fontSize: 12 }}>Welcome back, {user.name}</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ color: "#aab" }}><BellIcon /></div>
+            <div style={{ color: softText }}><BellIcon /></div>
             <div style={{
               width: 36, height: 36, borderRadius: "50%",
               background: "linear-gradient(135deg,#c9952a,#f0c060)",
@@ -667,8 +675,8 @@ const ApplicantDashboard = ({ user, onLogout }) => {
           {/* ─ OVERVIEW ─ */}
           {tab === "overview" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Dashboard Overview</h2>
-              <p style={{ color: "#667", marginBottom: 28 }}>Track your application progress and announcements.</p>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Dashboard Overview</h2>
+              <p style={{ color: t.muted, marginBottom: 28 }}>Track your application progress and announcements.</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 28 }}>
                 {[
                   { icon: "📋", label: "Application Status", val: appData.submitted ? "Submitted" : "Not Started", color: appData.submitted ? "#81c784" : "#c9952a" },
@@ -686,22 +694,22 @@ const ApplicantDashboard = ({ user, onLogout }) => {
 
               {!appData.submitted && (
                 <div style={{ ...S2.card, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.05)" }}>
-                  <div style={{ fontWeight: 700, color: "#e8d8a0", marginBottom: 8 }}>⚠️ Complete Your Application</div>
-                  <p style={{ color: "#8899aa", fontSize: 14, marginBottom: 16 }}>Your application has not been submitted. Fill the form and upload required documents to proceed.</p>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 8 }}>⚠️ Complete Your Application</div>
+                  <p style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>Your application has not been submitted. Fill the form and upload required documents to proceed.</p>
                   <GoldBtn onClick={() => setTab("apply")} style={{ fontSize: 13, padding: "10px 20px" }}>Start Application</GoldBtn>
                 </div>
               )}
 
               <div style={{ marginTop: 28 }}>
-                <div style={{ color: "#e8d8a0", fontWeight: 700, marginBottom: 14 }}>Latest Announcements</div>
+                <div style={{ color: isLight ? "#9a6b1a" : "#e8d8a0", fontWeight: 700, marginBottom: 14 }}>Latest Announcements</div>
                 {announcements.map((a, i) => (
                   <div key={i} style={{ ...S2.card, marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                       <Badge label={a.tag} />
-                      <span style={{ color: "#556", fontSize: 12 }}>{a.date}</span>
+                      <span style={{ color: faintText, fontSize: 12 }}>{a.date}</span>
                     </div>
-                    <div style={{ fontWeight: 700, color: "#fff", marginBottom: 6 }}>{a.title}</div>
-                    <div style={{ color: "#8899aa", fontSize: 14 }}>{a.text}</div>
+                    <div style={{ fontWeight: 700, color: t.text, marginBottom: 6 }}>{a.title}</div>
+                    <div style={{ color: t.muted, fontSize: 14 }}>{a.text}</div>
                   </div>
                 ))}
               </div>
@@ -836,15 +844,15 @@ const ApplicantDashboard = ({ user, onLogout }) => {
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Announcements</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Announcements</h2>
               {announcements.map((a, i) => (
                 <div key={i} style={{ ...S2.card, marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                     <Badge label={a.tag} />
-                    <span style={{ color: "#556", fontSize: 12 }}>{a.date}</span>
+                    <span style={{ color: faintText, fontSize: 12 }}>{a.date}</span>
                   </div>
-                  <div style={{ fontWeight: 700, color: "#fff", fontSize: 16, marginBottom: 8 }}>{a.title}</div>
-                  <div style={{ color: "#8899aa", lineHeight: 1.7 }}>{a.text}</div>
+                  <div style={{ fontWeight: 700, color: t.text, fontSize: 16, marginBottom: 8 }}>{a.title}</div>
+                  <div style={{ color: t.muted, lineHeight: 1.7 }}>{a.text}</div>
                 </div>
               ))}
             </div>
@@ -856,7 +864,15 @@ const ApplicantDashboard = ({ user, onLogout }) => {
 };
 
 // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────────
-const AdminDashboard = ({ user, onLogout }) => {
+const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
+  const t = getTheme(theme);
+  const isLight = theme === "light";
+  const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
+  const surfaceBorder = isLight ? "rgba(15,23,42,0.1)" : "rgba(255,255,255,0.07)";
+  const sidebarBg = isLight ? "#ffffff" : "#060a12";
+  const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
+  const softText = isLight ? "#475569" : "#8899aa";
+  const faintText = isLight ? "#64748b" : "#556";
   const [tab, setTab] = useState("overview");
   const [toast, setToast] = useState(null);
   const [search, setSearch] = useState("");
@@ -905,17 +921,17 @@ const AdminDashboard = ({ user, onLogout }) => {
   ];
 
   const S2 = {
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 24 },
+    card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0e1a", fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
+    <div style={{ minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Sidebar */}
       <div style={{
         width: sidebarOpen ? 240 : 0, minHeight: "100vh", overflow: "hidden",
-        background: "#060a12", borderRight: "1px solid rgba(201,168,76,0.1)",
+        background: sidebarBg, borderRight: `1px solid ${t.border}`,
         transition: "width .3s", flexShrink: 0,
       }}>
         <div style={{ padding: "24px 20px", minWidth: 240 }}>
@@ -925,14 +941,14 @@ const AdminDashboard = ({ user, onLogout }) => {
               CES <span style={{ color: "#c9952a" }}>ADMIN</span>
             </span>
           </div>
-          <div style={{ color: "#556", fontSize: 11, marginBottom: 28 }}>Control Panel</div>
+          <div style={{ color: faintText, fontSize: 11, marginBottom: 28 }}>Control Panel</div>
           {menuItems.map(m => (
             <button key={m.id} onClick={() => setTab(m.id)} style={{
               display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
               borderRadius: 10, marginBottom: 4, width: "100%", textAlign: "left",
               background: tab === m.id ? "rgba(201,168,76,0.1)" : "transparent",
               border: tab === m.id ? "1px solid rgba(201,168,76,0.25)" : "1px solid transparent",
-              color: tab === m.id ? "#c9952a" : "#8899aa", cursor: "pointer",
+              color: tab === m.id ? "#c9952a" : softText, cursor: "pointer",
               fontSize: 14, fontWeight: tab === m.id ? 700 : 400, whiteSpace: "nowrap",
               transition: "all .2s",
             }}>
@@ -943,7 +959,7 @@ const AdminDashboard = ({ user, onLogout }) => {
             display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
             borderRadius: 10, marginTop: 20, width: "100%", textAlign: "left",
             background: "transparent", border: "1px solid transparent",
-            color: "#667", cursor: "pointer", fontSize: 14,
+            color: softText, cursor: "pointer", fontSize: 14,
           }}
             onMouseEnter={e => e.currentTarget.style.color = "#f87171"}
             onMouseLeave={e => e.currentTarget.style.color = "#667"}
@@ -957,17 +973,17 @@ const AdminDashboard = ({ user, onLogout }) => {
       <div style={{ flex: 1, overflow: "auto" }}>
         {/* Top bar */}
         <div style={{
-          background: "rgba(6,10,18,0.9)", borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: topBarBg, borderBottom: `1px solid ${t.border}`,
           padding: "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between",
           position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", color: "#aab", cursor: "pointer" }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", color: softText, cursor: "pointer" }}>
               <MenuIcon />
             </button>
             <div>
-              <div style={{ fontWeight: 700, color: "#fff", fontSize: 16 }}>Admin Dashboard</div>
-              <div style={{ color: "#556", fontSize: 12 }}>{user.name} · Super Administrator</div>
+              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Admin Dashboard</div>
+              <div style={{ color: faintText, fontSize: 12 }}>{user.name} · Super Administrator</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -985,12 +1001,12 @@ const AdminDashboard = ({ user, onLogout }) => {
           {/* ─ OVERVIEW ─ */}
           {tab === "overview" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Admin Overview</h2>
-              <p style={{ color: "#667", marginBottom: 28 }}>Real-time recruitment statistics and activity.</p>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Admin Overview</h2>
+              <p style={{ color: t.muted, marginBottom: 28 }}>Real-time recruitment statistics and activity.</p>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16, marginBottom: 28 }}>
                 {[
-                  { icon: "👥", label: "Total Applicants", val: counts.total, color: "#fff" },
+                  { icon: "👥", label: "Total Applicants", val: counts.total, color: t.text },
                   { icon: "⏳", label: "Pending", val: counts.pending, color: "#c9952a" },
                   { icon: "🔍", label: "Under Review", val: counts.review, color: "#64b5f6" },
                   { icon: "✅", label: "Approved", val: counts.approved, color: "#81c784" },
@@ -999,14 +1015,14 @@ const AdminDashboard = ({ user, onLogout }) => {
                   <div key={c.label} style={{ ...S2.card, textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
                     <div style={{ color: c.color, fontWeight: 800, fontSize: 28 }}>{c.val}</div>
-                    <div style={{ color: "#667", fontSize: 12, marginTop: 4 }}>{c.label}</div>
+                    <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>{c.label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Recent activity */}
               <div style={{ ...S2.card }}>
-                <div style={{ fontWeight: 700, color: "#e8d8a0", marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+                <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
                   Recent Applications
                   <button onClick={() => setTab("applicants")} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontSize: 13 }}>View All →</button>
                 </div>
@@ -1015,16 +1031,16 @@ const AdminDashboard = ({ user, onLogout }) => {
                     <thead>
                       <tr>
                         {["Name", "State", "Date", "Status", "Action"].map(h => (
-                          <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#556", fontSize: 12, fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{h}</th>
+                          <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: faintText, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {applicants.slice(0, 5).map(a => (
-                        <tr key={a.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                          <td style={{ padding: "12px 14px", color: "#fff", fontSize: 14 }}>{a.name}</td>
-                          <td style={{ padding: "12px 14px", color: "#aab", fontSize: 14 }}>{a.state}</td>
-                          <td style={{ padding: "12px 14px", color: "#aab", fontSize: 13 }}>{a.date}</td>
+                        <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                          <td style={{ padding: "12px 14px", color: t.text, fontSize: 14 }}>{a.name}</td>
+                          <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.state}</td>
+                          <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.date}</td>
                           <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
                           <td style={{ padding: "12px 14px" }}>
                             <button onClick={() => updateStatus(a.id, "under_review")} style={{
