@@ -70,7 +70,6 @@ const MenuIcon = () => <Icon d="M3 12h18M3 6h18M3 18h18" />;
 const ChevronDown = () => <Icon d="m6 9 6 6 6-6" size={16} />;
 const ShieldIcon = () => <Icon d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" size={22} />;
 const ArrowRight = () => <Icon d="M5 12h14M12 5l7 7-7 7" size={18} />;
-const UploadIcon = () => <Icon d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />;
 const BellIcon = () => <Icon d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />;
 const UsersIcon = () => <Icon d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />;
 const BarChart = () => <Icon d="M18 20V10M12 20V4M6 20v-6" />;
@@ -131,6 +130,33 @@ const StatusBadge = ({ s }) => {
   };
   const m = map[s] || map.pending;
   return <span style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}44`, borderRadius: 999, padding: "3px 12px", fontSize: 12, fontWeight: 700 }}>{m.label}</span>;
+};
+
+const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
+  "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos",
+  "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers",
+  "Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja FCT",
+];
+
+const LGA_OPTIONS = {
+  "Abuja FCT": ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal Area Council"],
+  "Lagos": ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"],
+  "Kano": ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Malam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"],
+  "Rivers": ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"],
+  "Ogun": ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Egbado North", "Egbado South", "Ewekoro", "Ijebu East", "Ijebu North", "Ijebu North East", "Ijebu Ode", "Ikenne", "Imeko Afon", "Ipokia", "Obafemi Owode", "Odeda", "Odogbolu", "Ogun Waterside", "Remo North", "Shagamu"],
+  "Oyo": ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo", "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"],
+  "Anambra": ["Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Njikoka", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi"],
+  "Delta": ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Ukwuani", "Uvwie", "Warri North", "Warri South", "Warri South West"],
+  "Enugu": ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo Etiti", "Igbo Eze North", "Igbo Eze South", "Isi Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo Uwani"],
+  "Kaduna": ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria"],
+};
+
+const getLgaOptions = (state) => {
+  if (!state) return [];
+  if (LGA_OPTIONS[state]) return LGA_OPTIONS[state];
+  return ["Select LGA from official list during camp verification"];
 };
 
 const ThemeToggle = ({ theme, onToggle }) => (
@@ -575,7 +601,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const submitApp = () => {
-    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state) {
+    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !appData.lga) {
       showToast("Please fill all required fields.", "error"); return;
     }
     setAppData(d => ({ ...d, submitted: true, status: "under_review" }));
@@ -592,7 +618,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     { id: "overview", icon: "🏠", label: "Overview" },
     { id: "apply", icon: "📋", label: "Application Form" },
     { id: "status", icon: "📊", label: "Track Status" },
-    { id: "documents", icon: "📁", label: "Documents" },
     { id: "announcements", icon: "📢", label: "Announcements" },
   ];
 
@@ -682,7 +707,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 28 }}>
                 {[
                   { icon: "📋", label: "Application Status", val: appData.submitted ? "Submitted" : "Not Started", color: appData.submitted ? "#81c784" : "#c9952a" },
-                  { icon: "📁", label: "Documents", val: "0 / 2 Uploaded", color: "#64b5f6" },
+                  { icon: "🛂", label: "Verification", val: "Physical check in camp", color: "#64b5f6" },
                   { icon: "📢", label: "Announcements", val: `${announcements.length} New`, color: "#c9952a" },
                   { icon: "🎯", label: "Current Stage", val: appData.submitted ? "Under Review" : "Pre-Application", color: "#aab" },
                 ].map(c => (
@@ -697,7 +722,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
               {!appData.submitted && (
                 <div style={{ ...S2.card, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.05)" }}>
                   <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 8 }}>⚠️ Complete Your Application</div>
-                  <p style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>Your application has not been submitted. Fill the form and upload required documents to proceed.</p>
+                  <p style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>Your application has not been submitted. Fill the form and proceed to physical verification in camp.</p>
                   <GoldBtn onClick={() => setTab("apply")} style={{ fontSize: 13, padding: "10px 20px" }}>Start Application</GoldBtn>
                 </div>
               )}
@@ -739,9 +764,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Select light={isLight} label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
                     options={[{ value: "", label: "Select gender" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }]} />
                   <Input light={isLight} label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
-                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value }))} required
-                    options={[{ value: "", label: "Select state" }, ...["Lagos", "Abuja FCT", "Rivers", "Kano", "Ogun", "Oyo", "Anambra", "Delta", "Enugu", "Kaduna"].map(s => ({ value: s, label: s }))]} />
-                  <Input light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required />
+                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "" }))} required
+                    options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map(s => ({ value: s, label: s }))]} />
+                  <Select light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required
+                    options={[{ value: "", label: appData.state ? "Select LGA" : "Select state first" }, ...getLgaOptions(appData.state).map(lga => ({ value: lga, label: lga }))]} />
                   <Textarea light={isLight} label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
                 </div>
                 <div>
@@ -812,34 +838,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   </GoldBtn>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* ─ DOCUMENTS ─ */}
-          {tab === "documents" && (
-            <div>
-              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Document Upload</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 16 }}>
-                {[{ label: "Passport Photograph", hint: "Clear face photo, white background, JPG/PNG, max 2MB" },
-                  { label: "Valid Government ID", hint: "NIN slip, Voter's card, Driver's licence, or Passport" }].map(d => (
-                  <div key={d.label} style={{ ...S2.card }}>
-                    <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>{d.label}</div>
-                    <div style={{ color: t.muted, fontSize: 13, marginBottom: 16 }}>{d.hint}</div>
-                    <div style={{
-                      border: "2px dashed rgba(201,168,76,0.3)", borderRadius: 10, padding: "28px 20px",
-                      textAlign: "center", cursor: "pointer",
-                    }}
-                      onClick={() => showToast("Document uploaded successfully!")}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = "#c9952a"}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(201,168,76,0.3)"}
-                    >
-                      <div style={{ color: "#c9952a", display: "flex", justifyContent: "center", marginBottom: 8 }}><UploadIcon /></div>
-                      <div style={{ color: t.muted, fontSize: 14 }}>Click to upload</div>
-                      <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>JPG, PNG or PDF up to 5MB</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
