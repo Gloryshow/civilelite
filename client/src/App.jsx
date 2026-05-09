@@ -91,26 +91,26 @@ const GoldBtn = ({ children, onClick, outline = false, style = {} }) => (
   <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: "pointer", transition: "all .2s ease", ...style }}>{children}</button>
 );
 
-const Input = ({ label, value, onChange, type = "text", placeholder, required }) => (
+const Input = ({ label, value, onChange, type = "text", placeholder, required, light = false }) => (
   <div style={{ marginBottom: 16 }}>
-    {label && <label style={{ display: "block", color: "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
-    <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "11px 14px", color: "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+    {label && <label style={{ display: "block", color: light ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
+    <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} style={{ width: "100%", background: light ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", color: light ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = light ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
   </div>
 );
 
-const Select = ({ label, value, onChange, options, required }) => (
+const Select = ({ label, value, onChange, options, required, light = false }) => (
   <div style={{ marginBottom: 16 }}>
-    {label && <label style={{ display: "block", color: "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
-    <select value={value} onChange={onChange} required={required} style={{ width: "100%", background: "#0d1b2a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "11px 14px", color: value ? "#fff" : "#777", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}>
+    {label && <label style={{ display: "block", color: light ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
+    <select value={value} onChange={onChange} required={required} style={{ width: "100%", background: light ? "#ffffff" : "#0d1b2a", border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", color: value ? (light ? "#0f172a" : "#fff") : (light ? "#64748b" : "#777"), fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}>
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   </div>
 );
 
-const Textarea = ({ label, value, onChange, placeholder, rows = 4, required }) => (
+const Textarea = ({ label, value, onChange, placeholder, rows = 4, required, light = false }) => (
   <div style={{ marginBottom: 16 }}>
-    {label && <label style={{ display: "block", color: "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
-    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} required={required} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "11px 14px", color: "#fff", fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+    {label && <label style={{ display: "block", color: light ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
+    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} required={required} style={{ width: "100%", background: light ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", color: light ? "#0f172a" : "#fff", fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = light ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
   </div>
 );
 
@@ -464,7 +464,9 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 };
 
 // ── AUTH PAGE ─────────────────────────────────────────────────────────────────
-const AuthPage = ({ mode, onAuth, onNavigate }) => {
+const AuthPage = ({ mode, onAuth, onNavigate, theme = "light" }) => {
+  const t = getTheme(theme);
+  const isLight = theme === "light";
   const [form, setForm] = useState({ email: "", password: "", name: "", confirm: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -488,40 +490,40 @@ const AuthPage = ({ mode, onAuth, onNavigate }) => {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#0a0e1a", display: "flex", alignItems: "center",
+      minHeight: "100vh", background: isLight ? "linear-gradient(180deg, #f7f9fc 0%, #eef3f7 100%)" : "#0a0e1a", display: "flex", alignItems: "center",
       justifyContent: "center", fontFamily: "'Segoe UI',sans-serif", padding: 24, position: "relative",
     }}>
       {/* Background */}
       <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-        <div style={{ position: "absolute", top: "20%", right: "10%", width: 350, height: 350, background: "radial-gradient(circle,rgba(201,168,76,0.07) 0%,transparent 70%)" }} />
-        <div style={{ position: "absolute", bottom: "20%", left: "10%", width: 300, height: 300, background: "radial-gradient(circle,rgba(13,83,150,0.1) 0%,transparent 70%)" }} />
+        <div style={{ position: "absolute", top: "20%", right: "10%", width: 350, height: 350, background: isLight ? "radial-gradient(circle,rgba(201,149,42,0.12) 0%,transparent 70%)" : "radial-gradient(circle,rgba(201,168,76,0.07) 0%,transparent 70%)" }} />
+        <div style={{ position: "absolute", bottom: "20%", left: "10%", width: 300, height: 300, background: isLight ? "radial-gradient(circle,rgba(15,118,110,0.08) 0%,transparent 70%)" : "radial-gradient(circle,rgba(13,83,150,0.1) 0%,transparent 70%)" }} />
       </div>
       <div style={{
-        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(201,168,76,0.2)",
+        background: isLight ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.03)", border: `1px solid ${isLight ? "rgba(15,23,42,0.08)" : "rgba(201,168,76,0.2)"}`,
         borderRadius: 20, padding: "44px 40px", width: "100%", maxWidth: 440, zIndex: 1,
-        backdropFilter: "blur(20px)",
+        backdropFilter: "blur(20px)", boxShadow: isLight ? "0 24px 70px rgba(15,23,42,0.08)" : "none",
       }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <img src="/logo.png" alt="panel-logo" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, display: "block", margin: "0 auto 10px" }} />
-          <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: 1 }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</div>
-          <div style={{ color: "#667", fontSize: 12, marginTop: 4 }}>SECURE RECRUITMENT PORTAL</div>
+          <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: 1, color: t.text }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</div>
+          <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>SECURE RECRUITMENT PORTAL</div>
         </div>
 
-        <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
+        <h2 style={{ color: t.text, fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
           {isLogin ? "Sign In to Portal" : "Create Account"}
         </h2>
 
-        {!isLogin && <Input label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
-        <Input label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-        <Input label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
-        {!isLogin && <Input label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
+        {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
+        <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
+        <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
+        {!isLogin && <Input light={isLight} label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
 
         {isLogin && (
           <div style={{ textAlign: "center", marginBottom: 12 }}>
-            <span style={{ color: "#667", fontSize: 12 }}>Demo: </span>
+            <span style={{ color: t.muted, fontSize: 12 }}>Demo: </span>
             <span style={{ color: "#c9952a", fontSize: 12 }}>admin@ces.gov.ng</span>
-            <span style={{ color: "#667", fontSize: 12 }}> or any email for applicant</span>
+            <span style={{ color: t.muted, fontSize: 12 }}> or any email for applicant</span>
           </div>
         )}
 
@@ -531,7 +533,7 @@ const AuthPage = ({ mode, onAuth, onNavigate }) => {
           {loading ? "Authenticating…" : isLogin ? "Sign In" : "Create Account"}
         </GoldBtn>
 
-        <div style={{ textAlign: "center", color: "#667", fontSize: 14 }}>
+        <div style={{ textAlign: "center", color: t.muted, fontSize: 14 }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button onClick={() => onNavigate(isLogin ? "register" : "login")} style={{
             background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontWeight: 700,
@@ -540,7 +542,7 @@ const AuthPage = ({ mode, onAuth, onNavigate }) => {
 
         <button onClick={() => onNavigate("home")} style={{
           display: "block", margin: "16px auto 0", background: "none", border: "none",
-          color: "#556", cursor: "pointer", fontSize: 13,
+          color: t.muted, cursor: "pointer", fontSize: 13,
         }}>← Back to Home</button>
       </div>
     </div>
@@ -719,8 +721,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ APPLICATION FORM ─ */}
           {tab === "apply" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Recruitment Application</h2>
-              <p style={{ color: "#667", marginBottom: 28 }}>Complete all fields accurately. False information is disqualifying.</p>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Recruitment Application</h2>
+              <p style={{ color: t.muted, marginBottom: 28 }}>Complete all fields accurately. False information is disqualifying.</p>
 
               {appData.submitted && (
                 <div style={{ ...S2.card, background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.3)", marginBottom: 24 }}>
@@ -731,25 +733,25 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 0 }}>
                 <div style={{ paddingRight: 16 }}>
                   <div style={{ color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 16 }}>PERSONAL INFORMATION</div>
-                  <Input label="Full Name" value={appData.fullName} onChange={e => setAppData(d => ({ ...d, fullName: e.target.value }))} required />
-                  <Input label="Email Address" type="email" value={appData.email} onChange={e => setAppData(d => ({ ...d, email: e.target.value }))} required />
-                  <Input label="Phone Number" value={appData.phone} onChange={e => setAppData(d => ({ ...d, phone: e.target.value }))} placeholder="+234 800 000 0000" required />
-                  <Select label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
+                  <Input light={isLight} label="Full Name" value={appData.fullName} onChange={e => setAppData(d => ({ ...d, fullName: e.target.value }))} required />
+                  <Input light={isLight} label="Email Address" type="email" value={appData.email} onChange={e => setAppData(d => ({ ...d, email: e.target.value }))} required />
+                  <Input light={isLight} label="Phone Number" value={appData.phone} onChange={e => setAppData(d => ({ ...d, phone: e.target.value }))} placeholder="+234 800 000 0000" required />
+                  <Select light={isLight} label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
                     options={[{ value: "", label: "Select gender" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }]} />
-                  <Input label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
-                  <Select label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value }))} required
+                  <Input light={isLight} label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
+                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value }))} required
                     options={[{ value: "", label: "Select state" }, ...["Lagos", "Abuja FCT", "Rivers", "Kano", "Ogun", "Oyo", "Anambra", "Delta", "Enugu", "Kaduna"].map(s => ({ value: s, label: s }))]} />
-                  <Input label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required />
-                  <Textarea label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
+                  <Input light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required />
+                  <Textarea light={isLight} label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
                 </div>
                 <div>
                   <div style={{ color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 16 }}>QUALIFICATIONS & NEXT OF KIN</div>
-                  <Select label="Highest Educational Qualification" value={appData.qualification} onChange={e => setAppData(d => ({ ...d, qualification: e.target.value }))} required
+                  <Select light={isLight} label="Highest Educational Qualification" value={appData.qualification} onChange={e => setAppData(d => ({ ...d, qualification: e.target.value }))} required
                     options={[{ value: "", label: "Select qualification" }, { value: "waec", label: "WAEC/NECO" }, { value: "ond", label: "OND" }, { value: "hnd", label: "HND" }, { value: "bsc", label: "B.Sc / B.A" }, { value: "msc", label: "M.Sc / MBA" }]} />
-                  <Input label="Next of Kin — Full Name" value={appData.kinName} onChange={e => setAppData(d => ({ ...d, kinName: e.target.value }))} required />
-                  <Input label="Next of Kin — Phone" value={appData.kinPhone} onChange={e => setAppData(d => ({ ...d, kinPhone: e.target.value }))} required />
-                  <Textarea label="Medical Information (Conditions, Allergies, etc.)" value={appData.medInfo} onChange={e => setAppData(d => ({ ...d, medInfo: e.target.value }))} placeholder="None known / describe any conditions..." rows={3} />
-                  <Textarea label="Why do you want to join Civil Elite Service? *" value={appData.whyJoin} onChange={e => setAppData(d => ({ ...d, whyJoin: e.target.value }))} placeholder="Describe your motivation, goals, and how you will contribute..." rows={5} required />
+                  <Input light={isLight} label="Next of Kin — Full Name" value={appData.kinName} onChange={e => setAppData(d => ({ ...d, kinName: e.target.value }))} required />
+                  <Input light={isLight} label="Next of Kin — Phone" value={appData.kinPhone} onChange={e => setAppData(d => ({ ...d, kinPhone: e.target.value }))} required />
+                  <Textarea light={isLight} label="Medical Information (Conditions, Allergies, etc.)" value={appData.medInfo} onChange={e => setAppData(d => ({ ...d, medInfo: e.target.value }))} placeholder="None known / describe any conditions..." rows={3} />
+                  <Textarea light={isLight} label="Why do you want to join Civil Elite Service? *" value={appData.whyJoin} onChange={e => setAppData(d => ({ ...d, whyJoin: e.target.value }))} placeholder="Describe your motivation, goals, and how you will contribute..." rows={5} required />
                 </div>
               </div>
 
@@ -765,12 +767,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ STATUS ─ */}
           {tab === "status" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Application Status</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Application Status</h2>
               {!appData.submitted ? (
                 <div style={{ ...S2.card, textAlign: "center", padding: 48 }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-                  <div style={{ color: "#fff", fontWeight: 700, marginBottom: 8 }}>No Application Found</div>
-                  <div style={{ color: "#667", marginBottom: 20 }}>You have not submitted an application yet.</div>
+                  <div style={{ color: t.text, fontWeight: 700, marginBottom: 8 }}>No Application Found</div>
+                  <div style={{ color: t.muted, marginBottom: 20 }}>You have not submitted an application yet.</div>
                   <GoldBtn onClick={() => setTab("apply")}>Start Application</GoldBtn>
                 </div>
               ) : (
@@ -778,8 +780,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ ...S2.card, marginBottom: 20 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                       <div>
-                        <div style={{ fontWeight: 700, color: "#fff", fontSize: 18 }}>{appData.fullName}</div>
-                        <div style={{ color: "#667", fontSize: 13 }}>Ref: CES-2025-{String(Math.floor(Math.random() * 9000) + 1000)}</div>
+                        <div style={{ fontWeight: 700, color: t.text, fontSize: 18 }}>{appData.fullName}</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>Ref: CES-2025-{String(Math.floor(Math.random() * 9000) + 1000)}</div>
                       </div>
                       <StatusBadge s={appData.status} />
                     </div>
@@ -799,8 +801,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                             borderRadius: "50%", background: step.done ? "#c9952a" : "#333",
                             border: `2px solid ${step.done ? "#c9952a" : "#555"}`,
                           }} />
-                          <div style={{ fontWeight: 600, color: step.done ? "#fff" : "#667", fontSize: 14 }}>{step.label}</div>
-                          <div style={{ color: "#556", fontSize: 12 }}>{step.date}</div>
+                          <div style={{ fontWeight: 600, color: step.done ? t.text : t.muted, fontSize: 14 }}>{step.label}</div>
+                          <div style={{ color: "#64748b", fontSize: 12 }}>{step.date}</div>
                         </div>
                       ))}
                     </div>
@@ -816,13 +818,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ DOCUMENTS ─ */}
           {tab === "documents" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Document Upload</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Document Upload</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 16 }}>
                 {[{ label: "Passport Photograph", hint: "Clear face photo, white background, JPG/PNG, max 2MB" },
                   { label: "Valid Government ID", hint: "NIN slip, Voter's card, Driver's licence, or Passport" }].map(d => (
                   <div key={d.label} style={{ ...S2.card }}>
-                    <div style={{ fontWeight: 700, color: "#e8d8a0", marginBottom: 6 }}>{d.label}</div>
-                    <div style={{ color: "#667", fontSize: 13, marginBottom: 16 }}>{d.hint}</div>
+                    <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>{d.label}</div>
+                    <div style={{ color: t.muted, fontSize: 13, marginBottom: 16 }}>{d.hint}</div>
                     <div style={{
                       border: "2px dashed rgba(201,168,76,0.3)", borderRadius: 10, padding: "28px 20px",
                       textAlign: "center", cursor: "pointer",
@@ -832,8 +834,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(201,168,76,0.3)"}
                     >
                       <div style={{ color: "#c9952a", display: "flex", justifyContent: "center", marginBottom: 8 }}><UploadIcon /></div>
-                      <div style={{ color: "#aab", fontSize: 14 }}>Click to upload</div>
-                      <div style={{ color: "#556", fontSize: 12, marginTop: 4 }}>JPG, PNG or PDF up to 5MB</div>
+                      <div style={{ color: t.muted, fontSize: 14 }}>Click to upload</div>
+                      <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>JPG, PNG or PDF up to 5MB</div>
                     </div>
                   </div>
                 ))}
@@ -1061,14 +1063,14 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {tab === "applicants" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-                <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24 }}>All Applicants</h2>
+                <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24 }}>All Applicants</h2>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <div style={{ position: "relative" }}>
-                    <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#556" }}><Search /></div>
+                    <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: t.muted }}><Search /></div>
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search applicants…"
                       style={{
-                        background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 8, padding: "10px 14px 10px 40px", color: "#fff", fontSize: 14, outline: "none", width: 220,
+                        background: isLight ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`,
+                        borderRadius: 8, padding: "10px 14px 10px 40px", color: t.text, fontSize: 14, outline: "none", width: 220,
                       }} />
                   </div>
                   <GoldBtn onClick={() => showToast("Data exported as CSV!")} style={{ fontSize: 13, padding: "10px 18px" }}>
@@ -1081,22 +1083,22 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   <thead>
                     <tr>
                       {["#", "Name", "Email", "State", "Gender", "Date", "Status", "Actions"].map(h => (
-                        <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#556", fontSize: 12, fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>{h}</th>
+                          <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map(a => (
-                      <tr key={a.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                      <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}
+                        onMouseEnter={e => e.currentTarget.style.background = isLight ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        <td style={{ padding: "12px 14px", color: "#556", fontSize: 13 }}>{a.id}</td>
-                        <td style={{ padding: "12px 14px", color: "#fff", fontSize: 14, fontWeight: 600 }}>{a.name}</td>
-                        <td style={{ padding: "12px 14px", color: "#8899aa", fontSize: 13 }}>{a.email}</td>
-                        <td style={{ padding: "12px 14px", color: "#aab", fontSize: 14 }}>{a.state}</td>
-                        <td style={{ padding: "12px 14px", color: "#aab", fontSize: 14 }}>{a.gender}</td>
-                        <td style={{ padding: "12px 14px", color: "#556", fontSize: 13 }}>{a.date}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.id}</td>
+                        <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.state}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.gender}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.date}</td>
                         <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{ display: "flex", gap: 6 }}>
@@ -1128,11 +1130,11 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Post Announcement</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Post Announcement</h2>
               <div style={{ ...S2.card, maxWidth: 600, marginBottom: 32 }}>
                 <div style={{ color: "#c9952a", fontWeight: 700, marginBottom: 16 }}>New Announcement</div>
-                <Input label="Title" value={announcement.title} onChange={e => setAnnouncement(a => ({ ...a, title: e.target.value }))} placeholder="Announcement headline…" />
-                <Textarea label="Body" value={announcement.body} onChange={e => setAnnouncement(a => ({ ...a, body: e.target.value }))} placeholder="Full announcement content…" rows={5} />
+                <Input light={isLight} label="Title" value={announcement.title} onChange={e => setAnnouncement(a => ({ ...a, title: e.target.value }))} placeholder="Announcement headline…" />
+                <Textarea light={isLight} label="Body" value={announcement.body} onChange={e => setAnnouncement(a => ({ ...a, body: e.target.value }))} placeholder="Full announcement content…" rows={5} />
                 <GoldBtn onClick={() => { showToast("Announcement published to all applicants!"); setAnnouncement({ title: "", body: "" }); }}>
                   <Plus /> Publish Announcement
                 </GoldBtn>
@@ -1143,7 +1145,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ ANALYTICS ─ */}
           {tab === "analytics" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Analytics Dashboard</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Analytics Dashboard</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 20, marginBottom: 28 }}>
                 {[
                   { label: "Application Completion Rate", val: "74%", trend: "+8%", icon: "📈" },
@@ -1153,8 +1155,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 ].map(c => (
                   <div key={c.label} style={{ ...S2.card }}>
                     <div style={{ fontSize: 28, marginBottom: 10 }}>{c.icon}</div>
-                    <div style={{ color: "#8899aa", fontSize: 12, marginBottom: 6 }}>{c.label}</div>
-                    <div style={{ color: "#fff", fontWeight: 800, fontSize: 28 }}>{c.val}</div>
+                    <div style={{ color: t.muted, fontSize: 12, marginBottom: 6 }}>{c.label}</div>
+                    <div style={{ color: t.text, fontWeight: 800, fontSize: 28 }}>{c.val}</div>
                     <div style={{ color: "#81c784", fontSize: 13, marginTop: 4 }}>↑ {c.trend} this month</div>
                   </div>
                 ))}
@@ -1162,11 +1164,11 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
               {/* Visual bar chart */}
               <div style={{ ...S2.card }}>
-                <div style={{ fontWeight: 700, color: "#e8d8a0", marginBottom: 20 }}>Applications by State</div>
+                <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 20 }}>Applications by State</div>
                 {[{ state: "Lagos", count: 42 }, { state: "Rivers", count: 28 }, { state: "Abuja FCT", count: 25 }, { state: "Kano", count: 19 }, { state: "Anambra", count: 14 }, { state: "Oyo", count: 11 }].map(s => (
                   <div key={s.state} style={{ marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ color: "#aab", fontSize: 13 }}>{s.state}</span>
+                      <span style={{ color: t.muted, fontSize: 13 }}>{s.state}</span>
                       <span style={{ color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{s.count}</span>
                     </div>
                     <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 999, height: 8, overflow: "hidden" }}>
@@ -1185,7 +1187,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {/* ─ SETTINGS ─ */}
           {tab === "settings" && (
             <div>
-              <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Admin Settings</h2>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Admin Settings</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 20 }}>
                 {[
                   { label: "Recruitment Status", desc: "Toggle the portal open/closed for new applications", action: "Toggle Open", icon: "🔓" },
@@ -1195,8 +1197,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 ].map(s => (
                   <div key={s.label} style={{ ...S2.card }}>
                     <div style={{ fontSize: 28, marginBottom: 10 }}>{s.icon}</div>
-                    <div style={{ fontWeight: 700, color: "#e8d8a0", marginBottom: 6 }}>{s.label}</div>
-                    <div style={{ color: "#667", fontSize: 14, marginBottom: 16 }}>{s.desc}</div>
+                    <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>{s.label}</div>
+                    <div style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>{s.desc}</div>
                     <GoldBtn outline onClick={() => showToast(`${s.action} action triggered.`)} style={{ fontSize: 13, padding: "8px 16px" }}>{s.action}</GoldBtn>
                   </div>
                 ))}
@@ -1229,8 +1231,8 @@ export default function App() {
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
 
   if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "dashboard" && user) {
     return user.role === "admin"
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>
