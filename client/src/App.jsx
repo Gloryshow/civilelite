@@ -144,6 +144,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   const [navScrolled, setNavScrolled] = useState(false);
   const [faqOpen, setFaqOpen] = useState(0);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 900 : false));
+  const [isSmall, setIsSmall] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 640 : false));
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 24);
@@ -152,7 +153,10 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   }, []);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 900);
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 900);
+      setIsSmall(window.innerWidth <= 640);
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -234,7 +238,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             <img src="/logo.png" alt="logo" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 8, boxShadow: "0 6px 18px rgba(0,0,0,0.08)" }} />
             <span style={{ fontWeight: 900, letterSpacing: 0.6, fontSize: isMobile ? 14 : 18, whiteSpace: "normal", lineHeight: 1.2 }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</span>
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 10 : 24, flexWrap: "wrap", justifyContent: isMobile ? "flex-start" : "center", width: isMobile ? "100%" : "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 24, flexWrap: "nowrap", justifyContent: isMobile ? "flex-start" : "center", width: isMobile ? "100%" : "auto", overflowX: isMobile ? "auto" : "visible", WebkitOverflowScrolling: "touch" }}>
             {navLinks.map(([label, id]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: t.muted, fontWeight: 700, cursor: "pointer", fontSize: isMobile ? 13 : 14, padding: isMobile ? "4px 0" : 0 }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = t.muted}>{label}</button>
             ))}
@@ -243,20 +247,20 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         </div>
       </nav>
 
-      <section id="hero" style={{ minHeight: "100vh", paddingTop: isMobile ? 164 : 106, display: "grid", alignItems: "center", position: "relative", background: theme === "light" ? "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #f7f9fc 0%, #eef3f7 100%)" : "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #0a0e1a 0%, #0d1b2a 100%)" }}>
+      <section id="hero" style={{ minHeight: "100vh", paddingTop: isSmall ? 124 : isMobile ? 148 : 106, display: "grid", alignItems: "center", position: "relative", background: theme === "light" ? "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #f7f9fc 0%, #eef3f7 100%)" : "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #0a0e1a 0%, #0d1b2a 100%)" }}>
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
           {[...Array(8)].map((_, i) => <span key={i} style={{ position: "absolute", left: `${10 + i * 10}%`, top: -30, width: 1, height: "125%", background: `rgba(201,149,42,${0.03 + i * 0.004})`, transform: "rotate(-18deg)" }} />)}
         </div>
         <div style={{ maxWidth: 1440, margin: "0 auto", padding: isMobile ? "0 14px" : "0 60px", width: "100%", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.1fr 0.9fr", gap: isMobile ? 24 : 40, alignItems: "center", position: "relative", zIndex: 1 }}>
-          <div style={{ animation: "rise .7s ease both" }}>
+          <div style={{ animation: "rise .7s ease both", textAlign: isSmall ? "center" : "left" }}>
             <div style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: 999, border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.14)" : "rgba(255,255,255,0.12)"}`, background: theme === "light" ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.04)", color: t.muted, fontSize: 12, letterSpacing: 1.4, fontWeight: 800, textTransform: "uppercase" }}>Official Recruitment Portal</div>
-            <h1 style={{ marginTop: 22, fontSize: "clamp(34px, 10vw, 86px)", lineHeight: 0.95, letterSpacing: isMobile ? -1 : -2, fontWeight: 900, color: theme === "light" ? "#0f172a" : "#fff", maxWidth: 760 }}>Build a disciplined career in <span style={{ color: "#c9952a" }}>Civil Elite</span> Service.</h1>
-            <p style={{ marginTop: 20, fontSize: "clamp(16px, 2vw, 20px)", lineHeight: 1.8, maxWidth: 640, color: t.muted }}>A modern recruitment experience for applicants who want structure, purpose, and national service. Apply, track progress, and stay informed from one clean portal.</p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 32 }}>
+            <h1 style={{ marginTop: 22, fontSize: "clamp(32px, 9vw, 86px)", lineHeight: 0.98, letterSpacing: isMobile ? -1 : -2, fontWeight: 900, color: theme === "light" ? "#0f172a" : "#fff", maxWidth: isSmall ? "100%" : 760, marginLeft: isSmall ? "auto" : 0, marginRight: isSmall ? "auto" : 0 }}>Build a disciplined career in <span style={{ color: "#c9952a" }}>Civil Elite</span> Service.</h1>
+            <p style={{ marginTop: 16, fontSize: "clamp(15px, 3.4vw, 20px)", lineHeight: 1.8, maxWidth: isSmall ? "100%" : 640, color: t.muted, marginLeft: isSmall ? "auto" : 0, marginRight: isSmall ? "auto" : 0 }}>A modern recruitment experience for applicants who want structure, purpose, and national service. Apply, track progress, and stay informed from one clean portal.</p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24, justifyContent: isSmall ? "center" : "flex-start" }}>
               <GoldBtn onClick={() => onNavigate("register")} style={{ padding: "15px 26px" }}>Start Application <ArrowRight /></GoldBtn>
               <GoldBtn outline onClick={() => scrollTo("divisions")} style={{ padding: "15px 26px" }}>Explore Divisions</GoldBtn>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginTop: 34, maxWidth: 760 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginTop: 28, maxWidth: isSmall ? "100%" : 760 }}>
               {pillars.map(p => (
                 <div key={p.title} style={{ animation: "rise .7s ease both", background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.04)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.08)"}`, borderRadius: 18, padding: 18 }}>
                   <div style={{ fontSize: 24, marginBottom: 10 }}>{p.icon}</div>
@@ -266,9 +270,9 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
               ))}
             </div>
           </div>
-          <div style={{ animation: "rise .85s ease both", display: "grid", gap: 16 }}>
-            <img src="/logo.png" alt="Hero" style={{ width: "100%", borderRadius: 18, objectFit: "contain", maxHeight: isMobile ? 220 : 380, display: "block", marginBottom: 8 }} />
-            <div style={{ borderRadius: 28, padding: 24, background: theme === "light" ? "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,244,248,0.95))" : "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}`, boxShadow: theme === "light" ? "0 24px 70px rgba(15,23,42,0.08)" : "0 24px 70px rgba(0,0,0,0.35)" }}>
+          <div style={{ animation: "rise .85s ease both", display: "grid", gap: 14 }}>
+            <img src="/logo.png" alt="Hero" style={{ width: "100%", borderRadius: 18, objectFit: "contain", maxHeight: isSmall ? 180 : isMobile ? 240 : 380, display: "block", marginBottom: 6 }} />
+            <div style={{ borderRadius: 24, padding: isMobile ? 18 : 24, background: theme === "light" ? "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,244,248,0.95))" : "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}`, boxShadow: theme === "light" ? "0 24px 70px rgba(15,23,42,0.08)" : "0 24px 70px rgba(0,0,0,0.35)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
                   <div style={{ color: "#c9952a", fontWeight: 800, letterSpacing: 1, fontSize: 12, textTransform: "uppercase" }}>Portal Overview</div>
@@ -278,14 +282,14 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
               </div>
               <div style={{ display: "grid", gap: 12 }}>
                 {stats.map(([value, label]) => (
-                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", borderRadius: 16, background: theme === "light" ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.06)"}` }}>
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: isMobile ? "12px 14px" : "16px 18px", borderRadius: 16, background: theme === "light" ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.06)"}` }}>
                     <span style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800 }}>{label}</span>
                     <span style={{ color: "#c9952a", fontWeight: 900, fontSize: 20 }}>{value}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ borderRadius: 28, padding: 24, background: theme === "light" ? "rgba(255,255,255,0.76)" : "rgba(255,255,255,0.04)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}` }}>
+            <div style={{ borderRadius: 24, padding: isMobile ? 18 : 24, background: theme === "light" ? "rgba(255,255,255,0.76)" : "rgba(255,255,255,0.04)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}` }}>
               <div style={{ color: t.muted, fontSize: 12, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 800 }}>Application Snapshot</div>
               <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
                 {[["Eligibility", "18-35 years, medically fit"], ["Documents", "ID, certificates, passport photo"], ["Selection", "Screening, assessment, placement"]].map(([a, b]) => (
@@ -306,10 +310,10 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             <Badge label="Gallery" />
             <div style={{ color: t.muted, fontSize: 13 }}>{gallery.length} images</div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
             {gallery.map((f, i) => (
               <div key={f} style={{ borderRadius: 12, overflow: "hidden", background: "#f6f8fa", display: "block" }}>
-                <img src={`/images/${f}`} alt={`photo-${i+1}`} loading="lazy" style={{ width: "100%", height: 220, objectFit: "contain", display: "block", backgroundColor: theme === "light" ? "#f6f8fa" : "#1a2a3a" }} onError={(e)=>{e.currentTarget.style.display='none'}} />
+                <img src={`/images/${f}`} alt={`photo-${i+1}`} loading="lazy" style={{ width: "100%", height: isMobile ? 200 : 220, objectFit: "contain", display: "block", backgroundColor: theme === "light" ? "#f6f8fa" : "#1a2a3a" }} onError={(e)=>{e.currentTarget.style.display='none'}} />
               </div>
             ))}
           </div>
