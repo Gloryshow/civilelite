@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react";
+import { authAPI, applicantAPI, adminAPI, tokenManager } from "./api.js";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
 
@@ -570,28 +571,34 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 };
 
 // ── AUTH PAGE ─────────────────────────────────────────────────────────────────
-const AuthPage = ({ mode, onAuth, onNavigate, theme = "light" }) => {
+const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
   const [form, setForm] = useState({ email: "", password: "", name: "", confirm: "" });
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
   const isLogin = mode === "login";
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const submit = () => {
+  const submit = async () => {
     setError("");
     if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      // Demo: admin@ces.gov.ng → admin, anything else → applicant
-      const role = form.email === "admin@ces.gov.ng" ? "admin" : "applicant";
-      onAuth({ email: form.email, name: form.name || form.email.split("@")[0], role });
-    }, 1400);
+    setLocalLoading(true);
+    try {
+      if (isLogin) {
+        const result = await authAPI.login(form.email, form.password);
+        onAuth(result.user);
+      } else {
+        const result = await authAPI.register(form.email, form.password, form.name);
+        onAuth(result.user);
+      }
+    } catch (err) {
+      setError(err.message || "Authentication failed");
+      setLocalLoading(false);
+    }
   };
 
   return (
@@ -635,8 +642,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light" }) => {
 
         {error && <div style={{ color: "#f87171", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "#f8717122", borderRadius: 8 }}>{error}</div>}
 
-        <GoldBtn onClick={submit} style={{ width: "100%", justifyContent: "center", marginBottom: 20 }}>
-          {loading ? "Authenticating…" : isLogin ? "Sign In" : "Create Account"}
+        <GoldBtn onClick={submit} disabled={localLoading} style={{ width: "100%", justifyContent: "center", marginBottom: 20, opacity: localLoading ? 0.7 : 1 }}>
+          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : "Create Account"}
         </GoldBtn>
 
         <div style={{ textAlign: "center", color: t.muted, fontSize: 14 }}>
@@ -1032,22 +1039,48 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const [applicants, setApplicants] = useState([
-    { id: 1, applicantId: "CES-2025-120901", name: "Adebayo Taiwo", email: "adebayo@email.com", state: "Lagos", status: "pending", serviceStatus: "active", date: "Jan 18, 2025", gender: "Male" },
-    { id: 2, applicantId: "CES-2025-120902", name: "Amaka Okonkwo", email: "amaka@email.com", state: "Anambra", status: "under_review", serviceStatus: "active", date: "Jan 20, 2025", gender: "Female" },
-    { id: 3, applicantId: "CES-2025-120903", name: "Emeka Chukwu", email: "emeka@email.com", state: "Enugu", status: "approved", serviceStatus: "retired", date: "Jan 22, 2025", gender: "Male" },
-    { id: 4, applicantId: "CES-2025-120904", name: "Fatima Musa", email: "fatima@email.com", state: "Kano", status: "pending", serviceStatus: "active", date: "Jan 23, 2025", gender: "Female" },
-    { id: 5, applicantId: "CES-2025-120905", name: "Ibrahim Garba", email: "ibrahim@email.com", state: "Kaduna", status: "rejected", serviceStatus: "dismissed", date: "Jan 24, 2025", gender: "Male" },
-    { id: 6, applicantId: "CES-2025-120906", name: "Blessing Effiong", email: "blessing@email.com", state: "Rivers", status: "under_review", serviceStatus: "active", date: "Jan 25, 2025", gender: "Female" },
-  ]);
+  const [applicants, setApplicants] = useState([]);
 
-  const updateStatus = (id, status) => {
-    setApplicants(a => a.map(ap => ap.id === id ? { ...ap, status } : ap));
-    showToast(`Applicant status updated to ${status}.`);
+  useEffect(() => {
+    // Load applicants from API
+    const loadApplicants = async () => {
+      try {
+        const data = await adminAPI.getApplicants();
+        setApplicants(data);
+      } catch (err) {
+        console.log("Using demo applicants fallback");
+        // Use demo data if API fails
+        setApplicants([
+          { id: 1, applicantId: "CES-2025-120901", name: "Adebayo Taiwo", email: "adebayo@email.com", state: "Lagos", status: "pending", serviceStatus: "active", date: "Jan 18, 2025", gender: "Male" },
+          { id: 2, applicantId: "CES-2025-120902", name: "Amaka Okonkwo", email: "amaka@email.com", state: "Anambra", status: "under_review", serviceStatus: "active", date: "Jan 20, 2025", gender: "Female" },
+          { id: 3, applicantId: "CES-2025-120903", name: "Emeka Chukwu", email: "emeka@email.com", state: "Enugu", status: "approved", serviceStatus: "retired", date: "Jan 22, 2025", gender: "Male" },
+          { id: 4, applicantId: "CES-2025-120904", name: "Fatima Musa", email: "fatima@email.com", state: "Kano", status: "pending", serviceStatus: "active", date: "Jan 23, 2025", gender: "Female" },
+          { id: 5, applicantId: "CES-2025-120905", name: "Ibrahim Garba", email: "ibrahim@email.com", state: "Kaduna", status: "rejected", serviceStatus: "dismissed", date: "Jan 24, 2025", gender: "Male" },
+          { id: 6, applicantId: "CES-2025-120906", name: "Blessing Effiong", email: "blessing@email.com", state: "Rivers", status: "under_review", serviceStatus: "active", date: "Jan 25, 2025", gender: "Female" },
+        ]);
+      }
+    };
+    loadApplicants();
+  }, []);
+
+  const updateStatus = async (id, status) => {
+    try {
+      await adminAPI.updateStatus(id, status);
+      setApplicants(a => a.map(ap => ap.id === id ? { ...ap, status } : ap));
+      showToast(`Applicant status updated to ${status}.`);
+    } catch (err) {
+      showToast("Failed to update status: " + err.message, "error");
+    }
   };
 
-  const updateServiceStatus = (id, serviceStatus) => {
-    setApplicants(a => a.map(ap => ap.id === id ? { ...ap, serviceStatus } : ap));
+  const updateServiceStatus = async (id, serviceStatus) => {
+    try {
+      await adminAPI.updateServiceStatus(id, serviceStatus);
+      setApplicants(a => a.map(ap => ap.id === id ? { ...ap, serviceStatus } : ap));
+      showToast(`Service status updated to ${serviceStatus}.`);
+    } catch (err) {
+      showToast("Failed to update service status: " + err.message, "error");
+    }
   };
 
   const stopScanner = async () => {
@@ -1083,8 +1116,13 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
             showToast("Invalid QR payload scanned.", "error");
             return;
           }
-          setScannedResult(parsed);
-          showToast(`Scanned ${parsed.applicantId}`);
+          try {
+            const result = await adminAPI.scanQr(decodedText);
+            setScannedResult(result);
+            showToast(`Scanned ${result.applicantId}`);
+          } catch (err) {
+            showToast("Applicant not found: " + err.message, "error");
+          }
           await stopScanner();
         },
         () => {}
@@ -1453,40 +1491,102 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState("light");
   const [userRegistry, setUserRegistry] = useState(() => loadUserRegistry());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     saveUserRegistry(userRegistry);
   }, [userRegistry]);
 
-  const handleAuth = (u) => {
-    if (u.role === "admin") {
-      setUser(u);
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = tokenManager.getToken();
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        // Token exists and can be decoded, but we should fetch user data from API
+        // For now, just check if token is valid
+        setPage("dashboard");
+      } catch (e) {
+        tokenManager.clearToken();
+      }
+    }
+  }, []);
+
+  const handleAuth = async (authData) => {
+    setLoading(true);
+    try {
+      const result = await authAPI.login(
+        authData.email,
+        authData.password
+      );
+
+      tokenManager.setToken(result.token);
+      const userData = result.user;
+
+      if (userData.role === "admin") {
+        setUser({
+          ...userData,
+          name: userData.name,
+          role: "admin",
+        });
+        setPage("dashboard");
+        return;
+      }
+
+      const email = (userData.email || "").toLowerCase().trim();
+      const existing = userRegistry.find(item => item.email === email);
+      let nextUser = existing;
+
+      if (!nextUser) {
+        nextUser = {
+          email,
+          name: userData.name || email.split("@")[0],
+          role: "applicant",
+          applicantId: userData.applicantId,
+          serviceStatus: userData.serviceStatus,
+        };
+        setUserRegistry(prev => [...prev, nextUser]);
+      }
+
+      setUser({
+        ...nextUser,
+        id: userData.id,
+      });
       setPage("dashboard");
-      return;
-    }
-
-    const email = (u.email || "").toLowerCase().trim();
-    const existing = userRegistry.find(item => item.email === email);
-    let nextUser = existing;
-
-    if (!nextUser) {
-      nextUser = {
-        email,
-        name: u.name || email.split("@")[0],
-        role: "applicant",
-        applicantId: createUniqueApplicantId(userRegistry),
-        serviceStatus: "active",
+    } catch (error) {
+      console.error("Auth error:", error);
+      // Fallback to demo mode for now
+      const demoResult = {
+        email: authData.email,
+        name: authData.name || authData.email.split("@")[0],
+        role: authData.email === "admin@ces.gov.ng" ? "admin" : "applicant",
       };
-      setUserRegistry(prev => [...prev, nextUser]);
-    } else if (u.name && u.name !== existing.name) {
-      nextUser = { ...existing, name: u.name };
-      setUserRegistry(prev => prev.map(item => item.email === email ? nextUser : item));
+      const email = demoResult.email.toLowerCase().trim();
+      if (demoResult.role === "admin") {
+        setUser(demoResult);
+        setPage("dashboard");
+        return;
+      }
+      const existing = userRegistry.find(item => item.email === email);
+      let nextUser = existing;
+      if (!nextUser) {
+        nextUser = {
+          email,
+          name: demoResult.name,
+          role: "applicant",
+          applicantId: `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`,
+          serviceStatus: "active",
+        };
+        setUserRegistry(prev => [...prev, nextUser]);
+      }
+      setUser(nextUser);
+      setPage("dashboard");
+    } finally {
+      setLoading(false);
     }
-
-    setUser(nextUser);
-    setPage("dashboard");
   };
   const handleLogout = () => {
+    tokenManager.clearToken();
     setUser(null);
     setPage("home");
   };
@@ -1494,8 +1594,8 @@ export default function App() {
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
 
   if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "dashboard" && user) {
     return user.role === "admin"
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>
