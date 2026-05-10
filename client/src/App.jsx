@@ -650,9 +650,11 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const t = getTheme(theme);
   const isLight = theme === "light";
   const [form, setForm] = useState({ email: "", password: "", name: "", confirm: "" });
+  const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
   const isLogin = mode === "login";
+  const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -667,9 +669,15 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         const result = await authAPI.login(form.email, form.password);
         onAuth(result.user);
       } else {
-        const result = await authAPI.register(form.email, form.password, form.name);
-        // Registration requires admin approval. Show confirmation and navigate to login.
-        setError(result.message || "Registration submitted. Await admin approval.");
+        const result = await authAPI.register(form.email, form.password, form.name, isAdminRegister ? "admin" : "applicant");
+        if (result.token && result.user) {
+          tokenManager.setToken(result.token);
+          onAuth(result.user);
+          return;
+        }
+
+        // Admin registrations stay pending for approval.
+        setError(result.message || "Admin registration submitted. Await approval from an existing admin.");
         setLocalLoading(false);
         return;
       }
@@ -702,8 +710,43 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         </div>
 
         <h2 style={{ color: t.text, fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
-          {isLogin ? "Sign In to Portal" : "Create Account"}
+          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : "Create Applicant Account"}
         </h2>
+
+        {!isLogin && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
+            <button
+              type="button"
+              onClick={() => setRegistrationRole("applicant")}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: `1px solid ${registrationRole === "applicant" ? "#c9952a" : isLight ? "rgba(15,23,42,0.14)" : "rgba(255,255,255,0.08)"}`,
+                background: registrationRole === "applicant" ? "rgba(201,149,42,0.12)" : "transparent",
+                color: t.text,
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              Register as Applicant
+            </button>
+            <button
+              type="button"
+              onClick={() => setRegistrationRole("admin")}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: `1px solid ${registrationRole === "admin" ? "#c9952a" : isLight ? "rgba(15,23,42,0.14)" : "rgba(255,255,255,0.08)"}`,
+                background: registrationRole === "admin" ? "rgba(201,149,42,0.12)" : "transparent",
+                color: t.text,
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              Register as Admin
+            </button>
+          </div>
+        )}
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
@@ -721,7 +764,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         {error && <div style={{ color: "#f87171", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "#f8717122", borderRadius: 8 }}>{error}</div>}
 
         <GoldBtn onClick={submit} disabled={localLoading} style={{ width: "100%", justifyContent: "center", marginBottom: 20, opacity: localLoading ? 0.7 : 1 }}>
-          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : "Create Account"}
+          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : isAdminRegister ? "Create Admin Account" : "Create Applicant Account"}
         </GoldBtn>
 
         <div style={{ textAlign: "center", color: t.muted, fontSize: 14 }}>
@@ -730,6 +773,12 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
             background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontWeight: 700,
           }}>{isLogin ? "Register" : "Sign In"}</button>
         </div>
+
+        {!isLogin && (
+          <div style={{ textAlign: "center", color: t.muted, fontSize: 12, marginTop: 10 }}>
+            Applicant accounts can sign in immediately. Admin accounts require approval.
+          </div>
+        )}
 
         <button onClick={() => onNavigate("home")} style={{
           display: "block", margin: "16px auto 0", background: "none", border: "none",

@@ -42,8 +42,8 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
 };
 
 export const authAPI = {
-  register: (email, password, name) =>
-    apiCall("/auth/register", "POST", { email, password, name }),
+  register: (email, password, name, role = "applicant") =>
+    apiCall("/auth/register", "POST", { email, password, name, role }),
   login: (email, password) =>
     apiCall("/auth/login", "POST", { email, password }),
 };

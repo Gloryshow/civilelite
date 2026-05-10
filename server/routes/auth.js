@@ -15,7 +15,7 @@ const generateToken = (userId, role) => {
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+      const { email, password, name, role = 'applicant' } = req.body;
 
     if (!email || !password || !name) {
       return res
@@ -30,34 +30,53 @@ router.post("/register", async (req, res) => {
         return res.status(400).json({ error: "User already exists" });
       }
 
-      // Generate unique applicant ID for non-admin users
-      const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
+        // Generate unique applicant ID
+        const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
+        // If registering as admin, require approval. Applicants are auto-approved.
+        const isAdmin = role === 'admin';
       const user = new User({
         email: email.toLowerCase(),
         password,
         name,
-        role: "applicant",
+         role: isAdmin ? 'admin' : 'applicant',
         applicantId,
         serviceStatus: "active",
-        registrationStatus: "pending",
+         registrationStatus: isAdmin ? 'pending' : 'approved',
       });
 
       await user.save();
 
-      // Do not auto-issue token. Registration requires admin approval.
-      res.json({
-        message: "Registration submitted and is pending admin approval",
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          applicantId: user.applicantId,
-          serviceStatus: user.serviceStatus,
-          registrationStatus: user.registrationStatus || 'pending',
-        },
-      });
+        if (isAdmin) {
+          // Do not auto-issue token for admin - pending approval
+          res.json({
+            message: "Admin registration submitted and is pending admin approval",
+            user: {
+              id: user._id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              applicantId: user.applicantId,
+              serviceStatus: user.serviceStatus,
+              registrationStatus: user.registrationStatus,
+            },
+          });
+        } else {
+          // Applicants auto-approved - issue token immediately
+          const token = generateToken(user._id, user.role);
+          res.json({
+            token,
+            user: {
+              id: user._id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              applicantId: user.applicantId,
+              serviceStatus: user.serviceStatus,
+              registrationStatus: user.registrationStatus,
+            },
+          });
+        }
     } catch (dbError) {
       // Fallback to demo database
       console.log("⚠️ MongoDB unavailable, using demo data for registration");
@@ -69,28 +88,35 @@ router.post("/register", async (req, res) => {
       const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
       const hashedPassword = await bcryptjs.hash(password, 10);
 
+      // Demo fallback: handle admin vs applicant
+      const isAdmin = (role === 'admin');
       const user = demoDb.createUser({
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role: "applicant",
+        role: isAdmin ? 'admin' : 'applicant',
         applicantId,
         serviceStatus: "active",
+        registrationStatus: isAdmin ? 'pending' : 'approved',
       });
 
-      // Demo fallback: return pending registration status and user info (no token)
-      res.json({
-        message: "Registration submitted and is pending admin approval",
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          applicantId: user.applicantId,
-          serviceStatus: user.serviceStatus,
-          registrationStatus: user.registrationStatus || 'pending',
-        },
-      });
+      if (isAdmin) {
+        res.json({
+          message: "Admin registration submitted and is pending admin approval",
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            applicantId: user.applicantId,
+            serviceStatus: user.serviceStatus,
+            registrationStatus: user.registrationStatus,
+          },
+        });
+      } else {
+        const token = generateToken(user.id, user.role);
+        res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role, applicantId: user.applicantId, serviceStatus: user.serviceStatus, registrationStatus: user.registrationStatus } });
+      }
     }
   } catch (error) {
     console.error(error);

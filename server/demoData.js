@@ -9,6 +9,7 @@ export const demoDatabase = {
       role: "admin",
       applicantId: null,
       serviceStatus: "active",
+      registrationStatus: "approved",
       createdAt: new Date(),
     },
     {
@@ -19,6 +20,7 @@ export const demoDatabase = {
       role: "applicant",
       applicantId: "CES-2025-000001",
       serviceStatus: "active",
+      registrationStatus: "approved",
       createdAt: new Date(),
     },
   ],
@@ -66,6 +68,7 @@ export const demoDb = {
     const newUser = {
       id: `user-${demoDatabase.nextUserId++}`,
       ...userData,
+      registrationStatus: userData.registrationStatus || 'pending',
       createdAt: new Date(),
     };
     demoDatabase.users.push(newUser);
