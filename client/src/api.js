@@ -65,6 +65,9 @@ export const adminAPI = {
   scanQr: (qrPayload) =>
     apiCall("/admin/scan-qr", "POST", { qrPayload }),
   getStats: () => apiCall("/admin/stats"),
+  getRegistrations: () => apiCall("/admin/registrations"),
+  approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
+  rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),
 };
 
 export const tokenManager = {

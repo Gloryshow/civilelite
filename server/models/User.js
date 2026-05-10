@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema(
       enum: ["active", "dismissed", "retired"],
       default: "active",
     },
+    registrationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
     createdAt: {
       type: Date,
       default: Date.now,

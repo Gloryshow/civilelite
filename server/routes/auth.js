@@ -40,14 +40,14 @@ router.post("/register", async (req, res) => {
         role: "applicant",
         applicantId,
         serviceStatus: "active",
+        registrationStatus: "pending",
       });
 
       await user.save();
 
-      const token = generateToken(user._id, user.role);
-
+      // Do not auto-issue token. Registration requires admin approval.
       res.json({
-        token,
+        message: "Registration submitted and is pending admin approval",
         user: {
           id: user._id,
           email: user.email,
@@ -55,6 +55,7 @@ router.post("/register", async (req, res) => {
           role: user.role,
           applicantId: user.applicantId,
           serviceStatus: user.serviceStatus,
+          registrationStatus: user.registrationStatus || 'pending',
         },
       });
     } catch (dbError) {
@@ -77,10 +78,9 @@ router.post("/register", async (req, res) => {
         serviceStatus: "active",
       });
 
-      const token = generateToken(user.id, user.role);
-
+      // Demo fallback: return pending registration status and user info (no token)
       res.json({
-        token,
+        message: "Registration submitted and is pending admin approval",
         user: {
           id: user.id,
           email: user.email,
@@ -88,6 +88,7 @@ router.post("/register", async (req, res) => {
           role: user.role,
           applicantId: user.applicantId,
           serviceStatus: user.serviceStatus,
+          registrationStatus: user.registrationStatus || 'pending',
         },
       });
     }
@@ -113,6 +114,11 @@ router.post("/login", async (req, res) => {
       const user = await User.findOne({ email: email.toLowerCase() });
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Prevent login if registration is pending or rejected
+      if (user.registrationStatus !== "approved") {
+        return res.status(403).json({ error: "Account not approved by admin" });
       }
 
       const isMatch = await user.comparePassword(password);

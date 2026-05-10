@@ -65,6 +65,61 @@ router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// List pending user registrations
+router.get("/registrations", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    try {
+      const users = await User.find({ registrationStatus: "pending" }).sort({ createdAt: -1 });
+      res.json(users.map(u => ({ id: u._id, email: u.email, name: u.name, applicantId: u.applicantId, createdAt: u.createdAt })));
+    } catch (dbError) {
+      console.log("⚠️ MongoDB unavailable, using demo data for registrations");
+      const pending = demoDb.getPendingUsers();
+      res.json(pending);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Approve registration
+router.post("/registrations/:id/approve", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    try {
+      const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "approved" }, { new: true });
+      if (!user) return res.status(404).json({ error: "User not found" });
+      res.json({ message: "User approved", user });
+    } catch (dbError) {
+      console.log("⚠️ MongoDB unavailable, updating demo data");
+      const updated = demoDb.approveUser(req.params.id);
+      if (!updated) return res.status(404).json({ error: "User not found in demo data" });
+      res.json({ message: "User approved", user: updated });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reject registration
+router.post("/registrations/:id/reject", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    try {
+      const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "rejected" }, { new: true });
+      if (!user) return res.status(404).json({ error: "User not found" });
+      res.json({ message: "User rejected", user });
+    } catch (dbError) {
+      console.log("⚠️ MongoDB unavailable, updating demo data");
+      const updated = demoDb.rejectUser(req.params.id);
+      if (!updated) return res.status(404).json({ error: "User not found in demo data" });
+      res.json({ message: "User rejected", user: updated });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Update applicant status
 router.patch(
   "/applicants/:id/status",

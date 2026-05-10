@@ -72,6 +72,24 @@ export const demoDb = {
     return newUser;
   },
 
+  getPendingUsers() {
+    return demoDatabase.users.filter(u => u.registrationStatus === 'pending');
+  },
+
+  approveUser(id) {
+    const user = demoDatabase.users.find(u => u.id === id || u.id === String(id));
+    if (!user) return null;
+    user.registrationStatus = 'approved';
+    return user;
+  },
+
+  rejectUser(id) {
+    const user = demoDatabase.users.find(u => u.id === id || u.id === String(id));
+    if (!user) return null;
+    user.registrationStatus = 'rejected';
+    return user;
+  },
+
   // Applicant operations
   findApplicantByUserId(userId) {
     return demoDatabase.applicants.find((a) => a.userId === userId);
