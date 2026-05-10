@@ -1,24 +1,39 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:5000/api").replace(/\/+$/, "");
 
 const getAuthToken = () => localStorage.getItem("ces_auth_token");
 const setAuthToken = (token) => localStorage.setItem("ces_auth_token", token);
 const clearAuthToken = () => localStorage.removeItem("ces_auth_token");
 
 const apiCall = async (endpoint, method = "GET", body = null) => {
+  const token = getAuthToken();
   const options = {
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${getAuthToken()}`,
     },
   };
+
+  if (token) {
+    options.headers.Authorization = `Bearer ${token}`;
+  }
 
   if (body) options.body = JSON.stringify(body);
 
   const response = await fetch(`${API_BASE}${endpoint}`, options);
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "API request failed");
+    let errorMessage = "API request failed";
+    const rawBody = await response.text();
+
+    try {
+      const error = JSON.parse(rawBody);
+      errorMessage = error.error || error.message || errorMessage;
+    } catch {
+      if (rawBody.startsWith("<!DOCTYPE")) {
+        errorMessage = "Backend API is not reachable. Check VITE_API_BASE in Vercel settings.";
+      }
+    }
+
+    throw new Error(errorMessage);
   }
   return await response.json();
 };
