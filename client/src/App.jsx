@@ -667,12 +667,12 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     try {
       if (isLogin) {
         const result = await authAPI.login(form.email, form.password);
-        onAuth(result.user);
+        onAuth(result);
       } else {
         const result = await authAPI.register(form.email, form.password, form.name, isAdminRegister ? "admin" : "applicant");
         if (result.token && result.user) {
           tokenManager.setToken(result.token);
-          onAuth(result.user);
+          onAuth(result);
           return;
         }
 
@@ -1652,16 +1652,15 @@ export default function App() {
     }
   }, []);
 
-  const handleAuth = async (authData) => {
+  const handleAuth = async (authResult) => {
     setLoading(true);
     try {
-      const result = await authAPI.login(
-        authData.email,
-        authData.password
-      );
+      if (!authResult || !authResult.user || !authResult.token) {
+        throw new Error("Missing auth result");
+      }
 
-      tokenManager.setToken(result.token);
-      const userData = result.user;
+      tokenManager.setToken(authResult.token);
+      const userData = authResult.user;
 
       if (userData.role === "admin") {
         setUser({
@@ -1697,9 +1696,9 @@ export default function App() {
       console.error("Auth error:", error);
       // Fallback to demo mode for now
       const demoResult = {
-        email: authData.email,
-        name: authData.name || authData.email.split("@")[0],
-        role: authData.email === "admin@ces.gov.ng" ? "admin" : "applicant",
+        email: authResult?.user?.email || "",
+        name: authResult?.user?.name || (authResult?.user?.email || "user").split("@")[0],
+        role: authResult?.user?.email === "admin@ces.gov.ng" ? "admin" : "applicant",
       };
       const email = demoResult.email.toLowerCase().trim();
       if (demoResult.role === "admin") {

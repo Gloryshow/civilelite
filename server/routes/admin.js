@@ -2,121 +2,73 @@ import express from "express";
 import User from "../models/User.js";
 import Applicant from "../models/Applicant.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
-import { demoDb } from "../demoData.js";
 
 const router = express.Router();
 
 // Get all applicants
 router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    try {
-      // Try MongoDB first
-      const applicants = await Applicant.find()
-        .populate("userId", "email name applicantId serviceStatus")
-        .sort({ createdAt: -1 });
+    const applicants = await Applicant.find()
+      .populate("userId", "email name applicantId serviceStatus")
+      .sort({ createdAt: -1 });
 
-      const formatted = applicants.map((app) => ({
-        id: app._id,
-        applicantId: app.applicantId,
-        name: app.fullName || "N/A",
-        email: app.userId?.email || "N/A",
-        state: app.state || "N/A",
-        status: app.status,
-        serviceStatus: app.serviceStatus,
-        date: app.submittedAt
-          ? new Date(app.submittedAt).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })
-          : "Pending",
-        gender: app.gender || "N/A",
-      }));
+    const formatted = applicants.map((app) => ({
+      id: app._id,
+      applicantId: app.applicantId,
+      name: app.fullName || "N/A",
+      email: app.userId?.email || "N/A",
+      state: app.state || "N/A",
+      status: app.status,
+      serviceStatus: app.serviceStatus,
+      date: app.submittedAt
+        ? new Date(app.submittedAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Pending",
+      gender: app.gender || "N/A",
+    }));
 
-      res.json(formatted);
-    } catch (dbError) {
-      // Fallback to demo database
-      console.log("⚠️ MongoDB unavailable, using demo data for applicants list");
-      const applicants = demoDb.getAllApplicants();
-
-      const formatted = applicants.map((app) => ({
-        id: app.id,
-        applicantId: app.applicantId,
-        name: app.fullName || "N/A",
-        email: app.email || "N/A",
-        state: app.state || "N/A",
-        status: app.status,
-        serviceStatus: app.serviceStatus,
-        date: app.submittedAt
-          ? new Date(app.submittedAt).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })
-          : "Pending",
-        gender: app.gender || "N/A",
-      }));
-
-      res.json(formatted);
-    }
+    res.json(formatted);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(503).json({ error: "Database unavailable" });
   }
 });
 
 // List pending user registrations
 router.get("/registrations", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    try {
-      const users = await User.find({ registrationStatus: "pending" }).sort({ createdAt: -1 });
-      res.json(users.map(u => ({ id: u._id, email: u.email, name: u.name, applicantId: u.applicantId, createdAt: u.createdAt })));
-    } catch (dbError) {
-      console.log("⚠️ MongoDB unavailable, using demo data for registrations");
-      const pending = demoDb.getPendingUsers();
-      res.json(pending);
-    }
+    const users = await User.find({ registrationStatus: "pending" }).sort({ createdAt: -1 });
+    res.json(users.map(u => ({ id: u._id, email: u.email, name: u.name, applicantId: u.applicantId, createdAt: u.createdAt })));
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(503).json({ error: "Database unavailable" });
   }
 });
 
 // Approve registration
 router.post("/registrations/:id/approve", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    try {
-      const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "approved" }, { new: true });
-      if (!user) return res.status(404).json({ error: "User not found" });
-      res.json({ message: "User approved", user });
-    } catch (dbError) {
-      console.log("⚠️ MongoDB unavailable, updating demo data");
-      const updated = demoDb.approveUser(req.params.id);
-      if (!updated) return res.status(404).json({ error: "User not found in demo data" });
-      res.json({ message: "User approved", user: updated });
-    }
+    const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "approved" }, { new: true });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ message: "User approved", user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(503).json({ error: "Database unavailable" });
   }
 });
 
 // Reject registration
 router.post("/registrations/:id/reject", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    try {
-      const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "rejected" }, { new: true });
-      if (!user) return res.status(404).json({ error: "User not found" });
-      res.json({ message: "User rejected", user });
-    } catch (dbError) {
-      console.log("⚠️ MongoDB unavailable, updating demo data");
-      const updated = demoDb.rejectUser(req.params.id);
-      if (!updated) return res.status(404).json({ error: "User not found in demo data" });
-      res.json({ message: "User rejected", user: updated });
-    }
+    const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "rejected" }, { new: true });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ message: "User rejected", user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(503).json({ error: "Database unavailable" });
   }
 });
 
@@ -133,30 +85,20 @@ router.patch(
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      try {
-        // Try MongoDB first
-        const applicant = await Applicant.findByIdAndUpdate(
-          req.params.id,
-          { status },
-          { new: true }
-        );
+      const applicant = await Applicant.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true }
+      );
 
-        res.json(applicant);
-      } catch (dbError) {
-        // Fallback to demo database
-        console.log("⚠️ MongoDB unavailable, using demo data for status update");
-        const applicants = demoDb.getAllApplicants();
-        const applicant = applicants.find((a) => a.id === req.params.id);
-        if (!applicant) {
-          return res.status(404).json({ error: "Applicant not found" });
-        }
-
-        const updated = demoDb.updateApplicantStatus(applicant.applicantId, status);
-        res.json(updated);
+      if (!applicant) {
+        return res.status(404).json({ error: "Applicant not found" });
       }
+
+      res.json(applicant);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      res.status(503).json({ error: "Database unavailable" });
     }
   }
 );
@@ -174,38 +116,28 @@ router.patch(
         return res.status(400).json({ error: "Invalid service status" });
       }
 
-      try {
-        // Try MongoDB first
-        const applicant = await Applicant.findByIdAndUpdate(
-          req.params.id,
-          { serviceStatus },
-          { new: true }
-        ).populate("userId", "email name");
+      const applicant = await Applicant.findByIdAndUpdate(
+        req.params.id,
+        { serviceStatus },
+        { new: true }
+      ).populate("userId", "email name");
 
-        // Also update user's service status
-        if (applicant.userId) {
-          await User.findByIdAndUpdate(
-            applicant.userId._id,
-            { serviceStatus }
-          );
-        }
-
-        res.json(applicant);
-      } catch (dbError) {
-        // Fallback to demo database
-        console.log("⚠️ MongoDB unavailable, using demo data for service status update");
-        const applicants = demoDb.getAllApplicants();
-        const applicant = applicants.find((a) => a.id === req.params.id);
-        if (!applicant) {
-          return res.status(404).json({ error: "Applicant not found" });
-        }
-
-        const updated = demoDb.updateServiceStatus(applicant.applicantId, serviceStatus);
-        res.json(updated);
+      if (!applicant) {
+        return res.status(404).json({ error: "Applicant not found" });
       }
+
+      // Also update user's service status
+      if (applicant.userId) {
+        await User.findByIdAndUpdate(
+          applicant.userId._id,
+          { serviceStatus }
+        );
+      }
+
+      res.json(applicant);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      res.status(503).json({ error: "Database unavailable" });
     }
   }
 );
@@ -234,47 +166,26 @@ router.post(
         return res.status(400).json({ error: "Invalid QR payload" });
       }
 
-      try {
-        // Try MongoDB first
-        const applicant = await Applicant.findOne({
-          applicantId: parsed.applicantId,
-        }).populate("userId", "email name applicantId serviceStatus");
+      const applicant = await Applicant.findOne({
+        applicantId: parsed.applicantId,
+      }).populate("userId", "email name applicantId serviceStatus");
 
-        if (!applicant) {
-          return res.status(404).json({ error: "Applicant not found" });
-        }
-
-        res.json({
-          applicantId: applicant.applicantId,
-          name: applicant.fullName,
-          email: applicant.userId?.email,
-          serviceStatus: applicant.serviceStatus,
-          status: applicant.status,
-          state: applicant.state,
-          phone: applicant.phone,
-        });
-      } catch (dbError) {
-        // Fallback to demo database
-        console.log("⚠️ MongoDB unavailable, using demo data for QR scan");
-        const applicant = demoDb.findApplicantByApplicantId(parsed.applicantId);
-
-        if (!applicant) {
-          return res.status(404).json({ error: "Applicant not found" });
-        }
-
-        res.json({
-          applicantId: applicant.applicantId,
-          name: applicant.fullName,
-          email: applicant.email,
-          serviceStatus: applicant.serviceStatus,
-          status: applicant.status,
-          state: applicant.state,
-          phone: applicant.phone,
-        });
+      if (!applicant) {
+        return res.status(404).json({ error: "Applicant not found" });
       }
+
+      res.json({
+        applicantId: applicant.applicantId,
+        name: applicant.fullName,
+        email: applicant.userId?.email,
+        serviceStatus: applicant.serviceStatus,
+        status: applicant.status,
+        state: applicant.state,
+        phone: applicant.phone,
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      res.status(503).json({ error: "Database unavailable" });
     }
   }
 );
@@ -282,37 +193,22 @@ router.post(
 // Get stats
 router.get("/stats", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    try {
-      // Try MongoDB first
-      const total = await Applicant.countDocuments();
-      const pending = await Applicant.countDocuments({ status: "pending" });
-      const review = await Applicant.countDocuments({ status: "under_review" });
-      const approved = await Applicant.countDocuments({ status: "approved" });
-      const rejected = await Applicant.countDocuments({ status: "rejected" });
+    const total = await Applicant.countDocuments();
+    const pending = await Applicant.countDocuments({ status: "pending" });
+    const review = await Applicant.countDocuments({ status: "under_review" });
+    const approved = await Applicant.countDocuments({ status: "approved" });
+    const rejected = await Applicant.countDocuments({ status: "rejected" });
 
-      res.json({
-        total,
-        pending,
-        review,
-        approved,
-        rejected,
-      });
-    } catch (dbError) {
-      // Fallback to demo database
-      console.log("⚠️ MongoDB unavailable, using demo data for stats");
-      const stats = demoDb.getStats();
-
-      res.json({
-        total: demoDb.getAllApplicants().length,
-        pending: stats.pending || 0,
-        review: stats.under_review || 0,
-        approved: stats.approved || 0,
-        rejected: stats.rejected || 0,
-      });
-    }
+    res.json({
+      total,
+      pending,
+      review,
+      approved,
+      rejected,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(503).json({ error: "Database unavailable" });
   }
 });
 
