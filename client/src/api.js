@@ -1,4 +1,7 @@
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:5000/api").replace(/\/+$/, "");
+const configuredBase = (import.meta.env.VITE_API_BASE || "http://localhost:5000/api").replace(/\/+$/, "");
+const API_BASE = /\/api$/i.test(configuredBase)
+  ? configuredBase
+  : `${configuredBase}/api`;
 
 const getAuthToken = () => localStorage.getItem("ces_auth_token");
 const setAuthToken = (token) => localStorage.setItem("ces_auth_token", token);
