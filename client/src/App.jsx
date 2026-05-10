@@ -802,6 +802,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [tab, setTab] = useState("overview");
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
     dob: "", state: "", lga: "", address: "", qualification: "",
@@ -817,14 +818,84 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const submitApp = () => {
+  const loadAnnouncements = async () => {
+    try {
+      const data = await applicantAPI.getAnnouncements();
+      setAnnouncements(data || []);
+    } catch (err) {
+      setAnnouncements([]);
+      showToast("Failed to load announcements: " + err.message, "error");
+    }
+  };
+
+  const loadProfile = async () => {
+    try {
+      const profile = await applicantAPI.getProfile();
+      if (profile) {
+        setAppData((d) => ({
+          ...d,
+          fullName: profile.fullName || d.fullName,
+          email: profile.email || d.email,
+          phone: profile.phone || "",
+          gender: profile.gender || "",
+          dob: profile.dob || "",
+          state: profile.state || "",
+          lga: profile.lga || "",
+          address: profile.address || "",
+          qualification: profile.qualification || "",
+          kinName: profile.kinName || "",
+          kinPhone: profile.kinPhone || "",
+          medInfo: profile.medInfo || "",
+          whyJoin: profile.whyJoin || "",
+          id: profile.applicantId || d.id,
+          serviceStatus: profile.serviceStatus || d.serviceStatus,
+          status: profile.status || d.status,
+          submitted: profile.submitted || d.submitted,
+        }));
+      }
+    } catch (err) {
+      showToast("Failed to load profile: " + err.message, "error");
+    }
+  };
+
+  const submitApp = async () => {
     if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !appData.lga) {
       showToast("Please fill all required fields.", "error"); return;
     }
-    const id = appData.id || createApplicantId();
-    setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
-    setTab("status");
-    showToast("Application submitted successfully!");
+    try {
+      const result = await applicantAPI.submitApplication({
+        fullName: appData.fullName,
+        phone: appData.phone,
+        gender: appData.gender,
+        dob: appData.dob,
+        state: appData.state,
+        lga: appData.lga,
+        address: appData.address,
+        qualification: appData.qualification,
+        kinName: appData.kinName,
+        kinPhone: appData.kinPhone,
+        medInfo: appData.medInfo,
+        whyJoin: appData.whyJoin,
+      });
+
+      if (result?.applicant) {
+        const a = result.applicant;
+        setAppData((d) => ({
+          ...d,
+          id: a.applicantId || d.id,
+          status: a.status || "under_review",
+          submitted: a.submitted ?? true,
+        }));
+      } else {
+        const id = appData.id || createApplicantId();
+        setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
+      }
+
+      setTab("status");
+      showToast("Application submitted successfully!");
+    } catch (err) {
+      showToast("Submit failed: " + err.message, "error");
+    }
   };
 
   const shareQr = async () => {
@@ -865,10 +936,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     } else setQrDataUrl(null);
   }, [appData.id, appData.serviceStatus]);
 
-  const announcements = [
-    { title: "2025 Batch A Recruitment Open", date: "Jan 15, 2025", tag: "RECRUITMENT", text: "Applications are now open for the 2025 Batch A recruitment exercise. Deadline: March 31, 2025." },
-    { title: "Physical Assessment Schedule Released", date: "Jan 20, 2025", tag: "NOTICE", text: "Physical fitness assessment will hold at state capitals nationwide from April 10–20, 2025." },
-  ];
+  useEffect(() => {
+    loadAnnouncements();
+  }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
 
   const menuItems = [
     { id: "overview", icon: "🏠", label: "Overview" },
@@ -989,13 +1063,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                 {announcements.map((a, i) => (
                   <div key={i} style={{ ...S2.card, marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <Badge label={a.tag} />
-                      <span style={{ color: faintText, fontSize: 12 }}>{a.date}</span>
+                      <Badge label="NOTICE" />
+                      <span style={{ color: faintText, fontSize: 12 }}>
+                        {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                      </span>
                     </div>
                     <div style={{ fontWeight: 700, color: t.text, marginBottom: 6 }}>{a.title}</div>
-                    <div style={{ color: t.muted, fontSize: 14 }}>{a.text}</div>
+                    <div style={{ color: t.muted, fontSize: 14 }}>{a.body}</div>
                   </div>
                 ))}
+                {announcements.length === 0 && (
+                  <div style={{ color: t.muted, fontSize: 13 }}>No announcements available.</div>
+                )}
               </div>
             </div>
           )}
@@ -1127,13 +1206,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
               {announcements.map((a, i) => (
                 <div key={i} style={{ ...S2.card, marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <Badge label={a.tag} />
-                    <span style={{ color: faintText, fontSize: 12 }}>{a.date}</span>
+                    <Badge label="NOTICE" />
+                    <span style={{ color: faintText, fontSize: 12 }}>
+                      {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                    </span>
                   </div>
                   <div style={{ fontWeight: 700, color: t.text, fontSize: 16, marginBottom: 8 }}>{a.title}</div>
-                  <div style={{ color: t.muted, lineHeight: 1.7 }}>{a.text}</div>
+                  <div style={{ color: t.muted, lineHeight: 1.7 }}>{a.body}</div>
                 </div>
               ))}
+              {announcements.length === 0 && (
+                <div style={{ color: t.muted, fontSize: 13 }}>No announcements available.</div>
+              )}
             </div>
           )}
         </div>
@@ -1168,6 +1252,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
   const [applicants, setApplicants] = useState([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
+  const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
     // Load applicants from API
@@ -1182,6 +1267,16 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     };
     loadApplicants();
   }, []);
+
+  const loadAdminAnnouncements = async () => {
+    try {
+      const data = await adminAPI.getAnnouncements();
+      setAnnouncements(data || []);
+    } catch (err) {
+      setAnnouncements([]);
+      showToast("Failed to load announcements: " + err.message, "error");
+    }
+  };
 
   useEffect(() => {
     const loadStats = async () => {
@@ -1203,6 +1298,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     loadStats();
   }, []);
 
+  useEffect(() => {
+    loadAdminAnnouncements();
+  }, []);
+
   const updateStatus = async (id, status) => {
     try {
       await adminAPI.updateStatus(id, status);
@@ -1220,6 +1319,24 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       showToast(`Service status updated to ${serviceStatus}.`);
     } catch (err) {
       showToast("Failed to update service status: " + err.message, "error");
+    }
+  };
+
+  const publishAnnouncement = async () => {
+    const title = announcement.title.trim();
+    const body = announcement.body.trim();
+    if (!title || !body) {
+      showToast("Title and body are required.", "error");
+      return;
+    }
+
+    try {
+      await adminAPI.createAnnouncement(title, body);
+      setAnnouncement({ title: "", body: "" });
+      showToast("Announcement published.");
+      await loadAdminAnnouncements();
+    } catch (err) {
+      showToast("Failed to publish announcement: " + err.message, "error");
     }
   };
 
@@ -1577,9 +1694,26 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 <div style={{ color: "#c9952a", fontWeight: 700, marginBottom: 16 }}>New Announcement</div>
                 <Input light={isLight} label="Title" value={announcement.title} onChange={e => setAnnouncement(a => ({ ...a, title: e.target.value }))} placeholder="Announcement headline…" />
                 <Textarea light={isLight} label="Body" value={announcement.body} onChange={e => setAnnouncement(a => ({ ...a, body: e.target.value }))} placeholder="Full announcement content…" rows={5} />
-                <GoldBtn onClick={() => { showToast("Announcement published to all applicants!"); setAnnouncement({ title: "", body: "" }); }}>
+                <GoldBtn onClick={publishAnnouncement}>
                   <Plus /> Publish Announcement
                 </GoldBtn>
+              </div>
+              <div style={{ ...S2.card }}>
+                <div style={{ color: isLight ? "#9a6b1a" : "#e8d8a0", fontWeight: 700, marginBottom: 16 }}>Recent Announcements</div>
+                {announcements.map((a) => (
+                  <div key={a.id} style={{ padding: "14px 0", borderBottom: `1px solid ${t.border}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 700, color: t.text }}>{a.title}</div>
+                      <div style={{ color: t.muted, fontSize: 12 }}>
+                        {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                      </div>
+                    </div>
+                    <div style={{ color: t.muted, fontSize: 13, lineHeight: 1.6 }}>{a.body}</div>
+                  </div>
+                ))}
+                {announcements.length === 0 && (
+                  <div style={{ color: t.muted, fontSize: 13 }}>No announcements available.</div>
+                )}
               </div>
             </div>
           )}

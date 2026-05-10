@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../models/User.js";
 import Applicant from "../models/Applicant.js";
+import Announcement from "../models/Announcement.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -205,6 +206,58 @@ router.get("/stats", authMiddleware, adminMiddleware, async (req, res) => {
       review,
       approved,
       rejected,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// List announcements
+router.get("/announcements", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const items = await Announcement.find()
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(
+      items.map((a) => ({
+        id: a._id,
+        title: a.title,
+        body: a.body,
+        createdAt: a.createdAt,
+        createdBy: a.createdBy
+          ? { id: a.createdBy._id, name: a.createdBy.name, email: a.createdBy.email }
+          : null,
+      }))
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Create announcement
+router.post("/announcements", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { title, body } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: "Title and body are required" });
+    }
+
+    const announcement = await Announcement.create({
+      title: title.trim(),
+      body: body.trim(),
+      createdBy: req.user.id,
+    });
+
+    res.status(201).json({
+      id: announcement._id,
+      title: announcement.title,
+      body: announcement.body,
+      createdAt: announcement.createdAt,
+      createdBy: req.user.id,
     });
   } catch (error) {
     console.error(error);

@@ -1,6 +1,7 @@
 import express from "express";
 import Applicant from "../models/Applicant.js";
 import User from "../models/User.js";
+import Announcement from "../models/Announcement.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -101,6 +102,24 @@ router.post("/submit", authMiddleware, async (req, res) => {
       message: "Application submitted successfully",
       applicant,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// List announcements for applicants
+router.get("/announcements", authMiddleware, async (req, res) => {
+  try {
+    const items = await Announcement.find().sort({ createdAt: -1 });
+    res.json(
+      items.map((a) => ({
+        id: a._id,
+        title: a.title,
+        body: a.body,
+        createdAt: a.createdAt,
+      }))
+    );
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });

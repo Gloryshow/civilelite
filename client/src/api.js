@@ -50,6 +50,7 @@ export const authAPI = {
 
 export const applicantAPI = {
   getProfile: () => apiCall("/applicants/profile"),
+  getAnnouncements: () => apiCall("/applicants/announcements"),
   submitApplication: (data) =>
     apiCall("/applicants/submit", "POST", data),
 };
@@ -65,6 +66,9 @@ export const adminAPI = {
   scanQr: (qrPayload) =>
     apiCall("/admin/scan-qr", "POST", { qrPayload }),
   getStats: () => apiCall("/admin/stats"),
+  getAnnouncements: () => apiCall("/admin/announcements"),
+  createAnnouncement: (title, body) =>
+    apiCall("/admin/announcements", "POST", { title, body }),
   getRegistrations: () => apiCall("/admin/registrations"),
   approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
   rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),
