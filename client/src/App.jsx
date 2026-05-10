@@ -1167,6 +1167,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const [applicants, setApplicants] = useState([]);
+  const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
 
   useEffect(() => {
     // Load applicants from API
@@ -1175,19 +1176,31 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
         const data = await adminAPI.getApplicants();
         setApplicants(data);
       } catch (err) {
-        console.log("Using demo applicants fallback");
-        // Use demo data if API fails
-        setApplicants([
-          { id: 1, applicantId: "CES-2025-120901", name: "Adebayo Taiwo", email: "adebayo@email.com", state: "Lagos", status: "pending", serviceStatus: "active", date: "Jan 18, 2025", gender: "Male" },
-          { id: 2, applicantId: "CES-2025-120902", name: "Amaka Okonkwo", email: "amaka@email.com", state: "Anambra", status: "under_review", serviceStatus: "active", date: "Jan 20, 2025", gender: "Female" },
-          { id: 3, applicantId: "CES-2025-120903", name: "Emeka Chukwu", email: "emeka@email.com", state: "Enugu", status: "approved", serviceStatus: "retired", date: "Jan 22, 2025", gender: "Male" },
-          { id: 4, applicantId: "CES-2025-120904", name: "Fatima Musa", email: "fatima@email.com", state: "Kano", status: "pending", serviceStatus: "active", date: "Jan 23, 2025", gender: "Female" },
-          { id: 5, applicantId: "CES-2025-120905", name: "Ibrahim Garba", email: "ibrahim@email.com", state: "Kaduna", status: "rejected", serviceStatus: "dismissed", date: "Jan 24, 2025", gender: "Male" },
-          { id: 6, applicantId: "CES-2025-120906", name: "Blessing Effiong", email: "blessing@email.com", state: "Rivers", status: "under_review", serviceStatus: "active", date: "Jan 25, 2025", gender: "Female" },
-        ]);
+        setApplicants([]);
+        showToast("Failed to load applicants: " + err.message, "error");
       }
     };
     loadApplicants();
+  }, []);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await adminAPI.getStats();
+        setStats({
+          total: data.total || 0,
+          pending: data.pending || 0,
+          review: data.review || 0,
+          approved: data.approved || 0,
+          rejected: data.rejected || 0,
+        });
+      } catch (err) {
+        setStats({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
+        showToast("Failed to load stats: " + err.message, "error");
+      }
+    };
+
+    loadStats();
   }, []);
 
   const updateStatus = async (id, status) => {
@@ -1275,12 +1288,29 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   );
 
   const counts = {
-    total: applicants.length,
-    pending: applicants.filter(a => a.status === "pending").length,
-    review: applicants.filter(a => a.status === "under_review").length,
-    approved: applicants.filter(a => a.status === "approved").length,
-    rejected: applicants.filter(a => a.status === "rejected").length,
+    total: stats.total,
+    pending: stats.pending,
+    review: stats.review,
+    approved: stats.approved,
+    rejected: stats.rejected,
   };
+
+  const approvalRate = counts.total ? Math.round((counts.approved / counts.total) * 100) : 0;
+  const rejectionRate = counts.total ? Math.round((counts.rejected / counts.total) * 100) : 0;
+  const reviewRate = counts.total ? Math.round((counts.review / counts.total) * 100) : 0;
+  const pendingRate = counts.total ? Math.round((counts.pending / counts.total) * 100) : 0;
+
+  const stateCounts = applicants.reduce((acc, a) => {
+    const key = a.state || "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topStates = Object.entries(stateCounts)
+    .map(([state, count]) => ({ state, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+  const topStateMax = topStates[0]?.count || 0;
 
   const menuItems = [
     { id: "overview", icon: <BarChart />, label: "Overview" },
@@ -1560,16 +1590,16 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Analytics Dashboard</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 20, marginBottom: 28 }}>
                 {[
-                  { label: "Application Completion Rate", val: "74%", trend: "+8%", icon: "📈" },
-                  { label: "Avg. Processing Time", val: "3.2 days", trend: "-0.5d", icon: "⏱" },
-                  { label: "Approval Rate", val: `${Math.round(counts.approved / counts.total * 100)}%`, trend: "+2%", icon: "✅" },
-                  { label: "Female Applicants", val: "41%", trend: "+6%", icon: "👩" },
+                  { label: "Approval Rate", val: `${approvalRate}%`, sub: `${counts.approved} approved`, icon: "✅" },
+                  { label: "Under Review", val: `${reviewRate}%`, sub: `${counts.review} in review`, icon: "🔍" },
+                  { label: "Pending", val: `${pendingRate}%`, sub: `${counts.pending} pending`, icon: "⏳" },
+                  { label: "Rejected", val: `${rejectionRate}%`, sub: `${counts.rejected} rejected`, icon: "❌" },
                 ].map(c => (
                   <div key={c.label} style={{ ...S2.card }}>
                     <div style={{ fontSize: 28, marginBottom: 10 }}>{c.icon}</div>
                     <div style={{ color: t.muted, fontSize: 12, marginBottom: 6 }}>{c.label}</div>
                     <div style={{ color: t.text, fontWeight: 800, fontSize: 28 }}>{c.val}</div>
-                    <div style={{ color: "#81c784", fontSize: 13, marginTop: 4 }}>↑ {c.trend} this month</div>
+                    <div style={{ color: t.muted, fontSize: 13, marginTop: 4 }}>{c.sub}</div>
                   </div>
                 ))}
               </div>
@@ -1577,21 +1607,27 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               {/* Visual bar chart */}
               <div style={{ ...S2.card }}>
                 <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 20 }}>Applications by State</div>
-                {[{ state: "Lagos", count: 42 }, { state: "Rivers", count: 28 }, { state: "Abuja FCT", count: 25 }, { state: "Kano", count: 19 }, { state: "Anambra", count: 14 }, { state: "Oyo", count: 11 }].map(s => (
-                  <div key={s.state} style={{ marginBottom: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ color: t.muted, fontSize: 13 }}>{s.state}</span>
-                      <span style={{ color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{s.count}</span>
+                {topStates.length === 0 ? (
+                  <div style={{ color: t.muted, fontSize: 13 }}>No state breakdown available yet.</div>
+                ) : (
+                  topStates.map(s => (
+                    <div key={s.state} style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ color: t.muted, fontSize: 13 }}>{s.state}</span>
+                        <span style={{ color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{s.count}</span>
+                      </div>
+                      <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 999, height: 8, overflow: "hidden" }}>
+                        <div style={{
+                          width: topStateMax ? `${(s.count / topStateMax) * 100}%` : "0%",
+                          height: "100%",
+                          background: "linear-gradient(90deg,#c9952a,#f0c060)",
+                          borderRadius: 999,
+                          transition: "width 1s ease",
+                        }} />
+                      </div>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 999, height: 8, overflow: "hidden" }}>
-                      <div style={{
-                        width: `${(s.count / 42) * 100}%`, height: "100%",
-                        background: "linear-gradient(90deg,#c9952a,#f0c060)", borderRadius: 999,
-                        transition: "width 1s ease",
-                      }} />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}
