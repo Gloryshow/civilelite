@@ -65,6 +65,31 @@ const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
 
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
+const USER_REGISTRY_KEY = "ces_user_registry";
+
+const loadUserRegistry = () => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(USER_REGISTRY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveUserRegistry = (users) => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(USER_REGISTRY_KEY, JSON.stringify(users));
+};
+
+const createUniqueApplicantId = (users) => {
+  const ids = new Set(users.map(u => u.applicantId));
+  let id = createApplicantId();
+  while (ids.has(id)) id = createApplicantId();
+  return id;
+};
+
 const buildQrPayload = ({ applicantId, serviceStatus }) => JSON.stringify({
   type: "CES_USER",
   applicantId,
@@ -625,6 +650,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     status: "pending", submitted: false,
   });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const qrPayload = appData.id ? buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus }) : "";
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -639,6 +665,37 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
     setTab("status");
     showToast("Application submitted successfully!");
+  };
+
+  const shareQr = async () => {
+    if (!appData.id) {
+      showToast("No applicant ID yet.", "error");
+      return;
+    }
+    const text = `Civil Elite Applicant QR\nApplicant ID: ${appData.id}\nService Status: ${appData.serviceStatus}\nPayload: ${qrPayload}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Civil Elite Applicant QR", text });
+        showToast("QR details shared.");
+        return;
+      }
+      await navigator.clipboard.writeText(qrPayload);
+      showToast("QR payload copied to clipboard.");
+    } catch {
+      showToast("Unable to share QR right now.", "error");
+    }
+  };
+
+  const downloadQrImage = () => {
+    if (!qrDataUrl || !appData.id) {
+      showToast("QR image not ready.", "error");
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `${appData.id}-qr.png`;
+    link.click();
+    showToast("QR image downloaded.");
   };
 
   useEffect(() => {
@@ -762,6 +819,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                 <div style={{ ...S2.card, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.05)" }}>
                   <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 8 }}>⚠️ Complete Your Application</div>
                   <p style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>Your application has not been submitted. Fill the form and proceed to physical verification in camp.</p>
+                  <div style={{ color: t.muted, fontSize: 13, marginBottom: 12 }}>Your unique Applicant ID: <span style={{ color: "#c9952a", fontWeight: 700 }}>{appData.id || "Generating..."}</span></div>
                   <GoldBtn onClick={() => setTab("apply")} style={{ fontSize: 13, padding: "10px 20px" }}>Start Application</GoldBtn>
                 </div>
               )}
@@ -838,6 +896,16 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
                   <div style={{ color: t.text, fontWeight: 700, marginBottom: 8 }}>No Application Found</div>
                   <div style={{ color: t.muted, marginBottom: 20 }}>You have not submitted an application yet.</div>
+                  {qrDataUrl && (
+                    <div style={{ marginBottom: 18 }}>
+                      <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Your unique QR is already active and shareable.</div>
+                      <img src={qrDataUrl} alt="Applicant QR" style={{ width: 170, height: 170, borderRadius: 12, background: "#fff", padding: 8 }} />
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
+                    <GoldBtn outline onClick={shareQr} style={{ padding: "10px 16px" }}>Share QR</GoldBtn>
+                    <GoldBtn outline onClick={downloadQrImage} style={{ padding: "10px 16px" }}>Download QR</GoldBtn>
+                  </div>
                   <GoldBtn onClick={() => setTab("apply")}>Start Application</GoldBtn>
                 </div>
               ) : (
@@ -878,6 +946,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 12 }}>Identity QR Code</div>
                       <img src={qrDataUrl} alt="Applicant QR" style={{ width: 180, height: 180, borderRadius: 12, background: "#fff", padding: 8 }} />
                       <div style={{ color: t.muted, marginTop: 10, fontSize: 13 }}>Contains Applicant ID and Service Status for quick camp/event check-ins.</div>
+                      <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 14 }}>
+                        <GoldBtn outline onClick={shareQr} style={{ padding: "10px 16px" }}>Share QR</GoldBtn>
+                        <GoldBtn outline onClick={downloadQrImage} style={{ padding: "10px 16px" }}>Download QR</GoldBtn>
+                      </div>
                     </div>
                   )}
                   <GoldBtn outline onClick={() => showToast("Application slip downloaded!")}>
@@ -1354,9 +1426,38 @@ export default function App() {
   const [page, setPage] = useState("home"); // home | login | register | dashboard
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState("light");
+  const [userRegistry, setUserRegistry] = useState(() => loadUserRegistry());
+
+  useEffect(() => {
+    saveUserRegistry(userRegistry);
+  }, [userRegistry]);
 
   const handleAuth = (u) => {
-    setUser(u);
+    if (u.role === "admin") {
+      setUser(u);
+      setPage("dashboard");
+      return;
+    }
+
+    const email = (u.email || "").toLowerCase().trim();
+    const existing = userRegistry.find(item => item.email === email);
+    let nextUser = existing;
+
+    if (!nextUser) {
+      nextUser = {
+        email,
+        name: u.name || email.split("@")[0],
+        role: "applicant",
+        applicantId: createUniqueApplicantId(userRegistry),
+        serviceStatus: "active",
+      };
+      setUserRegistry(prev => [...prev, nextUser]);
+    } else if (u.name && u.name !== existing.name) {
+      nextUser = { ...existing, name: u.name };
+      setUserRegistry(prev => prev.map(item => item.email === email ? nextUser : item));
+    }
+
+    setUser(nextUser);
     setPage("dashboard");
   };
   const handleLogout = () => {
