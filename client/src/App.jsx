@@ -207,10 +207,12 @@ const LGA_OPTIONS = {
   "Kaduna": ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria"],
 };
 
+const FALLBACK_LGA_VALUE = "__manual_lga__";
+
 const getLgaOptions = (state) => {
   if (!state) return [];
   if (LGA_OPTIONS[state]) return LGA_OPTIONS[state];
-  return ["Select LGA from official list during camp verification"];
+  return [FALLBACK_LGA_VALUE];
 };
 
 const ThemeToggle = ({ theme, onToggle }) => (
@@ -644,7 +646,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
-    dob: "", state: "", lga: "", address: "", qualification: "",
+    dob: "", state: "", lga: "", lgaManual: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
     id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
@@ -658,11 +660,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const submitApp = () => {
-    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !appData.lga) {
+    const selectedLga = appData.lga === FALLBACK_LGA_VALUE ? appData.lgaManual.trim() : appData.lga;
+    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !selectedLga) {
       showToast("Please fill all required fields.", "error"); return;
     }
     const id = appData.id || createApplicantId();
-    setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
+    setAppData(d => ({ ...d, submitted: true, status: "under_review", id, lga: selectedLga }));
     setTab("status");
     showToast("Application submitted successfully!");
   };
@@ -861,10 +864,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Select light={isLight} label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
                     options={[{ value: "", label: "Select gender" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }]} />
                   <Input light={isLight} label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
-                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "" }))} required
+                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "", lgaManual: "" }))} required
                     options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map(s => ({ value: s, label: s }))]} />
                   <Select light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required
-                    options={[{ value: "", label: appData.state ? "Select LGA" : "Select state first" }, ...getLgaOptions(appData.state).map(lga => ({ value: lga, label: lga }))]} />
+                    options={[{ value: "", label: appData.state ? "Select LGA" : "Select state first" }, ...getLgaOptions(appData.state).map(lga => ({ value: lga, label: lga === FALLBACK_LGA_VALUE ? "My LGA is not listed (Type manually)" : lga }))]} />
+                  {appData.lga === FALLBACK_LGA_VALUE && (
+                    <Input light={isLight} label="Enter Local Government Area" value={appData.lgaManual} onChange={e => setAppData(d => ({ ...d, lgaManual: e.target.value }))} placeholder="Type your exact LGA" required />
+                  )}
                   <Textarea light={isLight} label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
                 </div>
                 <div>
