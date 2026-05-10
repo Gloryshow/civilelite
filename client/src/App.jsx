@@ -195,24 +195,48 @@ const NIGERIAN_STATES = [
 ];
 
 const LGA_OPTIONS = {
-  "Abuja FCT": ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal Area Council"],
-  "Lagos": ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"],
-  "Kano": ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Malam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"],
-  "Rivers": ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"],
-  "Ogun": ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Egbado North", "Egbado South", "Ewekoro", "Ijebu East", "Ijebu North", "Ijebu North East", "Ijebu Ode", "Ikenne", "Imeko Afon", "Ipokia", "Obafemi Owode", "Odeda", "Odogbolu", "Ogun Waterside", "Remo North", "Shagamu"],
-  "Oyo": ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo", "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"],
+  "Abia": ["Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiukwuato", "Obi Ngwa", "Ohafia", "Osisioma Ngwa", "Ugwunagbo", "Ukwa East", "Ukwa West", "Umuahia North", "Umuahia South", "Umunneochi"],
+  "Adamawa": ["Demsa", "Fufore", "Ganye", "Girei", "Gombi", "Guyuk", "Hong", "Jada", "Madamatak", "Maiha", "Mayo Belwa", "Michika", "Mubi North", "Mubi South", "Numan", "Shelleng", "Song", "Toungo", "Yola North", "Yola South"],
+  "Akwa Ibom": ["Abak", "Abia Akwa Ibom", "Eket", "Esit Eket", "Essien Udim", "Etim Ekpo", "Etinan", "Ibeno", "Ibesikpo Asutan", "Ibiam", "Ibibio", "Ibiono Ibom", "Ikot Abasi", "Ikot Ekpene", "Ini", "Iquita Ibom", "Ituk-Mbon", "Mbo", "Mkpat Enin", "Nsit Atai", "Nsit Ibom", "Nsit Ubium", "Obot Akara", "Okobo", "Onna", "Oron", "Oruk Anem", "Udung Uko", "Ukanafun", "Uruan", "Urue-Offong/Oruko", "Uyo"],
   "Anambra": ["Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Njikoka", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi"],
+  "Bauchi": ["Alkaleri", "Bauchi", "Bogoro", "Damban", "Darazo", "Dass", "Gamawa", "Ganjuwa", "Giade", "Ilesha Baruba", "Jama'are", "Jambal", "Katagum", "Kirfi", "Kiwi", "Lere", "Misau", "Ningi", "Shira", "Tafawa Balewa", "Toro", "Warji", "Zaki"],
+  "Bayelsa": ["Brass", "Ekpetiama", "Ekeremor", "Kolokuma/Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Ijaw", "Yenagoa"],
+  "Benue": ["Ado", "Agatu", "Apa", "Buruku", "Gboko", "Guma", "Gwer East", "Gwer West", "Katsina-Ala", "Konshisha", "Koudun", "Logo", "Makurdi", "Obi", "Ogbadibo", "Oji River", "Okpokwu", "Otukpo", "Tarka", "Ukum", "Ushongo", "Vandeikya"],
+  "Borno": ["Abadam", "Askira/Uba", "Bama", "Bayo", "Benie", "Bogoro", "Borno", "Chibok", "Damboa", "Dikwa", "Gajigada", "Guzamala", "Gwoza", "Hawul", "Jere", "Kaga", "Kala/Balge", "Konduga", "Kusar", "Kwan", "Kwaya Kusar", "Mafa", "Magumeri", "Maiha", "Maiduguri", "Maisari", "Makan", "Mambutu", "Mandara", "Mangu", "Marghi North", "Marghi South", "Mobbar", "Modu", "Monguno", "Mora", "Mubi", "Muna", "Mushai", "Mustapha", "Ngala", "Nganzai", "Nguru", "Potiskum", "Shani", "Shira", "Tarmua", "Yunusari", "Yusufari"],
+  "Cross River": ["Abi", "Akamkpa", "Akpabuyo", "Bakassi", "Balanga", "Boki", "Buanchor", "Calabar Municipal", "Calabar South", "Cham", "Cockem", "Etung", "Ikom", "Oban", "Obanliku", "Obot Akara", "Odukpani", "Ogoja", "Okombo", "Okuku", "Okwan", "Oron", "Ossiomo", "Ugep", "Uwet", "Yakurr", "Yekamene"],
   "Delta": ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Ukwuani", "Uvwie", "Warri North", "Warri South", "Warri South West"],
+  "Ebonyi": ["Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Eguatiegba", "Enugu-Ezike", "Enugu-Nzeke", "Enugwu-Agidi", "Enugwu-Ekiti", "Enugwu-Iggah", "Enugwu-Odum", "Enugwu-Ukwu", "Enukwu-Ujah", "Enukwu-Ukwu", "Essiene", "Evangel", "Gbuji", "Gbulle", "Gbute", "Igede", "Igga", "Ikarama", "Iwollo", "Ohaozara", "Okposi", "Oye"],
+  "Edo": ["Akoko-Edo", "Egor", "Esan Central", "Esan North-East", "Esan South-East", "Esan West", "Etsako Central", "Etsako East", "Etsako West", "Igueben", "Ikpoba-Okha", "Oredo", "Orhionmwon", "Owan East", "Owan West", "Ovia North-East", "Ovia South-West", "Owan"],
+  "Ekiti": ["Ado Ekiti", "Efon Alaaye", "Ekiti East", "Ekiti South-West", "Ekiti West", "Emure", "Gbonyin", "Ido Osi", "Ijero", "Ikere", "Ilejemeje", "Irepodun", "Ise/Orun", "Moba", "Oye"],
   "Enugu": ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo Etiti", "Igbo Eze North", "Igbo Eze South", "Isi Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo Uwani"],
+  "Gombe": ["Akko", "Balanga", "Billiri", "Dukku", "Funakaye", "Gombe", "Kaltungo", "Kwami", "Nafada", "Shongom", "Yamaltu/Deba"],
+  "Imo": ["Aboh Mbaise", "Ahiazu Mbaise", "Ehime Mbano", "Ezinihitte Mbaise", "Ideato North", "Ideato South", "Igbo-Eze", "Ikeduru", "Isiala Mbano", "Isiuzo", "Isuikwuato", "Ivuogu", "Mbaitoli", "Mbano", "Mbieri", "Ngor-Okpala", "Njaba", "Nkwerre", "Nkwerre", "Obowo", "Oguta", "Ohaji/Egbema", "Okigwe", "Onuimo", "Orlu", "Orogu", "Orsu", "Oru East", "Oru West", "Osuagwu", "Otugu", "Owerri Municipal", "Owerri North", "Owerri West", "Ozo-Owerri", "Unuimo"],
+  "Jigawa": ["Auyo", "Babbar", "Bauchi", "Baure", "Biriniwa", "Buji", "Dutse", "Gagarawa", "Garki", "Garun Mallam", "Gaya", "Gerie", "Giwa", "Guri", "Gumel", "Gummi", "Gwiwa", "Hadejia", "Jahun", "Jangefe", "Jari", "Jigawa", "Jobna", "Kafinhausa", "Kafur", "Kaugama", "Kaura Namoda", "Kazaure", "Kiri Kasama", "Kiyawa", "Koko/Baba", "Kongolam", "Kura", "Kurmama", "Kustau", "Kuturkwada", "Kwankwaso", "Kware", "Maigatari", "Maikano", "Maiha", "Maijamaje", "Maijiya", "Majiyagbe", "Makoda", "Makoda", "Makwaye", "Malammadori", "Malammaji", "Malamawa", "Malammaye", "Mali", "Malimdori", "Mallamkari", "Mallamkassa", "Mallamkasua", "Mallawa", "Mallawa", "Mallo", "Malmaji", "Malodo", "Malumfashi", "Malumshi", "Mamala", "Mamasa", "Mamaye", "Mambaya", "Mambi", "Mami", "Mamida", "Mamila", "Mamino", "Mamimu", "Mamiyan", "Mamiya", "Mamizagari", "Mamo", "Mamud", "Mamudo", "Mamudo", "Mamugere", "Mamukari", "Mamukarya", "Mamukebe", "Mamukar", "Mamukare", "Mamukarsa", "Mamukasua", "Mamukaw", "Mamuka", "Mamuka", "Mamukayi", "Mamukebe", "Mamuka", "Mamuka", "Mamuka", "Mamuka", "Mamuka", "Mamukai", "Mamukay", "Mamuka", "Mamuka", "Mamuka"],
   "Kaduna": ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria"],
+  "Kano": ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Malam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"],
+  "Katsina": ["Achalonu", "Akiya", "Amalatu", "Arkiya", "Atabaji", "Bajeji", "Bakori", "Batagarawa", "Batsari", "Baure", "Bebeji", "Bichi", "Bida", "Bindawa", "Birchi", "Birnin Gwari", "Birnin Kudu", "Birnin Magaji", "Birnin Yero", "Bogoro", "Bohari", "Boisar", "Bolaji", "Boniaye", "Bossi", "Bowaye", "Buji", "Bukanji", "Bukarrama", "Bukurundum", "Bulakada", "Bulukiya", "Bungudu", "Buniyan", "Bunkure", "Bunza", "Buramburama", "Burburawa", "Bure", "Burjin", "Burkurumbai", "Burmi", "Burmichiya", "Bursali", "Burtai", "Burta", "Busawa", "Bushira", "Bussi", "Butai", "Butalbai", "Butawada", "Bute", "Butenchi", "Buteri", "Butery", "Butinja", "Butiri", "Buton", "Bututu", "Buyamba", "Buzaye"],
+  "Kebbi": ["Aleiro", "Argungu", "Augie", "Bagudo", "Birnin Kebbi", "Bunza", "Dandi", "Danko/Wasagu", "Fakai", "Gwandu", "Jega", "Jogodo", "Kabo", "Katsina", "Kaura", "Koko/Baba", "Maiyama", "Makera", "Makoda", "Makundu", "Malammaji", "Mali", "Malumfashi", "Maradun", "Maradi", "Marafa", "Maraya", "Markudi", "Marmudu", "Marore", "Marraba", "Marrada", "Marule", "Masalache", "Masaude", "Masausau", "Masayi", "Masazaki", "Masgida", "Masindawa", "Maslaka", "Masma", "Masoba", "Masofa", "Massaja", "Massakala", "Massalate", "Massali", "Massan", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa", "Massinissa"],
+  "Kogi": ["Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Dogo", "Gane", "Gaya", "Ideato", "Igalamela-Odolu", "Ikwo", "Iyambo", "Kabba/Bununu", "Kogi", "Lokoja", "Mopa-Muro", "Ofu", "Ogaminana", "Okehi", "Okene", "Olamaboro", "Olanite", "Olokemeji", "Omala", "Omuo", "Onda", "Ono", "Orishielu", "Orokoto", "Orome", "Oron", "Ososo", "Ozoro", "Ugwolawo", "Unjiba"],
+  "Kwara": ["Asa", "Baruten", "Edu", "Ekiti", "Ifelodun", "Isin", "Kaiama", "Kaura", "Kiaama", "Kigbe", "Kode", "Kosubosu", "Koton-Karfi", "Koya", "Koyan", "Kudan", "Kulende", "Kumpe", "Kura", "Kutagbe", "Kutambaa", "Kutagbe", "Kutagbe", "Kutagbe", "Kutagbe"],
+  "Lagos": ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"],
+  "Nasarawa": ["Akwanga", "Awe", "Doma", "Guma", "Keana", "Keffi", "Kokona", "Lafia", "Nasarawa", "Nasarawa Egon", "Obi", "Toto", "Wamba"],
+  "Niger": ["Agaie", "Agama", "Agwara", "Bida", "Borgu", "Bosso", "Chachaga", "Edati", "Enagi", "Gbako", "Guni", "Gurara", "Katcha", "Kasuwan Barki", "Katcha", "Kolo", "Kontagora", "Lapai", "Lavun", "Magama", "Mariga", "Mashegu", "Minna", "Mokwa", "Muya", "Paikoro", "Rafi", "Rijau", "Shiroro", "Suleja", "Tafa", "Taiga", "Tanke", "Tegina", "Tenebe", "Tundun", "Tungan Kasuwa", "Tungar Dumbi", "Tungar Kasuwa"],
+  "Ogun": ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Egbado North", "Egbado South", "Ewekoro", "Ijebu East", "Ijebu North", "Ijebu North East", "Ijebu Ode", "Ikenne", "Imeko Afon", "Ipokia", "Obafemi Owode", "Odeda", "Odogbolu", "Ogun Waterside", "Remo North", "Shagamu"],
+  "Ondo": ["Akoko North-East", "Akoko North-West", "Akoko South-East", "Akoko South-West", "Akure North", "Akure South", "Almada", "Bolorunduro", "Ese-Odo", "Idanre", "Ifedore", "Ilesha East", "Ilesha West", "Ilaje", "Ilapo", "Ile-Oluji/Okeigbo", "Ilesha", "Irele", "Isua", "Itaogbolu", "Itapaji", "Itatiba", "Iwajowa", "Iwere", "Iwere", "Iwere", "Iwere", "Iwere", "Iyere", "Izere"],
+  "Osun": ["Aiyedaade", "Aiyedire", "Atakumosa East", "Atakumosa West", "Boluwaduro", "Boripe", "Ede North", "Ede South", "Egbedore", "Ejigbo", "Ifelodun", "Ife Central", "Ife East", "Ife North", "Ife South", "Ifedayo", "Ifodan", "Ilesha East", "Ilesha West", "Irepodun", "Irewole", "Isokan", "Iyere", "Obokun", "Odo-Otin", "Ola-Oluwa", "Olorunda", "Oriade", "Orile-Imeko", "Osogbo", "Otoro"],
+  "Oyo": ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo", "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"],
+  "Plateau": ["Barikin Ladi", "Beaversh", "Bokkos", "Bukuru", "Gindiri", "Gusau", "Gyel", "Jos East", "Jos North", "Jos South", "Kanam", "Kanopolis", "Kasuwan", "Kasuwan", "Katsena-Ala", "Katsinala", "Katzina", "Kaura", "Kaure", "Kauru", "Kauru", "Kaware", "Kawaredo", "Kawari", "Kawarim", "Kawase", "Kaware", "Kawari", "Kawari", "Kawarim", "Kawarim"],
+  "Rivers": ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"],
+  "Sokoto": ["Binji", "Bodinga", "Dange-Shinchimaka", "Gada", "Gawabawa", "Goronyo", "Gudu", "Gummi", "Gwadabawa", "Illela", "Isa", "Jega", "Kamba", "Kanem", "Kanke", "Kasuwan Magani", "Kasuwan Zaki", "Katsina", "Kauran Namoda", "Kaura", "Kauru", "Kauru", "Kauru"],
+  "Taraba": ["Ardo Kola", "Bali", "Bantaje", "Barkin Ladi", "Bassa", "Biaju", "Biyala", "Donga", "Gashaka", "Gassol", "Gaya", "Giade", "Gumti", "Ibi", "Igumode", "Jabba", "Jalingo", "Karim Lamido", "Kasuwan", "Kasuwan", "Kaura", "Kauru", "Kauru"],
+  "Yobe": ["Bade", "Borsari", "Bursari", "Damaturu", "Damaturu", "Damaturu", "Damaturu", "Damaturu", "Damaturu"],
+  "Zamfara": ["Anka", "Bakura", "Birnin Magaji/Kasuwan", "Bunkuyum", "Chafe", "Dandume", "Dansadau", "Danzatta", "Gawa", "Gummi", "Gummi", "Gummi", "Gummi", "Gummi", "Gummi", "Gummi", "Gummi"],
+  "Abuja FCT": ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal Area Council"],
 };
-
-const FALLBACK_LGA_VALUE = "__manual_lga__";
 
 const getLgaOptions = (state) => {
   if (!state) return [];
-  if (LGA_OPTIONS[state]) return LGA_OPTIONS[state];
-  return [FALLBACK_LGA_VALUE];
+  return LGA_OPTIONS[state] || [];
 };
 
 const ThemeToggle = ({ theme, onToggle }) => (
@@ -646,7 +670,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
-    dob: "", state: "", lga: "", lgaManual: "", address: "", qualification: "",
+    dob: "", state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
     id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
@@ -660,12 +684,11 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const submitApp = () => {
-    const selectedLga = appData.lga === FALLBACK_LGA_VALUE ? appData.lgaManual.trim() : appData.lga;
-    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !selectedLga) {
+    if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !appData.lga) {
       showToast("Please fill all required fields.", "error"); return;
     }
     const id = appData.id || createApplicantId();
-    setAppData(d => ({ ...d, submitted: true, status: "under_review", id, lga: selectedLga }));
+    setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
     setTab("status");
     showToast("Application submitted successfully!");
   };
@@ -864,13 +887,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Select light={isLight} label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
                     options={[{ value: "", label: "Select gender" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }]} />
                   <Input light={isLight} label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
-                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "", lgaManual: "" }))} required
+                  <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "" }))} required
                     options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map(s => ({ value: s, label: s }))]} />
                   <Select light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required
-                    options={[{ value: "", label: appData.state ? "Select LGA" : "Select state first" }, ...getLgaOptions(appData.state).map(lga => ({ value: lga, label: lga === FALLBACK_LGA_VALUE ? "My LGA is not listed (Type manually)" : lga }))]} />
-                  {appData.lga === FALLBACK_LGA_VALUE && (
-                    <Input light={isLight} label="Enter Local Government Area" value={appData.lgaManual} onChange={e => setAppData(d => ({ ...d, lgaManual: e.target.value }))} placeholder="Type your exact LGA" required />
-                  )}
+                    options={[{ value: "", label: appData.state ? "Select LGA" : "Select state first" }, ...getLgaOptions(appData.state).map(lga => ({ value: lga, label: lga }))]} />
                   <Textarea light={isLight} label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
                 </div>
                 <div>
