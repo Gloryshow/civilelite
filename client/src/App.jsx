@@ -1,3 +1,5 @@
+import QRCode from "qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
@@ -58,6 +60,33 @@ const THEME = {
 };
 
 const getTheme = (mode = "light") => THEME[mode] || THEME.light;
+
+const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
+
+const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
+
+const buildQrPayload = ({ applicantId, serviceStatus }) => JSON.stringify({
+  type: "CES_USER",
+  applicantId,
+  serviceStatus,
+});
+
+const parseQrPayload = (raw) => {
+  try {
+    const data = JSON.parse(raw);
+    if (
+      data &&
+      data.type === "CES_USER" &&
+      typeof data.applicantId === "string" &&
+      SERVICE_STATUS_OPTIONS.includes(data.serviceStatus)
+    ) {
+      return data;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 20, cls = "" }) => (
@@ -587,10 +616,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const faintText = isLight ? "#64748b" : "#556";
   const [tab, setTab] = useState("overview");
   const [toast, setToast] = useState(null);
+  const [qrDataUrl, setQrDataUrl] = useState(null);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
     dob: "", state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
+    id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
   });
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -604,10 +635,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     if (!appData.fullName || !appData.phone || !appData.gender || !appData.state || !appData.lga) {
       showToast("Please fill all required fields.", "error"); return;
     }
-    setAppData(d => ({ ...d, submitted: true, status: "under_review" }));
+    const id = appData.id || createApplicantId();
+    setAppData(d => ({ ...d, submitted: true, status: "under_review", id }));
     setTab("status");
     showToast("Application submitted successfully!");
   };
+
+  useEffect(() => {
+    if (appData.id) {
+      const payload = buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus });
+      QRCode.toDataURL(payload).then(url => setQrDataUrl(url)).catch(() => setQrDataUrl(null));
+    } else setQrDataUrl(null);
+  }, [appData.id, appData.serviceStatus]);
 
   const announcements = [
     { title: "2025 Batch A Recruitment Open", date: "Jan 15, 2025", tag: "RECRUITMENT", text: "Applications are now open for the 2025 Batch A recruitment exercise. Deadline: March 31, 2025." },
@@ -807,7 +846,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                       <div>
                         <div style={{ fontWeight: 700, color: t.text, fontSize: 18 }}>{appData.fullName}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Ref: CES-2025-{String(Math.floor(Math.random() * 9000) + 1000)}</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>Ref: {appData.id}</div>
+                        <div style={{ color: t.muted, fontSize: 13, marginTop: 2, textTransform: "capitalize" }}>Service status: {appData.serviceStatus}</div>
                       </div>
                       <StatusBadge s={appData.status} />
                     </div>
@@ -833,6 +873,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       ))}
                     </div>
                   </div>
+                  {qrDataUrl && (
+                    <div style={{ ...S2.card, marginBottom: 20, textAlign: "center" }}>
+                      <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 12 }}>Identity QR Code</div>
+                      <img src={qrDataUrl} alt="Applicant QR" style={{ width: 180, height: 180, borderRadius: 12, background: "#fff", padding: 8 }} />
+                      <div style={{ color: t.muted, marginTop: 10, fontSize: 13 }}>Contains Applicant ID and Service Status for quick camp/event check-ins.</div>
+                    </div>
+                  )}
                   <GoldBtn outline onClick={() => showToast("Application slip downloaded!")}>
                     <Download /> Download Application Slip
                   </GoldBtn>
@@ -878,6 +925,9 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [announcement, setAnnouncement] = useState({ title: "", body: "" });
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannedResult, setScannedResult] = useState(null);
+  const scannerRef = useRef(null);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -885,12 +935,12 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const [applicants, setApplicants] = useState([
-    { id: 1, name: "Adebayo Taiwo", email: "adebayo@email.com", state: "Lagos", status: "pending", date: "Jan 18, 2025", gender: "Male" },
-    { id: 2, name: "Amaka Okonkwo", email: "amaka@email.com", state: "Anambra", status: "under_review", date: "Jan 20, 2025", gender: "Female" },
-    { id: 3, name: "Emeka Chukwu", email: "emeka@email.com", state: "Enugu", status: "approved", date: "Jan 22, 2025", gender: "Male" },
-    { id: 4, name: "Fatima Musa", email: "fatima@email.com", state: "Kano", status: "pending", date: "Jan 23, 2025", gender: "Female" },
-    { id: 5, name: "Ibrahim Garba", email: "ibrahim@email.com", state: "Kaduna", status: "rejected", date: "Jan 24, 2025", gender: "Male" },
-    { id: 6, name: "Blessing Effiong", email: "blessing@email.com", state: "Rivers", status: "under_review", date: "Jan 25, 2025", gender: "Female" },
+    { id: 1, applicantId: "CES-2025-120901", name: "Adebayo Taiwo", email: "adebayo@email.com", state: "Lagos", status: "pending", serviceStatus: "active", date: "Jan 18, 2025", gender: "Male" },
+    { id: 2, applicantId: "CES-2025-120902", name: "Amaka Okonkwo", email: "amaka@email.com", state: "Anambra", status: "under_review", serviceStatus: "active", date: "Jan 20, 2025", gender: "Female" },
+    { id: 3, applicantId: "CES-2025-120903", name: "Emeka Chukwu", email: "emeka@email.com", state: "Enugu", status: "approved", serviceStatus: "retired", date: "Jan 22, 2025", gender: "Male" },
+    { id: 4, applicantId: "CES-2025-120904", name: "Fatima Musa", email: "fatima@email.com", state: "Kano", status: "pending", serviceStatus: "active", date: "Jan 23, 2025", gender: "Female" },
+    { id: 5, applicantId: "CES-2025-120905", name: "Ibrahim Garba", email: "ibrahim@email.com", state: "Kaduna", status: "rejected", serviceStatus: "dismissed", date: "Jan 24, 2025", gender: "Male" },
+    { id: 6, applicantId: "CES-2025-120906", name: "Blessing Effiong", email: "blessing@email.com", state: "Rivers", status: "under_review", serviceStatus: "active", date: "Jan 25, 2025", gender: "Female" },
   ]);
 
   const updateStatus = (id, status) => {
@@ -898,7 +948,64 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     showToast(`Applicant status updated to ${status}.`);
   };
 
+  const updateServiceStatus = (id, serviceStatus) => {
+    setApplicants(a => a.map(ap => ap.id === id ? { ...ap, serviceStatus } : ap));
+  };
+
+  const stopScanner = async () => {
+    if (!scannerRef.current) {
+      setScannerActive(false);
+      return;
+    }
+    try {
+      await scannerRef.current.stop();
+    } catch {
+      // no-op
+    }
+    try {
+      await scannerRef.current.clear();
+    } catch {
+      // no-op
+    }
+    scannerRef.current = null;
+    setScannerActive(false);
+  };
+
+  const startScanner = async () => {
+    if (scannerActive) return;
+    try {
+      const scanner = new Html5Qrcode("admin-qr-reader");
+      scannerRef.current = scanner;
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        async (decodedText) => {
+          const parsed = parseQrPayload(decodedText);
+          if (!parsed) {
+            showToast("Invalid QR payload scanned.", "error");
+            return;
+          }
+          setScannedResult(parsed);
+          showToast(`Scanned ${parsed.applicantId}`);
+          await stopScanner();
+        },
+        () => {}
+      );
+      setScannerActive(true);
+    } catch {
+      showToast("Unable to start camera scanner. Check permission and HTTPS context.", "error");
+    }
+  };
+
+  useEffect(() => () => {
+    if (scannerRef.current) {
+      scannerRef.current.stop().catch(() => {});
+      scannerRef.current.clear().catch(() => {});
+    }
+  }, []);
+
   const filtered = applicants.filter(a =>
+    a.applicantId.toLowerCase().includes(search.toLowerCase()) ||
     a.name.toLowerCase().includes(search.toLowerCase()) ||
     a.email.toLowerCase().includes(search.toLowerCase()) ||
     a.state.toLowerCase().includes(search.toLowerCase())
@@ -915,6 +1022,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const menuItems = [
     { id: "overview", icon: <BarChart />, label: "Overview" },
     { id: "applicants", icon: <UsersIcon />, label: "Applicants" },
+    { id: "scanner", icon: "📷", label: "QR Scanner" },
     { id: "announcements", icon: <BellIcon />, label: "Announcements" },
     { id: "analytics", icon: <TrendingUp />, label: "Analytics" },
     { id: "settings", icon: <Settings />, label: "Settings" },
@@ -1080,7 +1188,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
                   <thead>
                     <tr>
-                      {["#", "Name", "Email", "State", "Gender", "Date", "Status", "Actions"].map(h => (
+                      {["#", "Applicant ID", "Name", "Email", "State", "Gender", "Date", "Status", "Service", "Actions"].map(h => (
                           <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
                       ))}
                     </tr>
@@ -1092,12 +1200,18 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
                         <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.id}</td>
+                        <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{a.applicantId}</td>
                         <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.state}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.gender}</td>
                         <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.date}</td>
                         <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
+                        <td style={{ padding: "12px 14px" }}>
+                          <select value={a.serviceStatus} onChange={e => updateServiceStatus(a.id, e.target.value)} style={{ background: isLight ? "#fff" : "#0d1b2a", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 6, color: t.text, padding: "4px 8px", fontSize: 12, textTransform: "capitalize" }}>
+                            {SERVICE_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{ display: "flex", gap: 6 }}>
                             <button onClick={() => updateStatus(a.id, "approved")} style={{
@@ -1120,6 +1234,30 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 </table>
                 {filtered.length === 0 && (
                   <div style={{ textAlign: "center", padding: 40, color: "#556" }}>No applicants found for "{search}"</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ─ QR SCANNER ─ */}
+          {tab === "scanner" && (
+            <div>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 16 }}>QR Scanner</h2>
+              <p style={{ color: t.muted, marginBottom: 18 }}>Scan applicant QR to fetch Applicant ID and current service status for camp/events.</p>
+              <div style={{ ...S2.card, maxWidth: 620 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                  {!scannerActive
+                    ? <GoldBtn onClick={startScanner} style={{ padding: "10px 16px" }}>Start Camera Scan</GoldBtn>
+                    : <GoldBtn outline onClick={stopScanner} style={{ padding: "10px 16px" }}>Stop Scan</GoldBtn>}
+                  <GoldBtn outline onClick={() => setScannedResult(null)} style={{ padding: "10px 16px" }}>Clear Result</GoldBtn>
+                </div>
+                <div id="admin-qr-reader" style={{ width: "100%", minHeight: 260, border: `1px dashed ${t.border}`, borderRadius: 12, padding: 8, marginBottom: 14 }} />
+                {scannedResult && (
+                  <div style={{ background: isLight ? "#f8fafc" : "rgba(255,255,255,0.03)", border: `1px solid ${t.border}`, borderRadius: 10, padding: 14 }}>
+                    <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 8 }}>Scan Result</div>
+                    <div style={{ color: t.text, fontWeight: 700, marginBottom: 4 }}>Applicant ID: {scannedResult.applicantId}</div>
+                    <div style={{ color: t.muted, textTransform: "capitalize" }}>Service Status: {scannedResult.serviceStatus}</div>
+                  </div>
                 )}
               </div>
             </div>
