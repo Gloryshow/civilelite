@@ -1254,19 +1254,15 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
 
-  useEffect(() => {
-    // Load applicants from API
-    const loadApplicants = async () => {
-      try {
-        const data = await adminAPI.getApplicants();
-        setApplicants(data);
-      } catch (err) {
-        setApplicants([]);
-        showToast("Failed to load applicants: " + err.message, "error");
-      }
-    };
-    loadApplicants();
-  }, []);
+  const loadApplicants = async (silent = false) => {
+    try {
+      const data = await adminAPI.getApplicants();
+      setApplicants(data || []);
+    } catch (err) {
+      setApplicants([]);
+      if (!silent) showToast("Failed to load applicants: " + err.message, "error");
+    }
+  };
 
   const loadAdminAnnouncements = async () => {
     try {
@@ -1278,25 +1274,47 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const data = await adminAPI.getStats();
-        setStats({
-          total: data.total || 0,
-          pending: data.pending || 0,
-          review: data.review || 0,
-          approved: data.approved || 0,
-          rejected: data.rejected || 0,
-        });
-      } catch (err) {
-        setStats({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
-        showToast("Failed to load stats: " + err.message, "error");
-      }
-    };
+  const loadStats = async (silent = false) => {
+    try {
+      const data = await adminAPI.getStats();
+      setStats({
+        total: data.total || 0,
+        pending: data.pending || 0,
+        review: data.review || 0,
+        approved: data.approved || 0,
+        rejected: data.rejected || 0,
+      });
+    } catch (err) {
+      setStats({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
+      if (!silent) showToast("Failed to load stats: " + err.message, "error");
+    }
+  };
 
-    loadStats();
+  const refreshOverviewData = async (silent = false) => {
+    await Promise.all([loadApplicants(silent), loadStats(silent)]);
+  };
+
+  useEffect(() => {
+    refreshOverviewData();
+
+    const intervalId = window.setInterval(() => {
+      refreshOverviewData(true);
+    }, 5000);
+
+    const onFocus = () => refreshOverviewData(true);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
+
+  useEffect(() => {
+    if (tab === "overview" || tab === "applicants") {
+      refreshOverviewData(true);
+    }
+  }, [tab]);
 
   useEffect(() => {
     loadAdminAnnouncements();
@@ -1306,6 +1324,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     try {
       await adminAPI.updateStatus(id, status);
       setApplicants(a => a.map(ap => ap.id === id ? { ...ap, status } : ap));
+      await loadStats(true);
       showToast(`Applicant status updated to ${status}.`);
     } catch (err) {
       showToast("Failed to update status: " + err.message, "error");
@@ -1411,6 +1430,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     approved: stats.approved,
     rejected: stats.rejected,
   };
+
+  const recentApplications = applicants.slice(0, 5);
 
   const approvalRate = counts.total ? Math.round((counts.approved / counts.total) * 100) : 0;
   const rejectionRate = counts.total ? Math.round((counts.rejected / counts.total) * 100) : 0;
@@ -1545,23 +1566,37 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   Recent Applications
                   <button onClick={() => setTab("applicants")} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontSize: 13 }}>View All →</button>
                 </div>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <div style={{ width: "100%", overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560, tableLayout: "auto" }}>
                     <thead>
                       <tr>
-                        {["Name", "State", "Date", "Status", "Action"].map(h => (
-                          <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: faintText, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
+                        {["Name", "State", "Date", "Status", "Action"].map((h, idx) => (
+                          <th
+                            key={h}
+                            style={{
+                              textAlign: idx === 4 ? "center" : "left",
+                              width: ["30%", "16%", "18%", "22%", "14%"][idx],
+                              whiteSpace: "nowrap",
+                              padding: "10px 12px",
+                              color: faintText,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              borderBottom: `1px solid ${t.border}`,
+                            }}
+                          >
+                            {h}
+                          </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {applicants.slice(0, 5).map(a => (
+                      {recentApplications.map(a => (
                         <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}>
-                          <td style={{ padding: "12px 14px", color: t.text, fontSize: 14 }}>{a.name}</td>
-                          <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.state}</td>
-                          <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.date}</td>
-                          <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
-                          <td style={{ padding: "12px 14px" }}>
+                          <td style={{ padding: "12px 12px", color: t.text, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.name}</td>
+                          <td style={{ padding: "12px 12px", color: t.muted, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.state}</td>
+                          <td style={{ padding: "12px 12px", color: t.muted, fontSize: 13, whiteSpace: "nowrap" }}>{a.date}</td>
+                          <td style={{ padding: "12px 12px", whiteSpace: "nowrap" }}><StatusBadge s={a.status} /></td>
+                          <td style={{ padding: "12px 12px", textAlign: "center", whiteSpace: "nowrap" }}>
                             <button onClick={() => updateStatus(a.id, "under_review")} style={{
                               background: "none", border: "1px solid rgba(201,168,76,0.3)", color: "#c9952a",
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12,
@@ -1569,6 +1604,13 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                           </td>
                         </tr>
                       ))}
+                      {recentApplications.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ padding: "16px 12px", color: t.muted, fontSize: 13, textAlign: "center" }}>
+                            No applications yet.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
