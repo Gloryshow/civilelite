@@ -2,6 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import User from "../models/User.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -117,6 +118,26 @@ router.post("/login", async (req, res) => {
         role: user.role,
         applicantId: user.applicantId,
         serviceStatus: user.serviceStatus,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Current authenticated user
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    res.json({
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name,
+        role: req.user.role,
+        applicantId: req.user.applicantId,
+        serviceStatus: req.user.serviceStatus,
+        registrationStatus: req.user.registrationStatus,
       },
     });
   } catch (error) {

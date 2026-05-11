@@ -46,6 +46,7 @@ export const authAPI = {
     apiCall("/auth/register", "POST", { email, password, name, role }),
   login: (email, password) =>
     apiCall("/auth/login", "POST", { email, password }),
+  me: () => apiCall("/auth/me"),
 };
 
 export const applicantAPI = {

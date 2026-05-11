@@ -1567,7 +1567,14 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   <button onClick={() => setTab("applicants")} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontSize: 13 }}>View All →</button>
                 </div>
                 <div style={{ width: "100%", overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560, tableLayout: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560, tableLayout: "fixed" }}>
+                    <colgroup>
+                      <col style={{ width: "34%" }} />
+                      <col style={{ width: "16%" }} />
+                      <col style={{ width: "18%" }} />
+                      <col style={{ width: "20%" }} />
+                      <col style={{ width: "12%" }} />
+                    </colgroup>
                     <thead>
                       <tr>
                         {["Name", "State", "Date", "Status", "Action"].map((h, idx) => (
@@ -1575,9 +1582,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                             key={h}
                             style={{
                               textAlign: idx === 4 ? "center" : "left",
-                              width: ["30%", "16%", "18%", "22%", "14%"][idx],
                               whiteSpace: "nowrap",
-                              padding: "10px 12px",
+                              padding: "10px",
                               color: faintText,
                               fontSize: 12,
                               fontWeight: 700,
@@ -1592,11 +1598,11 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     <tbody>
                       {recentApplications.map(a => (
                         <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}>
-                          <td style={{ padding: "12px 12px", color: t.text, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.name}</td>
-                          <td style={{ padding: "12px 12px", color: t.muted, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.state}</td>
-                          <td style={{ padding: "12px 12px", color: t.muted, fontSize: 13, whiteSpace: "nowrap" }}>{a.date}</td>
-                          <td style={{ padding: "12px 12px", whiteSpace: "nowrap" }}><StatusBadge s={a.status} /></td>
-                          <td style={{ padding: "12px 12px", textAlign: "center", whiteSpace: "nowrap" }}>
+                          <td style={{ padding: "11px 10px", textAlign: "left", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.name}</td>
+                          <td style={{ padding: "11px 10px", textAlign: "left", color: t.muted, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 0 }}>{a.state}</td>
+                          <td style={{ padding: "11px 10px", textAlign: "left", color: t.muted, fontSize: 13, whiteSpace: "nowrap" }}>{a.date}</td>
+                          <td style={{ padding: "11px 10px", textAlign: "left", whiteSpace: "nowrap" }}><StatusBadge s={a.status} /></td>
+                          <td style={{ padding: "11px 10px", textAlign: "center", whiteSpace: "nowrap" }}>
                             <button onClick={() => updateStatus(a.id, "under_review")} style={{
                               background: "none", border: "1px solid rgba(201,168,76,0.3)", color: "#c9952a",
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12,
@@ -1850,18 +1856,55 @@ export default function App() {
   }, [userRegistry]);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = tokenManager.getToken();
-    if (token) {
+    const restoreSession = async () => {
+      const token = tokenManager.getToken();
+      if (!token) return;
+
+      setLoading(true);
       try {
-        const decoded = JSON.parse(atob(token.split('.')[1]));
-        // Token exists and can be decoded, but we should fetch user data from API
-        // For now, just check if token is valid
+        const { user: userData } = await authAPI.me();
+
+        if (!userData) throw new Error("No user in session");
+
+        if (userData.role === "admin") {
+          setUser({
+            ...userData,
+            role: "admin",
+          });
+          setPage("dashboard");
+          return;
+        }
+
+        const email = (userData.email || "").toLowerCase().trim();
+        const existing = userRegistry.find((item) => item.email === email);
+        let nextUser = existing;
+
+        if (!nextUser) {
+          nextUser = {
+            email,
+            name: userData.name || email.split("@")[0],
+            role: "applicant",
+            applicantId: userData.applicantId,
+            serviceStatus: userData.serviceStatus,
+          };
+          setUserRegistry((prev) => [...prev, nextUser]);
+        }
+
+        setUser({
+          ...nextUser,
+          id: userData.id,
+        });
         setPage("dashboard");
       } catch (e) {
         tokenManager.clearToken();
+        setUser(null);
+        setPage("home");
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    restoreSession();
   }, []);
 
   const handleAuth = async (authResult) => {
