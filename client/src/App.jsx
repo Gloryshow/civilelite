@@ -805,7 +805,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [announcements, setAnnouncements] = useState([]);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
-    dob: "", state: "", lga: "", address: "", qualification: "",
+    dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", nationality: "",
+    profession: "", professionAddress: "", educationQualification: "", disability: "",
+    convictedBefore: "", convictionReasons: "", paramilitaryMember: "", paramilitaryName: "",
+    paramilitaryRank: "", paramilitaryPost: "", paramilitaryYears: "", leavingReasons: "",
+    declarationName: "", declarationDate: "",
+    state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
     id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
@@ -839,6 +844,25 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           phone: profile.phone || "",
           gender: profile.gender || "",
           dob: profile.dob || "",
+          religion: profile.religion || "",
+          maritalStatus: profile.maritalStatus || "",
+          placeOfBirth: profile.placeOfBirth || "",
+          height: profile.height || "",
+          nationality: profile.nationality || "",
+          profession: profile.profession || "",
+          professionAddress: profile.professionAddress || "",
+          educationQualification: profile.educationQualification || "",
+          disability: profile.disability || "",
+          convictedBefore: profile.convictedBefore || "",
+          convictionReasons: profile.convictionReasons || "",
+          paramilitaryMember: profile.paramilitaryMember || "",
+          paramilitaryName: profile.paramilitaryName || "",
+          paramilitaryRank: profile.paramilitaryRank || "",
+          paramilitaryPost: profile.paramilitaryPost || "",
+          paramilitaryYears: profile.paramilitaryYears || "",
+          leavingReasons: profile.leavingReasons || "",
+          declarationName: profile.declarationName || profile.fullName || "",
+          declarationDate: profile.declarationDate || "",
           state: profile.state || "",
           lga: profile.lga || "",
           address: profile.address || "",
@@ -868,6 +892,25 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
         phone: appData.phone,
         gender: appData.gender,
         dob: appData.dob,
+        religion: appData.religion,
+        maritalStatus: appData.maritalStatus,
+        placeOfBirth: appData.placeOfBirth,
+        height: appData.height,
+        nationality: appData.nationality,
+        profession: appData.profession,
+        professionAddress: appData.professionAddress,
+        educationQualification: appData.educationQualification,
+        disability: appData.disability,
+        convictedBefore: appData.convictedBefore,
+        convictionReasons: appData.convictionReasons,
+        paramilitaryMember: appData.paramilitaryMember,
+        paramilitaryName: appData.paramilitaryName,
+        paramilitaryRank: appData.paramilitaryRank,
+        paramilitaryPost: appData.paramilitaryPost,
+        paramilitaryYears: appData.paramilitaryYears,
+        leavingReasons: appData.leavingReasons,
+        declarationName: appData.declarationName,
+        declarationDate: appData.declarationDate,
         state: appData.state,
         lga: appData.lga,
         address: appData.address,
@@ -929,6 +972,14 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     showToast("QR image downloaded.");
   };
 
+  const printApplicationSlip = () => {
+    if (!appData.submitted) {
+      showToast("Submit your application before printing the slip.", "error");
+      return;
+    }
+    window.print();
+  };
+
   useEffect(() => {
     if (appData.id) {
       const payload = buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus });
@@ -958,6 +1009,27 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
 
   return (
     <div style={{ minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          .print-slip, .print-slip * {
+            visibility: visible !important;
+          }
+          .print-slip {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: #fff !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Sidebar */}
@@ -1100,6 +1172,26 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Select light={isLight} label="Gender" value={appData.gender} onChange={e => setAppData(d => ({ ...d, gender: e.target.value }))} required
                     options={[{ value: "", label: "Select gender" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }]} />
                   <Input light={isLight} label="Date of Birth" type="date" value={appData.dob} onChange={e => setAppData(d => ({ ...d, dob: e.target.value }))} required />
+                  <Input light={isLight} label="Religion" value={appData.religion} onChange={e => setAppData(d => ({ ...d, religion: e.target.value }))} />
+                  <Select light={isLight} label="Marital Status" value={appData.maritalStatus} onChange={e => setAppData(d => ({ ...d, maritalStatus: e.target.value }))}
+                    options={[{ value: "", label: "Select marital status" }, { value: "single", label: "Single" }, { value: "married", label: "Married" }, { value: "divorced", label: "Divorced" }, { value: "widowed", label: "Widowed" }]} />
+                  <Input light={isLight} label="Place of Birth" value={appData.placeOfBirth} onChange={e => setAppData(d => ({ ...d, placeOfBirth: e.target.value }))} />
+                  <Input light={isLight} label="Height" value={appData.height} onChange={e => setAppData(d => ({ ...d, height: e.target.value }))} placeholder="e.g. 5ft 8in" />
+                  <Input light={isLight} label="Nationality" value={appData.nationality} onChange={e => setAppData(d => ({ ...d, nationality: e.target.value }))} />
+                  <Input light={isLight} label="Profession (Optional)" value={appData.profession} onChange={e => setAppData(d => ({ ...d, profession: e.target.value }))} />
+                  <Textarea light={isLight} label="Profession Address" value={appData.professionAddress} onChange={e => setAppData(d => ({ ...d, professionAddress: e.target.value }))} rows={2} />
+                  <Input light={isLight} label="Education Qualification if any" value={appData.educationQualification} onChange={e => setAppData(d => ({ ...d, educationQualification: e.target.value }))} />
+                  <Textarea light={isLight} label="Disability" value={appData.disability} onChange={e => setAppData(d => ({ ...d, disability: e.target.value }))} rows={2} placeholder="State none if not applicable" />
+                  <Select light={isLight} label="Have you been convicted by any court of law before?" value={appData.convictedBefore} onChange={e => setAppData(d => ({ ...d, convictedBefore: e.target.value }))}
+                    options={[{ value: "", label: "Select answer" }, { value: "no", label: "No" }, { value: "yes", label: "Yes" }]} />
+                  <Textarea light={isLight} label="If yes, state the reasons" value={appData.convictionReasons} onChange={e => setAppData(d => ({ ...d, convictionReasons: e.target.value }))} rows={3} />
+                  <Select light={isLight} label="Have you been a member of any voluntary, paramilitary organisation?" value={appData.paramilitaryMember} onChange={e => setAppData(d => ({ ...d, paramilitaryMember: e.target.value }))}
+                    options={[{ value: "", label: "Select answer" }, { value: "no", label: "No" }, { value: "yes", label: "Yes" }]} />
+                  <Input light={isLight} label="If yes, name of organisation" value={appData.paramilitaryName} onChange={e => setAppData(d => ({ ...d, paramilitaryName: e.target.value }))} />
+                  <Input light={isLight} label="Rank" value={appData.paramilitaryRank} onChange={e => setAppData(d => ({ ...d, paramilitaryRank: e.target.value }))} />
+                  <Input light={isLight} label="Post" value={appData.paramilitaryPost} onChange={e => setAppData(d => ({ ...d, paramilitaryPost: e.target.value }))} />
+                  <Input light={isLight} label="Years of Service" value={appData.paramilitaryYears} onChange={e => setAppData(d => ({ ...d, paramilitaryYears: e.target.value }))} />
+                  <Textarea light={isLight} label="Reasons for leaving" value={appData.leavingReasons} onChange={e => setAppData(d => ({ ...d, leavingReasons: e.target.value }))} rows={3} />
                   <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "" }))} required
                     options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map(s => ({ value: s, label: s }))]} />
                   <Select light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required
@@ -1107,13 +1199,21 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Textarea light={isLight} label="Residential Address" value={appData.address} onChange={e => setAppData(d => ({ ...d, address: e.target.value }))} rows={2} required />
                 </div>
                 <div>
-                  <div style={{ color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 16 }}>QUALIFICATIONS & NEXT OF KIN</div>
+                  <div style={{ color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 16 }}>QUALIFICATIONS & DECLARATION</div>
                   <Select light={isLight} label="Highest Educational Qualification" value={appData.qualification} onChange={e => setAppData(d => ({ ...d, qualification: e.target.value }))} required
                     options={[{ value: "", label: "Select qualification" }, { value: "waec", label: "WAEC/NECO" }, { value: "ond", label: "OND" }, { value: "hnd", label: "HND" }, { value: "bsc", label: "B.Sc / B.A" }, { value: "msc", label: "M.Sc / MBA" }]} />
                   <Input light={isLight} label="Next of Kin — Full Name" value={appData.kinName} onChange={e => setAppData(d => ({ ...d, kinName: e.target.value }))} required />
                   <Input light={isLight} label="Next of Kin — Phone" value={appData.kinPhone} onChange={e => setAppData(d => ({ ...d, kinPhone: e.target.value }))} required />
                   <Textarea light={isLight} label="Medical Information (Conditions, Allergies, etc.)" value={appData.medInfo} onChange={e => setAppData(d => ({ ...d, medInfo: e.target.value }))} placeholder="None known / describe any conditions..." rows={3} />
                   <Textarea light={isLight} label="Why do you want to join Civil Elite Service? *" value={appData.whyJoin} onChange={e => setAppData(d => ({ ...d, whyJoin: e.target.value }))} placeholder="Describe your motivation, goals, and how you will contribute..." rows={5} required />
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Declaration</label>
+                    <div style={{ border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: 14, color: isLight ? "#0f172a" : "#fff", background: isLight ? "#fff" : "rgba(255,255,255,0.03)", lineHeight: 1.7, fontSize: 14 }}>
+                      I {appData.declarationName || "____________"} hereby declare that the information contained herein is true and correct to the best of my knowledge.
+                    </div>
+                  </div>
+                  <Input light={isLight} label="Applicant Signature" value={appData.declarationName} onChange={e => setAppData(d => ({ ...d, declarationName: e.target.value }))} placeholder="Type your full name as signature" required />
+                  <Input light={isLight} label="Date" type="date" value={appData.declarationDate} onChange={e => setAppData(d => ({ ...d, declarationDate: e.target.value }))} required />
                 </div>
               </div>
 
@@ -1191,11 +1291,55 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       </div>
                     </div>
                   )}
-                  <GoldBtn outline onClick={() => showToast("Application slip downloaded!")}>
-                    <Download /> Download Application Slip
+                  <GoldBtn outline onClick={printApplicationSlip}>
+                    <Download /> Print Application Slip
                   </GoldBtn>
                 </div>
               )}
+              <div className="print-slip" style={{ display: "none" }}>
+                <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
+                    <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                    <div>
+                      <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
+                      <div style={{ fontSize: 12, color: "#6b7280" }}>Applicant Application Slip</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                    <div><strong>Applicant ID:</strong> {appData.id}</div>
+                    <div><strong>Full Name:</strong> {appData.fullName}</div>
+                    <div><strong>Email:</strong> {appData.email}</div>
+                    <div><strong>Phone:</strong> {appData.phone}</div>
+                    <div><strong>State:</strong> {appData.state}</div>
+                    <div><strong>LGA:</strong> {appData.lga}</div>
+                    <div><strong>Religion:</strong> {appData.religion || "N/A"}</div>
+                    <div><strong>Marital Status:</strong> {appData.maritalStatus || "N/A"}</div>
+                    <div><strong>Nationality:</strong> {appData.nationality || "N/A"}</div>
+                    <div><strong>Date of Birth:</strong> {appData.dob || "N/A"}</div>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}><strong>Declaration</strong></div>
+                  <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14, marginBottom: 16 }}>
+                    I {appData.declarationName || appData.fullName || "____________"} hereby declare that the information contained herein is true and correct to the best of my knowledge.
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 28 }}>
+                    <div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Applicant Signature</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationName || "________________"}</div>
+                    </div>
+                    <div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Date</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationDate || "________________"}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 22, fontSize: 12, color: "#6b7280" }}>
+                    Generated from the Civil Elite Service portal.
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
