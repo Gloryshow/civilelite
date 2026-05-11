@@ -195,7 +195,10 @@ router.post(
 router.get("/stats", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const total = await Applicant.countDocuments();
-    const pending = await Applicant.countDocuments({ status: "pending" });
+    const pending = await User.countDocuments({
+      role: "admin",
+      registrationStatus: "pending",
+    });
     const review = await Applicant.countDocuments({ status: "under_review" });
     const approved = await Applicant.countDocuments({ status: "approved" });
     const rejected = await Applicant.countDocuments({ status: "rejected" });

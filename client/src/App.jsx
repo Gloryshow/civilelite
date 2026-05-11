@@ -1547,7 +1547,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16, marginBottom: 28 }}>
                 {[
                   { icon: "👥", label: "Total Applicants", val: counts.total, color: t.text },
-                  { icon: "⏳", label: "Pending", val: counts.pending, color: "#c9952a" },
+                  { icon: "⏳", label: "Pending Admin Registrants", val: counts.pending, color: "#c9952a" },
                   { icon: "🔍", label: "Under Review", val: counts.review, color: "#64b5f6" },
                   { icon: "✅", label: "Approved", val: counts.approved, color: "#81c784" },
                   { icon: "❌", label: "Rejected", val: counts.rejected, color: "#e57373" },
@@ -1774,7 +1774,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 {[
                   { label: "Approval Rate", val: `${approvalRate}%`, sub: `${counts.approved} approved`, icon: "✅" },
                   { label: "Under Review", val: `${reviewRate}%`, sub: `${counts.review} in review`, icon: "🔍" },
-                  { label: "Pending", val: `${pendingRate}%`, sub: `${counts.pending} pending`, icon: "⏳" },
+                  { label: "Pending Admin Registrants", val: `${pendingRate}%`, sub: `${counts.pending} pending approval`, icon: "⏳" },
                   { label: "Rejected", val: `${rejectionRate}%`, sub: `${counts.rejected} rejected`, icon: "❌" },
                 ].map(c => (
                   <div key={c.label} style={{ ...S2.card }}>
