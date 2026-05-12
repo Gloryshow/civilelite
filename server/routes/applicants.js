@@ -24,6 +24,20 @@ router.get("/profile", authMiddleware, async (req, res) => {
         maritalStatus: "",
         placeOfBirth: "",
         height: "",
+        bloodGroup: "",
+        genotype: "",
+        urinaryTest: "",
+        generalAptitudeScore: "",
+        vocationalAptitudeScore: "",
+        oralTestScore: "",
+        documentsPresented: "",
+        remarks: "",
+        eliteAdminOfficerName: "",
+        eliteAdminOfficerPortfolio: "",
+        eliteAdminOfficerSignatureDate: "",
+        directorateName: "",
+        directoratePortfolio: "",
+        directorateSignatureDate: "",
         nationality: "",
         profession: "",
         professionAddress: "",
@@ -68,6 +82,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
       phone,
       gender,
       dob,
+      bloodGroup,
       state,
       lga,
       address,
@@ -103,6 +118,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.phone = phone;
     applicant.gender = gender;
     applicant.dob = dob;
+    applicant.bloodGroup = bloodGroup;
     applicant.state = state;
     applicant.lga = lga;
     applicant.address = address;

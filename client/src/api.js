@@ -64,6 +64,8 @@ export const adminAPI = {
     apiCall(`/admin/applicants/${id}/service-status`, "PATCH", {
       serviceStatus,
     }),
+  updateAssessment: (id, assessment) =>
+    apiCall(`/admin/applicants/${id}/assessment`, "PATCH", assessment),
   scanQr: (qrPayload) =>
     apiCall("/admin/scan-qr", "POST", { qrPayload }),
   getStats: () => apiCall("/admin/stats"),

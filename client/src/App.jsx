@@ -805,13 +805,16 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [announcements, setAnnouncements] = useState([]);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
-    dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", nationality: "",
+    dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", bloodGroup: "", genotype: "", urinaryTest: "", nationality: "",
     profession: "", professionAddress: "", educationQualification: "", disability: "",
     convictedBefore: "", convictionReasons: "", paramilitaryMember: "", paramilitaryName: "",
     paramilitaryRank: "", paramilitaryPost: "", paramilitaryYears: "", leavingReasons: "",
     declarationName: "", declarationDate: "",
     state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
+    generalAptitudeScore: "", vocationalAptitudeScore: "", oralTestScore: "", documentsPresented: "", remarks: "",
+    eliteAdminOfficerName: "", eliteAdminOfficerPortfolio: "", eliteAdminOfficerSignatureDate: "",
+    directorateName: "", directoratePortfolio: "", directorateSignatureDate: "",
     id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
   });
@@ -848,6 +851,9 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           maritalStatus: profile.maritalStatus || "",
           placeOfBirth: profile.placeOfBirth || "",
           height: profile.height || "",
+          bloodGroup: profile.bloodGroup || "",
+          genotype: profile.genotype || "",
+          urinaryTest: profile.urinaryTest || "",
           nationality: profile.nationality || "",
           profession: profile.profession || "",
           professionAddress: profile.professionAddress || "",
@@ -871,6 +877,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           kinPhone: profile.kinPhone || "",
           medInfo: profile.medInfo || "",
           whyJoin: profile.whyJoin || "",
+          generalAptitudeScore: profile.generalAptitudeScore || "",
+          vocationalAptitudeScore: profile.vocationalAptitudeScore || "",
+          oralTestScore: profile.oralTestScore || "",
+          documentsPresented: profile.documentsPresented || "",
+          remarks: profile.remarks || "",
+          eliteAdminOfficerName: profile.eliteAdminOfficerName || "",
+          eliteAdminOfficerPortfolio: profile.eliteAdminOfficerPortfolio || "",
+          eliteAdminOfficerSignatureDate: profile.eliteAdminOfficerSignatureDate || "",
+          directorateName: profile.directorateName || "",
+          directoratePortfolio: profile.directoratePortfolio || "",
+          directorateSignatureDate: profile.directorateSignatureDate || "",
           id: profile.applicantId || d.id,
           serviceStatus: profile.serviceStatus || d.serviceStatus,
           status: profile.status || d.status,
@@ -892,6 +909,9 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
         phone: appData.phone,
         gender: appData.gender,
         dob: appData.dob,
+        bloodGroup: appData.bloodGroup,
+        genotype: appData.genotype,
+        urinaryTest: appData.urinaryTest,
         religion: appData.religion,
         maritalStatus: appData.maritalStatus,
         placeOfBirth: appData.placeOfBirth,
@@ -919,6 +939,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
         kinPhone: appData.kinPhone,
         medInfo: appData.medInfo,
         whyJoin: appData.whyJoin,
+        generalAptitudeScore: appData.generalAptitudeScore,
+        vocationalAptitudeScore: appData.vocationalAptitudeScore,
+        oralTestScore: appData.oralTestScore,
+        documentsPresented: appData.documentsPresented,
+        remarks: appData.remarks,
+        eliteAdminOfficerName: appData.eliteAdminOfficerName,
+        eliteAdminOfficerPortfolio: appData.eliteAdminOfficerPortfolio,
+        eliteAdminOfficerSignatureDate: appData.eliteAdminOfficerSignatureDate,
+        directorateName: appData.directorateName,
+        directoratePortfolio: appData.directoratePortfolio,
+        directorateSignatureDate: appData.directorateSignatureDate,
       });
 
       if (result?.applicant) {
@@ -1177,6 +1208,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     options={[{ value: "", label: "Select marital status" }, { value: "single", label: "Single" }, { value: "married", label: "Married" }, { value: "divorced", label: "Divorced" }, { value: "widowed", label: "Widowed" }]} />
                   <Input light={isLight} label="Place of Birth" value={appData.placeOfBirth} onChange={e => setAppData(d => ({ ...d, placeOfBirth: e.target.value }))} />
                   <Input light={isLight} label="Height" value={appData.height} onChange={e => setAppData(d => ({ ...d, height: e.target.value }))} placeholder="e.g. 5ft 8in" />
+                  <Select light={isLight} label="Blood Group" value={appData.bloodGroup} onChange={e => setAppData(d => ({ ...d, bloodGroup: e.target.value }))}
+                    options={[
+                      { value: "", label: "Select blood group" },
+                      { value: "A+", label: "A+" },
+                      { value: "A-", label: "A-" },
+                      { value: "B+", label: "B+" },
+                      { value: "B-", label: "B-" },
+                      { value: "AB+", label: "AB+" },
+                      { value: "AB-", label: "AB-" },
+                      { value: "O+", label: "O+" },
+                      { value: "O-", label: "O-" },
+                    ]} />
                   <Input light={isLight} label="Nationality" value={appData.nationality} onChange={e => setAppData(d => ({ ...d, nationality: e.target.value }))} />
                   <Input light={isLight} label="Profession (Optional)" value={appData.profession} onChange={e => setAppData(d => ({ ...d, profession: e.target.value }))} />
                   <Textarea light={isLight} label="Profession Address" value={appData.professionAddress} onChange={e => setAppData(d => ({ ...d, professionAddress: e.target.value }))} rows={2} />
@@ -1291,6 +1334,43 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       </div>
                     </div>
                   )}
+                  {[
+                    appData.bloodGroup,
+                    appData.genotype,
+                    appData.urinaryTest,
+                    appData.generalAptitudeScore,
+                    appData.vocationalAptitudeScore,
+                    appData.oralTestScore,
+                    appData.documentsPresented,
+                    appData.remarks,
+                    appData.eliteAdminOfficerName,
+                    appData.directorateName,
+                  ].some(Boolean) && (
+                    <div style={{ ...S2.card, marginBottom: 20 }}>
+                      <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 14 }}>Admin Assessment</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+                        {[
+                          ["Blood Group", appData.bloodGroup || "N/A"],
+                          ["Genotype", appData.genotype || "N/A"],
+                          ["Urinary Test", appData.urinaryTest || "N/A"],
+                          ["General Aptitude", appData.generalAptitudeScore || "N/A"],
+                          ["Vocational Aptitude", appData.vocationalAptitudeScore || "N/A"],
+                          ["Oral Test", appData.oralTestScore || "N/A"],
+                        ].map(([label, value]) => (
+                          <div key={label} style={{ border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 12px", background: isLight ? "#fff" : "rgba(255,255,255,0.03)" }}>
+                            <div style={{ color: t.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+                            <div style={{ color: t.text, fontSize: 14, fontWeight: 700 }}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+                        <div><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
+                        <div><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
+                        <div><strong>Elite Admin Officer:</strong> {appData.eliteAdminOfficerName || "N/A"} | {appData.eliteAdminOfficerPortfolio || "N/A"} | {appData.eliteAdminOfficerSignatureDate || "N/A"}</div>
+                        <div><strong>Directorate of Recruitment:</strong> {appData.directorateName || "N/A"} | {appData.directoratePortfolio || "N/A"} | {appData.directorateSignatureDate || "N/A"}</div>
+                      </div>
+                    </div>
+                  )}
                   <GoldBtn outline onClick={printApplicationSlip}>
                     <Download /> Print Application Slip
                   </GoldBtn>
@@ -1313,10 +1393,34 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div><strong>Phone:</strong> {appData.phone}</div>
                     <div><strong>State:</strong> {appData.state}</div>
                     <div><strong>LGA:</strong> {appData.lga}</div>
+                    <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
+                    <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
+                    <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
+                    <div><strong>General Aptitude Score:</strong> {appData.generalAptitudeScore || "N/A"}</div>
+                    <div><strong>Vocational Aptitude Score:</strong> {appData.vocationalAptitudeScore || "N/A"}</div>
+                    <div><strong>Oral Test Score:</strong> {appData.oralTestScore || "N/A"}</div>
                     <div><strong>Religion:</strong> {appData.religion || "N/A"}</div>
                     <div><strong>Marital Status:</strong> {appData.maritalStatus || "N/A"}</div>
                     <div><strong>Nationality:</strong> {appData.nationality || "N/A"}</div>
                     <div><strong>Date of Birth:</strong> {appData.dob || "N/A"}</div>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
+                  <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
+                    <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
+                      <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.eliteAdminOfficerName || "N/A"}</div>
+                      <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.eliteAdminOfficerPortfolio || "N/A"}</div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.eliteAdminOfficerSignatureDate || "________________"}</div>
+                    </div>
+                    <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
+                      <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.directorateName || "N/A"}</div>
+                      <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.directoratePortfolio || "N/A"}</div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.directorateSignatureDate || "________________"}</div>
+                    </div>
                   </div>
 
                   <div style={{ marginBottom: 14 }}><strong>Declaration</strong></div>
@@ -1387,6 +1491,23 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [announcement, setAnnouncement] = useState({ title: "", body: "" });
   const [scannerActive, setScannerActive] = useState(false);
   const [scannedResult, setScannedResult] = useState(null);
+  const [selectedApplicantId, setSelectedApplicantId] = useState(null);
+  const [assessmentDraft, setAssessmentDraft] = useState({
+    bloodGroup: "",
+    genotype: "",
+    urinaryTest: "",
+    generalAptitudeScore: "",
+    vocationalAptitudeScore: "",
+    oralTestScore: "",
+    documentsPresented: "",
+    remarks: "",
+    eliteAdminOfficerName: "",
+    eliteAdminOfficerPortfolio: "",
+    eliteAdminOfficerSignatureDate: "",
+    directorateName: "",
+    directoratePortfolio: "",
+    directorateSignatureDate: "",
+  });
   const scannerRef = useRef(null);
 
   const showToast = (msg, type = "success") => {
@@ -1397,6 +1518,27 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [applicants, setApplicants] = useState([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
+  const selectedApplicant = applicants.find((item) => item.id === selectedApplicantId) || null;
+
+  useEffect(() => {
+    if (!selectedApplicant) return;
+    setAssessmentDraft({
+      bloodGroup: selectedApplicant.bloodGroup || "",
+      genotype: selectedApplicant.genotype || "",
+      urinaryTest: selectedApplicant.urinaryTest || "",
+      generalAptitudeScore: selectedApplicant.generalAptitudeScore || "",
+      vocationalAptitudeScore: selectedApplicant.vocationalAptitudeScore || "",
+      oralTestScore: selectedApplicant.oralTestScore || "",
+      documentsPresented: selectedApplicant.documentsPresented || "",
+      remarks: selectedApplicant.remarks || "",
+      eliteAdminOfficerName: selectedApplicant.eliteAdminOfficerName || "",
+      eliteAdminOfficerPortfolio: selectedApplicant.eliteAdminOfficerPortfolio || "",
+      eliteAdminOfficerSignatureDate: selectedApplicant.eliteAdminOfficerSignatureDate || "",
+      directorateName: selectedApplicant.directorateName || "",
+      directoratePortfolio: selectedApplicant.directoratePortfolio || "",
+      directorateSignatureDate: selectedApplicant.directorateSignatureDate || "",
+    });
+  }, [selectedApplicant?.id]);
 
   const loadApplicants = async (silent = false) => {
     try {
@@ -1483,6 +1625,28 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     } catch (err) {
       showToast("Failed to update service status: " + err.message, "error");
     }
+  };
+
+  const saveAssessment = async () => {
+    if (!selectedApplicant) {
+      showToast("Select an applicant first.", "error");
+      return;
+    }
+    try {
+      const updated = await adminAPI.updateAssessment(selectedApplicant.id, assessmentDraft);
+      setApplicants((current) => current.map((item) => item.id === selectedApplicant.id ? { ...item, ...updated } : item));
+      showToast("Assessment saved.");
+    } catch (err) {
+      showToast("Failed to save assessment: " + err.message, "error");
+    }
+  };
+
+  const printAssessment = () => {
+    if (!selectedApplicant) {
+      showToast("Select an applicant first.", "error");
+      return;
+    }
+    window.print();
   };
 
   const publishAnnouncement = async () => {
@@ -1610,6 +1774,21 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
   return (
     <div style={{ minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Segoe UI',sans-serif", display: "flex" }}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          .admin-print-sheet, .admin-print-sheet * { visibility: visible !important; }
+          .admin-print-sheet {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: #fff !important;
+          }
+          .no-print { display: none !important; }
+        }
+      `}</style>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Sidebar */}
@@ -1825,10 +2004,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                               background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.25)", color: "#e57373",
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
                             }}>✗</button>
-                            <button onClick={() => updateStatus(a.id, "under_review")} style={{
-                              background: "rgba(100,181,246,0.1)", border: "1px solid rgba(100,181,246,0.25)", color: "#64b5f6",
-                              borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 11,
-                            }}><Eye /></button>
+                            <button onClick={() => setSelectedApplicantId(a.id)} style={{
+                              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: t.text,
+                              borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
+                            }}>View</button>
                           </div>
                         </td>
                       </tr>
@@ -1839,6 +2018,92 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ textAlign: "center", padding: 40, color: "#556" }}>No applicants found for "{search}"</div>
                 )}
               </div>
+
+                {selectedApplicant && (
+                  <div style={{ ...S2.card, marginTop: 24 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ fontWeight: 800, color: t.text, fontSize: 18 }}>{selectedApplicant.fullName || selectedApplicant.name}</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>Applicant ID: {selectedApplicant.applicantId}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <GoldBtn outline onClick={printAssessment} style={{ padding: "10px 16px" }}>Print Result Sheet</GoldBtn>
+                        <GoldBtn onClick={saveAssessment} style={{ padding: "10px 16px" }}>Save Assessment</GoldBtn>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
+                      <Input light={isLight} label="Blood Group" value={assessmentDraft.bloodGroup} onChange={e => setAssessmentDraft(d => ({ ...d, bloodGroup: e.target.value }))} placeholder="e.g. O+" />
+                      <Input light={isLight} label="Genotype" value={assessmentDraft.genotype} onChange={e => setAssessmentDraft(d => ({ ...d, genotype: e.target.value }))} placeholder="e.g. AA" />
+                      <Input light={isLight} label="Urinary Test" value={assessmentDraft.urinaryTest} onChange={e => setAssessmentDraft(d => ({ ...d, urinaryTest: e.target.value }))} placeholder="e.g. Negative" />
+                      <Input light={isLight} label="General Aptitude Test Score" value={assessmentDraft.generalAptitudeScore} onChange={e => setAssessmentDraft(d => ({ ...d, generalAptitudeScore: e.target.value }))} placeholder="e.g. 78/100" />
+                      <Input light={isLight} label="Vocational Aptitude Test Score" value={assessmentDraft.vocationalAptitudeScore} onChange={e => setAssessmentDraft(d => ({ ...d, vocationalAptitudeScore: e.target.value }))} placeholder="e.g. 82/100" />
+                      <Input light={isLight} label="Oral Test Score" value={assessmentDraft.oralTestScore} onChange={e => setAssessmentDraft(d => ({ ...d, oralTestScore: e.target.value }))} placeholder="e.g. 19/20" />
+                    </div>
+
+                    <div style={{ marginTop: 14 }}>
+                      <Textarea light={isLight} label="Documents Presented" value={assessmentDraft.documentsPresented} onChange={e => setAssessmentDraft(d => ({ ...d, documentsPresented: e.target.value }))} rows={3} placeholder="List all documents presented by the applicant" />
+                      <Textarea light={isLight} label="Remarks" value={assessmentDraft.remarks} onChange={e => setAssessmentDraft(d => ({ ...d, remarks: e.target.value }))} rows={3} placeholder="General remarks, observations, or decision notes" />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14, marginTop: 14 }}>
+                      <div style={{ border: `1px solid ${t.border}`, borderRadius: 12, padding: 14 }}>
+                        <div style={{ fontWeight: 700, color: t.text, marginBottom: 10 }}>Elite Admin Officer</div>
+                        <Input light={isLight} label="Name" value={assessmentDraft.eliteAdminOfficerName} onChange={e => setAssessmentDraft(d => ({ ...d, eliteAdminOfficerName: e.target.value }))} />
+                        <Input light={isLight} label="Port-folio" value={assessmentDraft.eliteAdminOfficerPortfolio} onChange={e => setAssessmentDraft(d => ({ ...d, eliteAdminOfficerPortfolio: e.target.value }))} />
+                        <Input light={isLight} label="Signature & Date" value={assessmentDraft.eliteAdminOfficerSignatureDate} onChange={e => setAssessmentDraft(d => ({ ...d, eliteAdminOfficerSignatureDate: e.target.value }))} placeholder="Sign and date" />
+                      </div>
+                      <div style={{ border: `1px solid ${t.border}`, borderRadius: 12, padding: 14 }}>
+                        <div style={{ fontWeight: 700, color: t.text, marginBottom: 10 }}>Directorate of Recruitment</div>
+                        <Input light={isLight} label="Name" value={assessmentDraft.directorateName} onChange={e => setAssessmentDraft(d => ({ ...d, directorateName: e.target.value }))} />
+                        <Input light={isLight} label="Port-folio" value={assessmentDraft.directoratePortfolio} onChange={e => setAssessmentDraft(d => ({ ...d, directoratePortfolio: e.target.value }))} />
+                        <Input light={isLight} label="Signature & Date" value={assessmentDraft.directorateSignatureDate} onChange={e => setAssessmentDraft(d => ({ ...d, directorateSignatureDate: e.target.value }))} placeholder="Sign and date" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="admin-print-sheet" style={{ display: "none" }}>
+                  {selectedApplicant && (
+                    <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
+                        <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
+                          <div style={{ fontSize: 12, color: "#6b7280" }}>Detailed Recruitment Result</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        <div><strong>Applicant ID:</strong> {selectedApplicant.applicantId}</div>
+                        <div><strong>Full Name:</strong> {selectedApplicant.fullName || selectedApplicant.name}</div>
+                        <div><strong>Blood Group:</strong> {selectedApplicant.bloodGroup || "N/A"}</div>
+                        <div><strong>Genotype:</strong> {selectedApplicant.genotype || "N/A"}</div>
+                        <div><strong>Urinary Test:</strong> {selectedApplicant.urinaryTest || "N/A"}</div>
+                        <div><strong>General Aptitude Test Score:</strong> {selectedApplicant.generalAptitudeScore || "N/A"}</div>
+                        <div><strong>Vocational Aptitude Test Score:</strong> {selectedApplicant.vocationalAptitudeScore || "N/A"}</div>
+                        <div><strong>Oral Test Score:</strong> {selectedApplicant.oralTestScore || "N/A"}</div>
+                        <div><strong>Documents Presented:</strong> {selectedApplicant.documentsPresented || "N/A"}</div>
+                        <div><strong>Remarks:</strong> {selectedApplicant.remarks || "N/A"}</div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 18 }}>
+                        <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
+                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.eliteAdminOfficerName || "N/A"}</div>
+                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.eliteAdminOfficerPortfolio || "N/A"}</div>
+                          <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {selectedApplicant.eliteAdminOfficerSignatureDate || "________________"}</div>
+                        </div>
+                        <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
+                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.directorateName || "N/A"}</div>
+                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.directoratePortfolio || "N/A"}</div>
+                          <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {selectedApplicant.directorateSignatureDate || "________________"}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
           )}
 
@@ -1868,10 +2133,44 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 </div>
                 <div id="admin-qr-reader" style={{ width: "100%", minHeight: 260, border: `1px dashed ${t.border}`, borderRadius: 12, padding: 8, marginBottom: 14 }} />
                 {scannedResult && (
-                  <div style={{ background: isLight ? "#f8fafc" : "rgba(255,255,255,0.03)", border: `1px solid ${t.border}`, borderRadius: 10, padding: 14 }}>
-                    <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 8 }}>Scan Result</div>
-                    <div style={{ color: t.text, fontWeight: 700, marginBottom: 4 }}>Applicant ID: {scannedResult.applicantId}</div>
-                    <div style={{ color: t.muted, textTransform: "capitalize" }}>Service Status: {scannedResult.serviceStatus}</div>
+                  <div style={{ background: isLight ? "#f8fafc" : "rgba(255,255,255,0.03)", border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+                      <div>
+                        <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 4 }}>Scan Result</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>Verified applicant profile</div>
+                      </div>
+                      <div style={{ background: scannedResult.serviceStatus === "active" ? "rgba(129,199,132,0.16)" : "rgba(201,168,76,0.16)", color: scannedResult.serviceStatus === "active" ? "#81c784" : "#e8d8a0", borderRadius: 999, padding: "6px 10px", fontSize: 12, fontWeight: 700, textTransform: "capitalize" }}>
+                        {scannedResult.serviceStatus}
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+                      {[
+                        ["Full Name", scannedResult.fullName || scannedResult.name || "N/A"],
+                        ["Applicant ID", scannedResult.applicantId || "N/A"],
+                        ["Blood Group", scannedResult.bloodGroup || "Not provided"],
+                        ["Genotype", scannedResult.genotype || "Not provided"],
+                        ["Urinary Test", scannedResult.urinaryTest || "Not provided"],
+                        ["General Aptitude", scannedResult.generalAptitudeScore || "Not provided"],
+                        ["Vocational Aptitude", scannedResult.vocationalAptitudeScore || "Not provided"],
+                        ["Oral Test", scannedResult.oralTestScore || "Not provided"],
+                        ["Phone", scannedResult.phone || "N/A"],
+                        ["Email", scannedResult.email || "N/A"],
+                        ["Gender", scannedResult.gender || "N/A"],
+                        ["State", scannedResult.state || "N/A"],
+                        ["LGA", scannedResult.lga || "N/A"],
+                        ["Documents Presented", scannedResult.documentsPresented || "Not provided"],
+                      ].map(([label, value]) => (
+                        <div key={label} style={{ background: isLight ? "#fff" : "rgba(255,255,255,0.04)", border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 12px" }}>
+                          <div style={{ color: t.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+                          <div style={{ color: t.text, fontSize: 14, fontWeight: 700, wordBreak: "break-word" }}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                      <div><strong>Remarks:</strong> {scannedResult.remarks || "Not provided"}</div>
+                      <div><strong>Elite Admin Officer:</strong> {(scannedResult.eliteAdminOfficerName || "N/A") + " | " + (scannedResult.eliteAdminOfficerPortfolio || "N/A") + " | " + (scannedResult.eliteAdminOfficerSignatureDate || "N/A")}</div>
+                      <div><strong>Directorate of Recruitment:</strong> {(scannedResult.directorateName || "N/A") + " | " + (scannedResult.directoratePortfolio || "N/A") + " | " + (scannedResult.directorateSignatureDate || "N/A")}</div>
+                    </div>
                   </div>
                 )}
               </div>

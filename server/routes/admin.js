@@ -21,6 +21,23 @@ router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
       state: app.state || "N/A",
       status: app.status,
       serviceStatus: app.serviceStatus,
+      fullName: app.fullName || "N/A",
+      phone: app.phone || "N/A",
+      gender: app.gender || "N/A",
+      bloodGroup: app.bloodGroup || "",
+      genotype: app.genotype || "",
+      urinaryTest: app.urinaryTest || "",
+      generalAptitudeScore: app.generalAptitudeScore || "",
+      vocationalAptitudeScore: app.vocationalAptitudeScore || "",
+      oralTestScore: app.oralTestScore || "",
+      documentsPresented: app.documentsPresented || "",
+      remarks: app.remarks || "",
+      eliteAdminOfficerName: app.eliteAdminOfficerName || "",
+      eliteAdminOfficerPortfolio: app.eliteAdminOfficerPortfolio || "",
+      eliteAdminOfficerSignatureDate: app.eliteAdminOfficerSignatureDate || "",
+      directorateName: app.directorateName || "",
+      directoratePortfolio: app.directoratePortfolio || "",
+      directorateSignatureDate: app.directorateSignatureDate || "",
       date: app.submittedAt
         ? new Date(app.submittedAt).toLocaleDateString("en-US", {
             month: "short",
@@ -143,6 +160,68 @@ router.patch(
   }
 );
 
+router.patch(
+  "/applicants/:id/assessment",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const applicant = await Applicant.findById(req.params.id);
+
+      if (!applicant) {
+        return res.status(404).json({ error: "Applicant not found" });
+      }
+
+      const fields = [
+        "bloodGroup",
+        "genotype",
+        "urinaryTest",
+        "generalAptitudeScore",
+        "vocationalAptitudeScore",
+        "oralTestScore",
+        "documentsPresented",
+        "remarks",
+        "eliteAdminOfficerName",
+        "eliteAdminOfficerPortfolio",
+        "eliteAdminOfficerSignatureDate",
+        "directorateName",
+        "directoratePortfolio",
+        "directorateSignatureDate",
+      ];
+
+      fields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+          applicant[field] = req.body[field];
+        }
+      });
+
+      await applicant.save();
+
+      res.json({
+        id: applicant._id,
+        applicantId: applicant.applicantId,
+        bloodGroup: applicant.bloodGroup,
+        genotype: applicant.genotype,
+        urinaryTest: applicant.urinaryTest,
+        generalAptitudeScore: applicant.generalAptitudeScore,
+        vocationalAptitudeScore: applicant.vocationalAptitudeScore,
+        oralTestScore: applicant.oralTestScore,
+        documentsPresented: applicant.documentsPresented,
+        remarks: applicant.remarks,
+        eliteAdminOfficerName: applicant.eliteAdminOfficerName,
+        eliteAdminOfficerPortfolio: applicant.eliteAdminOfficerPortfolio,
+        eliteAdminOfficerSignatureDate: applicant.eliteAdminOfficerSignatureDate,
+        directorateName: applicant.directorateName,
+        directoratePortfolio: applicant.directoratePortfolio,
+        directorateSignatureDate: applicant.directorateSignatureDate,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(503).json({ error: "Database unavailable" });
+    }
+  }
+);
+
 // Parse and match scanned QR
 router.post(
   "/scan-qr",
@@ -177,12 +256,29 @@ router.post(
 
       res.json({
         applicantId: applicant.applicantId,
+        fullName: applicant.fullName,
         name: applicant.fullName,
         email: applicant.userId?.email,
+        phone: applicant.phone,
+        gender: applicant.gender,
+        bloodGroup: applicant.bloodGroup,
+        genotype: applicant.genotype,
+        urinaryTest: applicant.urinaryTest,
+        generalAptitudeScore: applicant.generalAptitudeScore,
+        vocationalAptitudeScore: applicant.vocationalAptitudeScore,
+        oralTestScore: applicant.oralTestScore,
+        documentsPresented: applicant.documentsPresented,
+        remarks: applicant.remarks,
+        eliteAdminOfficerName: applicant.eliteAdminOfficerName,
+        eliteAdminOfficerPortfolio: applicant.eliteAdminOfficerPortfolio,
+        eliteAdminOfficerSignatureDate: applicant.eliteAdminOfficerSignatureDate,
+        directorateName: applicant.directorateName,
+        directoratePortfolio: applicant.directoratePortfolio,
+        directorateSignatureDate: applicant.directorateSignatureDate,
+        state: applicant.state,
+        lga: applicant.lga,
         serviceStatus: applicant.serviceStatus,
         status: applicant.status,
-        state: applicant.state,
-        phone: applicant.phone,
       });
     } catch (error) {
       console.error(error);
