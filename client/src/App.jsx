@@ -63,6 +63,25 @@ const THEME = {
 const getTheme = (mode = "light") => THEME[mode] || THEME.light;
 
 const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
+const APPLICATION_STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
+
+const buildApplicationTimeline = (status) => {
+  const stage = status || "pending";
+  const stageIndex = {
+    pending: 0,
+    under_review: 1,
+    approved: 4,
+    rejected: 2,
+  }[stage] ?? 0;
+
+  return [
+    { label: "Application Received", date: "Submitted", done: stageIndex >= 0 },
+    { label: "Document Verification", date: stageIndex >= 1 ? "Completed" : "Pending", done: stageIndex >= 1 },
+    { label: "Physical Assessment", date: stageIndex >= 2 ? "Completed" : "Pending", done: stageIndex >= 2 },
+    { label: "Medical Examination", date: stageIndex >= 3 ? "Completed" : "Pending", done: stageIndex >= 3 },
+    { label: "Final Approval & Posting", date: stageIndex >= 4 ? "Completed" : "Pending", done: stageIndex >= 4 },
+  ];
+};
 
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
@@ -803,6 +822,9 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  const [settings, setSettings] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [loadingSettings, setLoadingSettings] = useState(false);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
     dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", bloodGroup: "", genotype: "", urinaryTest: "", nationality: "",
@@ -1304,13 +1326,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     {/* Timeline */}
                     <div style={{ position: "relative", paddingLeft: 28 }}>
                       <div style={{ position: "absolute", left: 9, top: 0, bottom: 0, width: 2, background: "rgba(255,255,255,0.1)" }} />
-                      {[
-                        { label: "Application Received", date: "Jan 22, 2025", done: true },
-                        { label: "Document Verification", date: "Pending", done: false },
-                        { label: "Physical Assessment", date: "April 10–20, 2025", done: false },
-                        { label: "Medical Examination", date: "TBD", done: false },
-                        { label: "Final Approval & Posting", date: "TBD", done: false },
-                      ].map((step, i) => (
+                      {buildApplicationTimeline(appData.status).map((step, i) => (
                         <div key={i} style={{ position: "relative", marginBottom: 20 }}>
                           <div style={{
                             position: "absolute", left: -24, top: 2, width: 12, height: 12,
@@ -1560,6 +1576,70 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
+  const loadSettings = async () => {
+    setLoadingSettings(true);
+    try {
+      const s = await adminAPI.getSettings();
+      setSettings(s || { recruitmentOpen: true, emailNotifications: { enabled: false, address: "" } });
+    } catch (err) {
+      showToast("Failed to load settings: " + err.message, "error");
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  const saveSettings = async (partial) => {
+    try {
+      const updated = await adminAPI.updateSettings(partial);
+      setSettings(updated);
+      showToast("Settings saved.");
+    } catch (err) {
+      showToast("Failed to save settings: " + err.message, "error");
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    try {
+      const logs = await adminAPI.getAuditLogs(50);
+      setAuditLogs(logs || []);
+    } catch (err) {
+      showToast("Failed to load audit logs: " + err.message, "error");
+    }
+  };
+
+  const exportApplicants = async () => {
+    try {
+      const res = await adminAPI.exportApplicants();
+      // apiCall with raw returns Response-like object; try to download
+      if (res && typeof res === "string") {
+        // fallback if server returned CSV string
+        const blob = new Blob([res], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `applicants-${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Export downloaded.");
+        return;
+      }
+      if (res && res.blob) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `applicants-${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Export downloaded.");
+      } else {
+        showToast("Export failed: unexpected response.", "error");
+      }
+    } catch (err) {
+      showToast("Export failed: " + err.message, "error");
+    }
+  };
+
   const loadStats = async (silent = false) => {
     try {
       const data = await adminAPI.getStats();
@@ -1604,6 +1684,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
   useEffect(() => {
     loadAdminAnnouncements();
+    loadSettings();
   }, []);
 
   const updateStatus = async (id, status) => {
@@ -1624,6 +1705,16 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       showToast(`Service status updated to ${serviceStatus}.`);
     } catch (err) {
       showToast("Failed to update service status: " + err.message, "error");
+    }
+  };
+
+  const updateApplicantStatus = async (id, status) => {
+    try {
+      await adminAPI.updateStatus(id, status);
+      setApplicants((current) => current.map((item) => item.id === id ? { ...item, status } : item));
+      showToast(`Applicant status updated to ${status}.`);
+    } catch (err) {
+      showToast("Failed to update applicant status: " + err.message, "error");
     }
   };
 
@@ -2032,6 +2123,23 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       </div>
                     </div>
 
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14, marginBottom: 14 }}>
+                      <Select
+                        light={isLight}
+                        label="Application Status"
+                        value={selectedApplicant.status || "pending"}
+                        onChange={e => updateApplicantStatus(selectedApplicant.id, e.target.value)}
+                        options={APPLICATION_STATUS_OPTIONS.map((status) => ({ value: status, label: status.replace(/_/g, " ") }))}
+                      />
+                      <Select
+                        light={isLight}
+                        label="Service Status"
+                        value={selectedApplicant.serviceStatus || "active"}
+                        onChange={e => updateServiceStatus(selectedApplicant.id, e.target.value)}
+                        options={SERVICE_STATUS_OPTIONS.map((status) => ({ value: status, label: status }))}
+                      />
+                    </div>
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
                       <Input light={isLight} label="Blood Group" value={assessmentDraft.bloodGroup} onChange={e => setAssessmentDraft(d => ({ ...d, bloodGroup: e.target.value }))} placeholder="e.g. O+" />
                       <Input light={isLight} label="Genotype" value={assessmentDraft.genotype} onChange={e => setAssessmentDraft(d => ({ ...d, genotype: e.target.value }))} placeholder="e.g. AA" />
@@ -2261,20 +2369,56 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {tab === "settings" && (
             <div>
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Admin Settings</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 20 }}>
-                {[
-                  { label: "Recruitment Status", desc: "Toggle the portal open/closed for new applications", action: "Toggle Open", icon: "🔓" },
-                  { label: "Audit Logs", desc: "View all admin actions and changes in the system", action: "View Logs", icon: "📋" },
-                  { label: "Export All Data", desc: "Download full applicant database as CSV or Excel", action: "Export Now", icon: "📥" },
-                  { label: "Email Notifications", desc: "Configure system email alerts to applicants", action: "Configure", icon: "📧" },
-                ].map(s => (
-                  <div key={s.label} style={{ ...S2.card }}>
-                    <div style={{ fontSize: 28, marginBottom: 10 }}>{s.icon}</div>
-                    <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>{s.label}</div>
-                    <div style={{ color: t.muted, fontSize: 14, marginBottom: 16 }}>{s.desc}</div>
-                    <GoldBtn outline onClick={() => showToast(`${s.action} action triggered.`)} style={{ fontSize: 13, padding: "8px 16px" }}>{s.action}</GoldBtn>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 20 }}>
+                <div style={{ ...S2.card }}>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Recruitment Status</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Toggle the portal open/closed for new applications</div>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <input type="checkbox" checked={!!settings?.recruitmentOpen} onChange={e => setSettings(s => ({ ...s, recruitmentOpen: e.target.checked }))} />
+                      <span style={{ color: t.muted }}>{settings?.recruitmentOpen ? "Open" : "Closed"}</span>
+                    </label>
+                    <GoldBtn onClick={() => saveSettings({ recruitmentOpen: !!settings?.recruitmentOpen })} style={{ padding: "8px 14px" }}>Save</GoldBtn>
                   </div>
-                ))}
+                </div>
+
+                <div style={{ ...S2.card }}>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Email Notifications</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Configure system email alerts to applicants</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <label style={{ color: t.muted, fontSize: 13 }}>Enable notifications</label>
+                    <input type="checkbox" checked={!!settings?.emailNotifications?.enabled} onChange={e => setSettings(s => ({ ...s, emailNotifications: { ...(s?.emailNotifications||{}), enabled: e.target.checked } }))} />
+                    <label style={{ color: t.muted, fontSize: 13 }}>From address</label>
+                    <input value={settings?.emailNotifications?.address || ""} onChange={e => setSettings(s => ({ ...s, emailNotifications: { ...(s?.emailNotifications||{}), address: e.target.value } }))} placeholder="no-reply@example.com" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                    <GoldBtn onClick={() => saveSettings({ emailNotifications: settings?.emailNotifications })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
+                  </div>
+                </div>
+
+                <div style={{ ...S2.card }}>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Export All Data</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Download full applicant database as CSV</div>
+                  <GoldBtn onClick={exportApplicants} style={{ padding: "8px 14px" }}>Export Now</GoldBtn>
+                </div>
+
+                <div style={{ ...S2.card }}>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Audit Logs</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>View recent admin actions</div>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                    <GoldBtn onClick={fetchAuditLogs} outline style={{ padding: "8px 14px" }}>Refresh Logs</GoldBtn>
+                    <GoldBtn onClick={() => { setAuditLogs([]); showToast('Cleared logs locally') }} outline style={{ padding: "8px 14px" }}>Clear Local</GoldBtn>
+                  </div>
+                  <div style={{ maxHeight: 220, overflow: 'auto', borderTop: `1px solid ${t.border}`, paddingTop: 8 }}>
+                    {auditLogs.length === 0 && <div style={{ color: t.muted }}>No logs yet.</div>}
+                    {auditLogs.map(l => (
+                      <div key={l.id} style={{ borderBottom: `1px solid ${t.border}`, padding: '8px 4px' }}>
+                        <div style={{ fontWeight: 700 }}>{l.action}</div>
+                        <div style={{ color: t.muted, fontSize: 12 }}>{l.actorName} · {new Date(l.createdAt).toLocaleString()}</div>
+                        <div style={{ color: t.muted, fontSize: 13, marginTop: 6, whiteSpace: 'pre-wrap' }}>{l.details}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}

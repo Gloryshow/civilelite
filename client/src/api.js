@@ -7,7 +7,7 @@ const getAuthToken = () => localStorage.getItem("ces_auth_token");
 const setAuthToken = (token) => localStorage.setItem("ces_auth_token", token);
 const clearAuthToken = () => localStorage.removeItem("ces_auth_token");
 
-const apiCall = async (endpoint, method = "GET", body = null) => {
+const apiCall = async (endpoint, method = "GET", body = null, opts = {}) => {
   const token = getAuthToken();
   const options = {
     method,
@@ -38,6 +38,7 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
 
     throw new Error(errorMessage);
   }
+  if (opts.raw) return response;
   return await response.json();
 };
 
@@ -66,6 +67,10 @@ export const adminAPI = {
     }),
   updateAssessment: (id, assessment) =>
     apiCall(`/admin/applicants/${id}/assessment`, "PATCH", assessment),
+  getSettings: () => apiCall(`/admin/settings`),
+  updateSettings: (payload) => apiCall(`/admin/settings`, "PATCH", payload),
+  getAuditLogs: (limit = 50) => apiCall(`/admin/audit-logs?limit=${limit}`),
+  exportApplicants: () => apiCall(`/admin/export`, "POST", {}, { raw: true }),
   scanQr: (qrPayload) =>
     apiCall("/admin/scan-qr", "POST", { qrPayload }),
   getStats: () => apiCall("/admin/stats"),

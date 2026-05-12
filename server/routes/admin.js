@@ -2,6 +2,8 @@ import express from "express";
 import User from "../models/User.js";
 import Applicant from "../models/Applicant.js";
 import Announcement from "../models/Announcement.js";
+import Setting from "../models/Setting.js";
+import AuditLog from "../models/AuditLog.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -358,6 +360,80 @@ router.post("/announcements", authMiddleware, adminMiddleware, async (req, res) 
       createdAt: announcement.createdAt,
       createdBy: req.user.id,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Get admin settings
+router.get("/settings", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    let s = await Setting.findOne();
+    if (!s) {
+      s = await Setting.create({});
+    }
+    res.json(s);
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Update settings
+router.patch("/settings", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    let s = await Setting.findOne();
+    if (!s) s = new Setting({});
+    const { recruitmentOpen, emailNotifications } = req.body;
+    if (typeof recruitmentOpen === "boolean") s.recruitmentOpen = recruitmentOpen;
+    if (emailNotifications && typeof emailNotifications === "object") s.emailNotifications = { ...s.emailNotifications, ...emailNotifications };
+    await s.save();
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "update_settings", details: JSON.stringify(req.body) });
+    res.json(s);
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Get audit logs (latest)
+router.get("/audit-logs", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const logs = await AuditLog.find().sort({ createdAt: -1 }).limit(limit);
+    res.json(logs.map(l => ({ id: l._id, actorName: l.actorName, action: l.action, details: l.details, createdAt: l.createdAt })));
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Export applicants as CSV
+router.post("/export", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const applicants = await Applicant.find().populate("userId", "email name");
+    const header = ["Applicant ID","Full Name","Email","Phone","State","LGA","Status","Service Status","Submitted At"].join(",") + "\n";
+    const rows = applicants.map(a => {
+      const vals = [
+        a.applicantId || "",
+        (a.fullName || "").replace(/,/g, " "),
+        a.userId?.email || a.email || "",
+        a.phone || "",
+        a.state || "",
+        a.lga || "",
+        a.status || "",
+        a.serviceStatus || "",
+        a.submittedAt ? new Date(a.submittedAt).toISOString() : "",
+      ];
+      return vals.join(",");
+    }).join("\n");
+
+    const csv = header + rows;
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="applicants-${Date.now()}.csv"`);
+    res.send(csv);
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "export_applicants", details: `exported ${applicants.length} applicants` });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
