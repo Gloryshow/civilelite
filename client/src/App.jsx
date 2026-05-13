@@ -213,12 +213,15 @@ const PaymentNotice = ({ settings, light = false }) => {
   const payment = settings?.manualPayment || {};
   const feeAmount = payment.feeAmount ?? 5000;
   const currency = payment.currency || "NGN";
-  const boxStyle = {
-    border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.08)"}`,
-    borderRadius: 10,
-    padding: 12,
-    background: light ? "#fff" : "rgba(255,255,255,0.03)",
-  };
+  const bankRows = [
+    ["Bank", payment.bankName],
+    ["Account Name", payment.accountName],
+    ["Account Number", payment.accountNumber],
+  ];
+
+  if (payment.bankBranch) {
+    bankRows.push(["Branch", payment.bankBranch]);
+  }
 
   return (
     <div className={`payment-notice ${light ? "payment-notice--light" : "payment-notice--dark"}`} style={{ marginBottom: 20 }}>
@@ -226,18 +229,17 @@ const PaymentNotice = ({ settings, light = false }) => {
       <div className="payment-notice__header">
         <div>
           <div className="payment-notice__eyebrow">Manual Payment</div>
-          <div className="payment-notice__title">Form fee is ready for bank transfer</div>
+          <div className="payment-notice__title">Applicant form fee</div>
+          <div className="payment-notice__subcopy">Transfer to the account below, then bring the receipt to camp for verification.</div>
         </div>
-        <div className="payment-notice__amount">{formatCurrency(feeAmount, currency)}</div>
+        <div className="payment-notice__amount-wrap">
+          <div className="payment-notice__amount-label">Fee</div>
+          <div className="payment-notice__amount">{formatCurrency(feeAmount, currency)}</div>
+        </div>
       </div>
 
       <div className="payment-notice__banks">
-        {[
-          ["Bank", payment.bankName],
-          ["Account Name", payment.accountName],
-          ["Account Number", payment.accountNumber],
-          ["Branch", payment.bankBranch],
-        ].map(([label, value], index) => (
+        {bankRows.map(([label, value], index) => (
           <div key={label} className={`payment-notice__bank-card payment-notice__bank-card--${index + 1}`}>
             <div className="payment-notice__label">{label}</div>
             <div className="payment-notice__value">{value || "To be added by admin"}</div>
@@ -247,11 +249,11 @@ const PaymentNotice = ({ settings, light = false }) => {
 
       <div className="payment-notice__bottom">
         <div className="payment-notice__info">
-          <div className="payment-notice__label">Payment note</div>
-          <div className="payment-notice__copy">{payment.note || "Paystack and Flutterwave are not enabled yet."}</div>
+          <div className="payment-notice__mini-label">Status</div>
+          <div className="payment-notice__copy">Manual verification only</div>
         </div>
         <div className="payment-notice__receipt">
-          <div className="payment-notice__receipt-badge">Camp verification required</div>
+          <div className="payment-notice__receipt-badge">Receipt required at camp</div>
           <div className="payment-notice__copy">{payment.receiptRequirement || "Come to camp with your payment receipt for verification."}</div>
         </div>
       </div>
