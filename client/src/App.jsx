@@ -888,7 +888,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           paramilitaryPost: profile.paramilitaryPost || "",
           paramilitaryYears: profile.paramilitaryYears || "",
           leavingReasons: profile.leavingReasons || "",
-          declarationName: profile.declarationName || profile.fullName || "",
+          declarationName: profile.declarationName || "",
           declarationDate: profile.declarationDate || "",
           passportPhotoDataUrl: profile.passportPhotoDataUrl || "",
           guardianName: profile.guardianName || "",
@@ -1503,22 +1503,22 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 28 }}>
                     <div>
                       <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Applicant Signature</div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationName || "________________"}</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationName || ""}</div>
                     </div>
                     <div>
                       <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Date</div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationDate || "________________"}</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.declarationDate || ""}</div>
                     </div>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 18 }}>
                     <div>
                       <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Parent/Guardian Sign & Date</div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.guardianSignatureDate || "________________"}</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.guardianSignatureDate || ""}</div>
                     </div>
                     <div>
                       <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Witness Sign/Date</div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.witnessName || "________________"} {appData.witnessSignatureDate ? `(${appData.witnessSignatureDate})` : ""}</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.witnessName || ""} {appData.witnessSignatureDate ? `(${appData.witnessSignatureDate})` : ""}</div>
                     </div>
                   </div>
 
