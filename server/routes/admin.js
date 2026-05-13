@@ -388,6 +388,53 @@ router.post("/announcements", authMiddleware, adminMiddleware, async (req, res) 
   }
 });
 
+// Update announcement
+router.patch("/announcements/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { title, body } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: "Title and body are required" });
+    }
+
+    const announcement = await Announcement.findByIdAndUpdate(
+      req.params.id,
+      { title: title.trim(), body: body.trim() },
+      { new: true }
+    );
+
+    if (!announcement) {
+      return res.status(404).json({ error: "Announcement not found" });
+    }
+
+    res.json({
+      id: announcement._id,
+      title: announcement.title,
+      body: announcement.body,
+      createdAt: announcement.createdAt,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Delete announcement
+router.delete("/announcements/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const announcement = await Announcement.findByIdAndDelete(req.params.id);
+
+    if (!announcement) {
+      return res.status(404).json({ error: "Announcement not found" });
+    }
+
+    res.json({ success: true, id: announcement._id });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Get admin settings
 router.get("/settings", authMiddleware, adminMiddleware, async (req, res) => {
   try {

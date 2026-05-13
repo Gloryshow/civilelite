@@ -83,6 +83,10 @@ export const adminAPI = {
   getAnnouncements: () => apiCall("/admin/announcements"),
   createAnnouncement: (title, body) =>
     apiCall("/admin/announcements", "POST", { title, body }),
+  updateAnnouncement: (id, title, body) =>
+    apiCall(`/admin/announcements/${id}`, "PATCH", { title, body }),
+  deleteAnnouncement: (id) =>
+    apiCall(`/admin/announcements/${id}`, "DELETE"),
   getRegistrations: () => apiCall("/admin/registrations"),
   approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
   rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),

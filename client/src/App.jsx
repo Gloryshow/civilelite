@@ -1982,6 +1982,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [applicants, setApplicants] = useState([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
+  const [settings, setSettings] = useState(createDefaultSettings());
+  const [loadingSettings, setLoadingSettings] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState(null);
   const selectedApplicant = applicants.find((item) => item.id === selectedApplicantId) || null;
 
   useEffect(() => {
@@ -2212,6 +2216,38 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       await loadAdminAnnouncements();
     } catch (err) {
       showToast("Failed to publish announcement: " + err.message, "error");
+    }
+  };
+
+  const deleteAnnouncement = async (id) => {
+    if (!confirm("Delete this announcement?")) return;
+    try {
+      await adminAPI.deleteAnnouncement(id);
+      showToast("Announcement deleted.");
+      await loadAdminAnnouncements();
+    } catch (err) {
+      showToast("Failed to delete announcement: " + err.message, "error");
+    }
+  };
+
+  const editAnnouncement = (ann) => {
+    setAnnouncement({ title: ann.title, body: ann.body, id: ann.id });
+    setEditingAnnouncementId(ann.id);
+  };
+
+  const updateAnnouncement = async () => {
+    if (!announcement.title?.trim() || !announcement.body?.trim()) {
+      showToast("Title and body are required.", "error");
+      return;
+    }
+    try {
+      await adminAPI.updateAnnouncement(announcement.id, announcement.title, announcement.body);
+      setAnnouncement({ title: "", body: "" });
+      setEditingAnnouncementId(null);
+      showToast("Announcement updated.");
+      await loadAdminAnnouncements();
+    } catch (err) {
+      showToast("Failed to update announcement: " + err.message, "error");
     }
   };
 
@@ -2757,24 +2793,42 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
             <div>
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Post Announcement</h2>
               <div style={{ ...S2.card, maxWidth: 600, marginBottom: 32 }}>
-                <div style={{ color: "#c9952a", fontWeight: 700, marginBottom: 16 }}>New Announcement</div>
+                <div style={{ color: "#c9952a", fontWeight: 700, marginBottom: 16 }}>{editingAnnouncementId ? "Edit Announcement" : "New Announcement"}</div>
                 <Input light={isLight} label="Title" value={announcement.title} onChange={e => setAnnouncement(a => ({ ...a, title: e.target.value }))} placeholder="Announcement headline…" />
                 <Textarea light={isLight} label="Body" value={announcement.body} onChange={e => setAnnouncement(a => ({ ...a, body: e.target.value }))} placeholder="Full announcement content…" rows={5} />
-                <GoldBtn onClick={publishAnnouncement}>
-                  <Plus /> Publish Announcement
-                </GoldBtn>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <GoldBtn onClick={editingAnnouncementId ? updateAnnouncement : publishAnnouncement}>
+                    <Plus /> {editingAnnouncementId ? "Update Announcement" : "Publish Announcement"}
+                  </GoldBtn>
+                  {editingAnnouncementId && (
+                    <button onClick={() => { setAnnouncement({ title: "", body: "" }); setEditingAnnouncementId(null); }} style={{
+                      padding: "10px 18px", borderRadius: 8, border: "1px solid rgba(201,168,76,0.3)", background: "transparent",
+                      color: "#c9952a", cursor: "pointer", fontSize: 14, fontWeight: 600
+                    }}>Cancel</button>
+                  )}
+                </div>
               </div>
               <div style={{ ...S2.card }}>
                 <div style={{ color: isLight ? "#9a6b1a" : "#e8d8a0", fontWeight: 700, marginBottom: 16 }}>Recent Announcements</div>
                 {announcements.map((a) => (
-                  <div key={a.id} style={{ padding: "14px 0", borderBottom: `1px solid ${t.border}` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <div style={{ fontWeight: 700, color: t.text }}>{a.title}</div>
-                      <div style={{ color: t.muted, fontSize: 12 }}>
-                        {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                  <div key={a.id} style={{ padding: "14px 0", borderBottom: `1px solid ${t.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <div style={{ fontWeight: 700, color: t.text }}>{a.title}</div>
+                        <div style={{ color: t.muted, fontSize: 12, whiteSpace: "nowrap", marginLeft: 12 }}>
+                          {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                        </div>
                       </div>
+                      <div style={{ color: t.muted, fontSize: 13, lineHeight: 1.6 }}>{a.body}</div>
                     </div>
-                    <div style={{ color: t.muted, fontSize: 13, lineHeight: 1.6 }}>{a.body}</div>
+                    <div style={{ display: "flex", gap: 8, marginLeft: 12, flexShrink: 0 }}>
+                      <button onClick={() => editAnnouncement(a)} style={{
+                        background: "none", border: "none", color: "#64b5f6", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 4
+                      }}>Edit</button>
+                      <button onClick={() => deleteAnnouncement(a.id)} style={{
+                        background: "none", border: "none", color: "#e57373", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 4
+                      }}>Delete</button>
+                    </div>
                   </div>
                 ))}
                 {announcements.length === 0 && (
