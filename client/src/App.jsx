@@ -3143,7 +3143,7 @@ export default function App() {
 
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
 
-  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /></>;
   if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
@@ -3152,5 +3152,5 @@ export default function App() {
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>
       : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   }
-  return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  return <><LandingPage onNavigate={setPage} theme={theme} /></>;
 }
