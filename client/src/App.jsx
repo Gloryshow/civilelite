@@ -735,11 +735,11 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "72px 24px 36px" : "90px 40px" }}>
         <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 800%22><defs><pattern id=%22grid%22 width=%2240%22 height=%2240%22 patternUnits=%22userSpaceOnUse%22><path d=%22M 40 0 L 0 0 0 40%22 fill=%22none%22 stroke=%22rgba(200,168,75,0.03)%22 stroke-width=%221%22/></pattern></defs><rect width=%221200%22 height=%22800%22 fill=%22url(%23grid)%22/></svg>')", opacity: 0.4, pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr minmax(220px,360px)", gap: isMobile ? 20 : 28, alignItems: "center" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 560px) minmax(240px, 280px)", gap: isMobile ? 20 : 18, alignItems: "center", justifyContent: "center", justifyItems: "center" }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
 
-            <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 600 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
+            <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 560 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
 
             <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
 
@@ -764,8 +764,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             </div>
           </div>
 
-          <div style={{ display: isMobile ? "none" : "block", justifySelf: "end", alignSelf: "center", paddingRight: 12 }}>
-            <img src="/logo.png" alt="Hero" style={{ width: isMobile ? '180px' : 'clamp(160px, 18vw, 320px)', maxWidth: '100%', maxHeight: 360, objectFit: "contain", display: "block", borderRadius: 6 }} />
+          <div style={{ display: isMobile ? "none" : "block", justifySelf: "center", alignSelf: "center" }}>
+            <img src="/logo.png" alt="Hero" style={{ width: isMobile ? '180px' : 'clamp(170px, 17vw, 300px)', maxWidth: '100%', maxHeight: 340, objectFit: "contain", display: "block", borderRadius: 6 }} />
           </div>
         </div>
 
