@@ -583,6 +583,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   const isLight = theme === "light";
   const [navScrolled, setNavScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
+  const [isNarrow, setIsNarrow] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 1024 : false));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -593,7 +594,10 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   }, []);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsNarrow(window.innerWidth <= 1024);
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -732,23 +736,23 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       )}
 
       {/* HERO SECTION */}
-      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "72px 24px 36px" : "90px 40px" }}>
+      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "72px 24px 36px" : isNarrow ? "86px 32px" : "90px 40px" }}>
         <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 800%22><defs><pattern id=%22grid%22 width=%2240%22 height=%2240%22 patternUnits=%22userSpaceOnUse%22><path d=%22M 40 0 L 0 0 0 40%22 fill=%22none%22 stroke=%22rgba(200,168,75,0.03)%22 stroke-width=%221%22/></pattern></defs><rect width=%221200%22 height=%22800%22 fill=%22url(%23grid)%22/></svg>')", opacity: 0.4, pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 560px) minmax(240px, 280px)", gap: isMobile ? 20 : 18, alignItems: "center", justifyContent: "center", justifyItems: "center" }}>
-          <div>
+        <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isNarrow ? "1fr" : "minmax(0, 620px) minmax(260px, 380px)", gap: isNarrow ? 22 : 22, alignItems: "center", justifyContent: "center", justifyItems: isNarrow ? "center" : "start" }}>
+          <div style={{ textAlign: isNarrow ? "center" : "left" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
 
             <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 560 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
 
             <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? 'column' : 'row', justifyContent: isNarrow ? "center" : "flex-start" }}>
               <button onClick={() => onNavigate("register")} style={{ display: "inline-flex", width: isMobile ? '100%' : 'auto', justifyContent: 'center', alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Start Application ➜</button>
               <button onClick={() => scrollTo("divisions")} style={{ display: "inline-flex", width: isMobile ? '100%' : 'auto', justifyContent: 'center', alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid rgba(255,255,255,.45)", color: "#fff", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.45)"; e.currentTarget.style.color = "#fff"; }}>Explore Divisions</button>
             </div>
 
-            <div style={{ display: "flex", gap: 28, marginTop: 28, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 28, marginTop: 28, flexWrap: "wrap", justifyContent: isNarrow ? "center" : "flex-start" }}>
               <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "rgba(255,255,255,.7)" }}>
                 <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>12.4K+</strong>
                 Applications Processed
@@ -765,7 +769,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
 
           <div style={{ display: isMobile ? "none" : "block", justifySelf: "center", alignSelf: "center" }}>
-            <img src="/logo.png" alt="Hero" style={{ width: isMobile ? '180px' : 'clamp(170px, 17vw, 300px)', maxWidth: '100%', maxHeight: 340, objectFit: "contain", display: "block", borderRadius: 6 }} />
+            <img src="/logo.png" alt="Hero" style={{ width: 'clamp(220px, 22vw, 380px)', maxWidth: '100%', maxHeight: 420, objectFit: "contain", display: "block", borderRadius: 6 }} />
           </div>
         </div>
 
