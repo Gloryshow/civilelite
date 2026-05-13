@@ -634,7 +634,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   ];
 
   const [faqOpen, setFaqOpen] = useState(-1);
-  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const pageColors = isLight ? { text: "#0f172a", muted: "#526173", page: "#f8fafc", nav: "#ffffff", border: "rgba(15,23,42,0.1)" } : { text: "#f8fbff", muted: "#b7c2d0", page: "#060a12", nav: "rgba(6,10,18,0.95)", border: "rgba(255,255,255,0.07)" };
   const t = pageColors;
 
