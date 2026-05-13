@@ -83,6 +83,34 @@ const buildApplicationTimeline = (status) => {
   ];
 };
 
+const createDefaultSettings = () => ({
+  recruitmentOpen: true,
+  emailNotifications: { enabled: false, address: "" },
+  manualPayment: {
+    enabled: true,
+    feeAmount: 5000,
+    currency: "NGN",
+    bankName: "Zenith",
+    accountName: "Civic Rights and peace building foundation",
+    accountNumber: "1311106690",
+    bankBranch: "",
+    receiptRequirement: "Come to camp with your payment receipt for verification.",
+    note: "Paystack and Flutterwave are not enabled yet.",
+  },
+});
+
+const formatCurrency = (amount, currency = "NGN") => {
+  try {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Number(amount || 0));
+  } catch {
+    return `₦${Number(amount || 0).toLocaleString("en-NG")}`;
+  }
+};
+
 const SOCIAL_LINKS = [
   { label: "WhatsApp Group", href: "#", icon: "💬", note: "Get live updates and alerts" },
   { label: "Facebook Page", href: "#", icon: "📘", note: "News, photos, and notices" },
@@ -180,6 +208,56 @@ const Badge = ({ label, color = "#c9952a" }) => (
 const GoldBtn = ({ children, onClick, outline = false, style = {} }) => (
   <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: "pointer", transition: "all .2s ease", ...style }}>{children}</button>
 );
+
+const PaymentNotice = ({ settings, light = false }) => {
+  const payment = settings?.manualPayment || {};
+  const feeAmount = payment.feeAmount ?? 5000;
+  const currency = payment.currency || "NGN";
+  const boxStyle = {
+    border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.08)"}`,
+    borderRadius: 10,
+    padding: 12,
+    background: light ? "#fff" : "rgba(255,255,255,0.03)",
+  };
+
+  return (
+    <div className={`payment-notice ${light ? "payment-notice--light" : "payment-notice--dark"}`} style={{ marginBottom: 20 }}>
+      <div className="payment-notice__glow" />
+      <div className="payment-notice__header">
+        <div>
+          <div className="payment-notice__eyebrow">Manual Payment</div>
+          <div className="payment-notice__title">Form fee is ready for bank transfer</div>
+        </div>
+        <div className="payment-notice__amount">{formatCurrency(feeAmount, currency)}</div>
+      </div>
+
+      <div className="payment-notice__banks">
+        {[
+          ["Bank", payment.bankName],
+          ["Account Name", payment.accountName],
+          ["Account Number", payment.accountNumber],
+          ["Branch", payment.bankBranch],
+        ].map(([label, value], index) => (
+          <div key={label} className={`payment-notice__bank-card payment-notice__bank-card--${index + 1}`}>
+            <div className="payment-notice__label">{label}</div>
+            <div className="payment-notice__value">{value || "To be added by admin"}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="payment-notice__bottom">
+        <div className="payment-notice__info">
+          <div className="payment-notice__label">Payment note</div>
+          <div className="payment-notice__copy">{payment.note || "Paystack and Flutterwave are not enabled yet."}</div>
+        </div>
+        <div className="payment-notice__receipt">
+          <div className="payment-notice__receipt-badge">Camp verification required</div>
+          <div className="payment-notice__copy">{payment.receiptRequirement || "Come to camp with your payment receipt for verification."}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Input = ({ label, value, onChange, type = "text", placeholder, required, light = false }) => (
   <div style={{ marginBottom: 16 }}>
@@ -960,6 +1038,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  const [publicSettings, setPublicSettings] = useState(createDefaultSettings());
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
     dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", bloodGroup: "", genotype: "", urinaryTest: "", nationality: "",
@@ -992,6 +1071,22 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     } catch (err) {
       setAnnouncements([]);
       showToast("Failed to load announcements: " + err.message, "error");
+    }
+  };
+
+  const loadPublicSettings = async () => {
+    try {
+      const settings = await publicAPI.getSettings();
+      setPublicSettings({
+        ...createDefaultSettings(),
+        ...settings,
+        manualPayment: {
+          ...createDefaultSettings().manualPayment,
+          ...(settings?.manualPayment || {}),
+        },
+      });
+    } catch {
+      setPublicSettings(createDefaultSettings());
     }
   };
 
@@ -1227,6 +1322,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   }, []);
 
   useEffect(() => {
+    loadPublicSettings();
+  }, []);
+
+  useEffect(() => {
     loadProfile();
   }, []);
 
@@ -1436,6 +1535,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
             <div>
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Recruitment Application</h2>
               <p style={{ color: t.muted, marginBottom: 28 }}>Complete all fields accurately. False information is disqualifying.</p>
+
+              <PaymentNotice settings={publicSettings} light={isLight} />
 
               {appData.submitted && (
                 <div style={{ ...S2.card, background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.3)", marginBottom: 24 }}>
@@ -1787,6 +1888,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           {tab === "camp" && (
             <div>
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Camp Requirements</h2>
+              <PaymentNotice settings={publicSettings} light={isLight} />
               <div style={{ ...S2.card }}>
                 <div style={{ color: t.muted, marginBottom: 14 }}>All intending applicants are to come with forms and camp requirements.</div>
                 <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.9, color: t.text }}>
@@ -1931,7 +2033,14 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     setLoadingSettings(true);
     try {
       const s = await adminAPI.getSettings();
-      setSettings(s || { recruitmentOpen: true, emailNotifications: { enabled: false, address: "" } });
+      setSettings({
+        ...createDefaultSettings(),
+        ...s,
+        manualPayment: {
+          ...createDefaultSettings().manualPayment,
+          ...(s?.manualPayment || {}),
+        },
+      });
     } catch (err) {
       showToast("Failed to load settings: " + err.message, "error");
     } finally {
@@ -2755,6 +2864,28 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     <GoldBtn onClick={() => saveSettings({ emailNotifications: settings?.emailNotifications })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
                   </div>
                 </div>
+
+                  <div style={{ ...S2.card }}>
+                    <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Form Fee & Manual Payment</div>
+                    <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Set the fee and bank details applicants should use for manual payment.</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      <label style={{ color: t.muted, fontSize: 13 }}>Fee amount</label>
+                      <input type="number" min="0" value={settings?.manualPayment?.feeAmount ?? 5000} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), feeAmount: Number(e.target.value) } }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Bank name</label>
+                      <input value={settings?.manualPayment?.bankName || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), bankName: e.target.value } }))} placeholder="Bank name" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Account name</label>
+                      <input value={settings?.manualPayment?.accountName || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), accountName: e.target.value } }))} placeholder="Account name" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Account number</label>
+                      <input value={settings?.manualPayment?.accountNumber || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), accountNumber: e.target.value } }))} placeholder="Account number" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Branch</label>
+                      <input value={settings?.manualPayment?.bankBranch || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), bankBranch: e.target.value } }))} placeholder="Branch or location" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Receipt requirement</label>
+                      <textarea value={settings?.manualPayment?.receiptRequirement || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), receiptRequirement: e.target.value } }))} placeholder="Come to camp with your receipt for verification." rows={3} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, resize: "vertical" }} />
+                      <label style={{ color: t.muted, fontSize: 13 }}>Payment note</label>
+                      <textarea value={settings?.manualPayment?.note || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), note: e.target.value } }))} placeholder="Paystack and Flutterwave are not enabled yet." rows={3} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, resize: "vertical" }} />
+                      <GoldBtn onClick={() => saveSettings({ manualPayment: settings?.manualPayment })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
+                    </div>
+                  </div>
 
                 <div style={{ ...S2.card }}>
                   <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Export All Data</div>

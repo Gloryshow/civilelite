@@ -407,9 +407,10 @@ router.patch("/settings", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     let s = await Setting.findOne();
     if (!s) s = new Setting({});
-    const { recruitmentOpen, emailNotifications } = req.body;
+    const { recruitmentOpen, emailNotifications, manualPayment } = req.body;
     if (typeof recruitmentOpen === "boolean") s.recruitmentOpen = recruitmentOpen;
     if (emailNotifications && typeof emailNotifications === "object") s.emailNotifications = { ...s.emailNotifications, ...emailNotifications };
+    if (manualPayment && typeof manualPayment === "object") s.manualPayment = { ...s.manualPayment, ...manualPayment };
     await s.save();
     await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "update_settings", details: JSON.stringify(req.body) });
     res.json(s);

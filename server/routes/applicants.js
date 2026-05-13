@@ -2,6 +2,7 @@ import express from "express";
 import Applicant from "../models/Applicant.js";
 import User from "../models/User.js";
 import Announcement from "../models/Announcement.js";
+import Setting from "../models/Setting.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -243,6 +244,38 @@ router.get("/announcements", authMiddleware, async (req, res) => {
         createdAt: a.createdAt,
       }))
     );
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Public manual payment settings
+router.get("/settings", async (req, res) => {
+  try {
+    let s = await Setting.findOne();
+    if (!s) {
+      s = await Setting.create({});
+    }
+
+    res.json({
+      recruitmentOpen: s.recruitmentOpen,
+      manualPayment: {
+        enabled: s.manualPayment?.enabled ?? true,
+        feeAmount: s.manualPayment?.feeAmount ?? 5000,
+        currency: s.manualPayment?.currency || "NGN",
+        bankName: s.manualPayment?.bankName || "",
+        accountName: s.manualPayment?.accountName || "",
+        accountNumber: s.manualPayment?.accountNumber || "",
+        bankBranch: s.manualPayment?.bankBranch || "",
+        receiptRequirement:
+          s.manualPayment?.receiptRequirement ||
+          "Come to camp with your payment receipt for verification.",
+        note:
+          s.manualPayment?.note ||
+          "Paystack and Flutterwave are not enabled yet.",
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
