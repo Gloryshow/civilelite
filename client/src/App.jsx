@@ -226,36 +226,31 @@ const PaymentNotice = ({ settings, light = false }) => {
   return (
     <div className={`payment-notice ${light ? "payment-notice--light" : "payment-notice--dark"}`} style={{ marginBottom: 20 }}>
       <div className="payment-notice__glow" />
+      
+      {/* Amount + Title */}
       <div className="payment-notice__header">
         <div>
-          <div className="payment-notice__eyebrow">Manual Payment</div>
-          <div className="payment-notice__title">Applicant form fee</div>
-          <div className="payment-notice__subcopy">Transfer to the account below, then bring the receipt to camp for verification.</div>
+          <div className="payment-notice__title">Form Fee</div>
+          <div className="payment-notice__subcopy">Manual bank transfer</div>
         </div>
-        <div className="payment-notice__amount-wrap">
-          <div className="payment-notice__amount-label">Fee</div>
-          <div className="payment-notice__amount">{formatCurrency(feeAmount, currency)}</div>
+        <div className="payment-notice__amount">{formatCurrency(feeAmount, currency)}</div>
+      </div>
+
+      {/* Bank Details - Compact Receipt Style */}
+      <div className="payment-notice__receipt-box">
+        <div className="payment-notice__receipt-bank">{payment.bankName || "Zenith"}</div>
+        <div className="payment-notice__receipt-account">
+          <span className="payment-notice__receipt-label">Account:</span>
+          {payment.accountNumber || "1311106690"}
+        </div>
+        <div className="payment-notice__receipt-name">
+          {payment.accountName || "Civic Rights and peace building foundation"}
         </div>
       </div>
 
-      <div className="payment-notice__banks">
-        {bankRows.map(([label, value], index) => (
-          <div key={label} className={`payment-notice__bank-card payment-notice__bank-card--${index + 1}`}>
-            <div className="payment-notice__label">{label}</div>
-            <div className="payment-notice__value">{value || "To be added by admin"}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="payment-notice__bottom">
-        <div className="payment-notice__info">
-          <div className="payment-notice__mini-label">Status</div>
-          <div className="payment-notice__copy">Manual verification only</div>
-        </div>
-        <div className="payment-notice__receipt">
-          <div className="payment-notice__receipt-badge">Receipt required at camp</div>
-          <div className="payment-notice__copy">{payment.receiptRequirement || "Come to camp with your payment receipt for verification."}</div>
-        </div>
+      {/* Action Footer */}
+      <div className="payment-notice__footer">
+        <span style={{ fontWeight: 600 }}>✓</span> Bring receipt to camp for verification
       </div>
     </div>
   );
