@@ -822,16 +822,14 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
-  const [settings, setSettings] = useState(null);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [loadingSettings, setLoadingSettings] = useState(false);
   const [appData, setAppData] = useState({
     fullName: user.name || "", email: user.email || "", phone: "", gender: "",
     dob: "", religion: "", maritalStatus: "", placeOfBirth: "", height: "", bloodGroup: "", genotype: "", urinaryTest: "", nationality: "",
     profession: "", professionAddress: "", educationQualification: "", disability: "",
     convictedBefore: "", convictionReasons: "", paramilitaryMember: "", paramilitaryName: "",
     paramilitaryRank: "", paramilitaryPost: "", paramilitaryYears: "", leavingReasons: "",
-    declarationName: "", declarationDate: "",
+    declarationName: "", declarationDate: "", passportPhotoDataUrl: "",
+    guardianName: "", guardianSignatureDate: "", witnessName: "", witnessSignatureDate: "",
     state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
     generalAptitudeScore: "", vocationalAptitudeScore: "", oralTestScore: "", documentsPresented: "", remarks: "",
@@ -891,6 +889,11 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           leavingReasons: profile.leavingReasons || "",
           declarationName: profile.declarationName || profile.fullName || "",
           declarationDate: profile.declarationDate || "",
+          passportPhotoDataUrl: profile.passportPhotoDataUrl || "",
+          guardianName: profile.guardianName || "",
+          guardianSignatureDate: profile.guardianSignatureDate || "",
+          witnessName: profile.witnessName || "",
+          witnessSignatureDate: profile.witnessSignatureDate || "",
           state: profile.state || "",
           lga: profile.lga || "",
           address: profile.address || "",
@@ -953,6 +956,11 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
         leavingReasons: appData.leavingReasons,
         declarationName: appData.declarationName,
         declarationDate: appData.declarationDate,
+        passportPhotoDataUrl: appData.passportPhotoDataUrl,
+        guardianName: appData.guardianName,
+        guardianSignatureDate: appData.guardianSignatureDate,
+        witnessName: appData.witnessName,
+        witnessSignatureDate: appData.witnessSignatureDate,
         state: appData.state,
         lga: appData.lga,
         address: appData.address,
@@ -992,6 +1000,23 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     } catch (err) {
       showToast("Submit failed: " + err.message, "error");
     }
+  };
+
+  const onPassportChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Passport must be an image file.", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      setAppData((d) => ({ ...d, passportPhotoDataUrl: dataUrl }));
+      showToast("Passport uploaded.");
+    };
+    reader.onerror = () => showToast("Unable to read passport image.", "error");
+    reader.readAsDataURL(file);
   };
 
   const shareQr = async () => {
@@ -1052,6 +1077,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     { id: "overview", icon: "🏠", label: "Overview" },
     { id: "apply", icon: "📋", label: "Application Form" },
     { id: "status", icon: "📊", label: "Track Status" },
+    { id: "camp", icon: "🧰", label: "Camp Requirements" },
     { id: "announcements", icon: "📢", label: "Announcements" },
   ];
 
@@ -1242,6 +1268,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       { value: "O+", label: "O+" },
                       { value: "O-", label: "O-" },
                     ]} />
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Passport Photograph</label>
+                    <input type="file" accept="image/*" onChange={onPassportChange} style={{ display: "block", marginBottom: 8 }} />
+                    {appData.passportPhotoDataUrl && (
+                      <img src={appData.passportPhotoDataUrl} alt="Passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
+                    )}
+                  </div>
                   <Input light={isLight} label="Nationality" value={appData.nationality} onChange={e => setAppData(d => ({ ...d, nationality: e.target.value }))} />
                   <Input light={isLight} label="Profession (Optional)" value={appData.profession} onChange={e => setAppData(d => ({ ...d, profession: e.target.value }))} />
                   <Textarea light={isLight} label="Profession Address" value={appData.professionAddress} onChange={e => setAppData(d => ({ ...d, professionAddress: e.target.value }))} rows={2} />
@@ -1279,6 +1312,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   </div>
                   <Input light={isLight} label="Applicant Signature" value={appData.declarationName} onChange={e => setAppData(d => ({ ...d, declarationName: e.target.value }))} placeholder="Type your full name as signature" required />
                   <Input light={isLight} label="Date" type="date" value={appData.declarationDate} onChange={e => setAppData(d => ({ ...d, declarationDate: e.target.value }))} required />
+
+                  <div style={{ marginTop: 20, marginBottom: 12, color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>
+                    PARENTS AND GUARDIAN DETAILS: ATTESTATION OF GOOD CONDUCT
+                  </div>
+                  <div style={{ border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: 14, color: isLight ? "#0f172a" : "#fff", background: isLight ? "#fff" : "rgba(255,255,255,0.03)", lineHeight: 1.7, fontSize: 14, marginBottom: 12 }}>
+                    I, Mr./Mrs./Chief {appData.guardianName || "__________"} parent/guardian of {appData.fullName || "__________"} who is applying for recruitment into the corps hereby certify that, I fully understand that my child/ward will attend the recruitment exercise, with an attestation of good conduct as a well behaved person that can serve and portray a good ambassador of the organization anywhere.
+                  </div>
+                  <Input light={isLight} label="Parent/Guardian Name" value={appData.guardianName} onChange={e => setAppData(d => ({ ...d, guardianName: e.target.value }))} placeholder="Mr./Mrs./Chief ..." />
+                  <Input light={isLight} label="Parent/Guardian Sign & Date" value={appData.guardianSignatureDate} onChange={e => setAppData(d => ({ ...d, guardianSignatureDate: e.target.value }))} placeholder="Signature and date" />
+                  <Input light={isLight} label="Witness Sign/Date (Name or Signature)" value={appData.witnessName} onChange={e => setAppData(d => ({ ...d, witnessName: e.target.value }))} placeholder="Witness signature/name" />
+                  <Input light={isLight} label="Witness Date" value={appData.witnessSignatureDate} onChange={e => setAppData(d => ({ ...d, witnessSignatureDate: e.target.value }))} placeholder="Date" />
                 </div>
               </div>
 
@@ -1421,6 +1465,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div><strong>Date of Birth:</strong> {appData.dob || "N/A"}</div>
                   </div>
 
+                  {appData.passportPhotoDataUrl && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ marginBottom: 6 }}><strong>Passport Photograph</strong></div>
+                      <img src={appData.passportPhotoDataUrl} alt="Passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
+                    </div>
+                  )}
+
                   <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
                   <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
 
@@ -1444,6 +1495,11 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     I {appData.declarationName || appData.fullName || "____________"} hereby declare that the information contained herein is true and correct to the best of my knowledge.
                   </div>
 
+                  <div style={{ marginBottom: 14 }}><strong>PARENTS AND GUARDIAN DETAILS: ATTESTATION OF GOOD CONDUCT</strong></div>
+                  <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14, marginBottom: 16, lineHeight: 1.7 }}>
+                    I, Mr./Mrs./Chief {appData.guardianName || "__________"} parent/guardian of {appData.fullName || "__________"} who is applying for recruitment into the corps hereby certify that, I fully understand that my child/ward will attend the recruitment exercise, with an attestation of good conduct as a well behaved person that can serve and portray a good ambassador of the organization anywhere.
+                  </div>
+
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 28 }}>
                     <div>
                       <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Applicant Signature</div>
@@ -1455,10 +1511,48 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
                   </div>
 
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 18 }}>
+                    <div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Parent/Guardian Sign & Date</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.guardianSignatureDate || "________________"}</div>
+                    </div>
+                    <div>
+                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Witness Sign/Date</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{appData.witnessName || "________________"} {appData.witnessSignatureDate ? `(${appData.witnessSignatureDate})` : ""}</div>
+                    </div>
+                  </div>
+
                   <div style={{ marginTop: 22, fontSize: 12, color: "#6b7280" }}>
                     Generated from the Civil Elite Service portal.
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─ CAMP REQUIREMENTS ─ */}
+          {tab === "camp" && (
+            <div>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Camp Requirements</h2>
+              <div style={{ ...S2.card }}>
+                <div style={{ color: t.muted, marginBottom: 14 }}>All intending applicants are to come with forms and camp requirements.</div>
+                <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.9, color: t.text }}>
+                  <li>Birth certificate</li>
+                  <li>Educational results</li>
+                  <li>Medical report (B/G, Genotype and urinary test)</li>
+                  <li>Passport photography (not less than 3 months) - 2 copies</li>
+                  <li>Training fees (camping, ID card & certificate) - 25,000 naira</li>
+                  <li>Document files (1)</li>
+                  <li>Office flat file (1)</li>
+                  <li>Blue short knickers (2)</li>
+                  <li>White vest (round neck) - 2</li>
+                  <li>White canvas or trainers with socks</li>
+                  <li>Bucket (1)</li>
+                  <li>Torch light (1)</li>
+                  <li>Food</li>
+                  <li>Writing materials</li>
+                </ul>
+                <div style={{ marginTop: 16, color: t.muted }}>Note: All intending applicants are to come with their forms and camp requirements. Thanks.</div>
               </div>
             </div>
           )}

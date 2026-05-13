@@ -53,6 +53,11 @@ router.get("/profile", authMiddleware, async (req, res) => {
         leavingReasons: "",
         declarationName: "",
         declarationDate: "",
+        passportPhotoDataUrl: "",
+        guardianName: "",
+        guardianSignatureDate: "",
+        witnessName: "",
+        witnessSignatureDate: "",
         state: "",
         lga: "",
         address: "",
@@ -83,6 +88,32 @@ router.post("/submit", authMiddleware, async (req, res) => {
       gender,
       dob,
       bloodGroup,
+      genotype,
+      urinaryTest,
+      religion,
+      maritalStatus,
+      placeOfBirth,
+      height,
+      nationality,
+      profession,
+      professionAddress,
+      educationQualification,
+      disability,
+      convictedBefore,
+      convictionReasons,
+      paramilitaryMember,
+      paramilitaryName,
+      paramilitaryRank,
+      paramilitaryPost,
+      paramilitaryYears,
+      leavingReasons,
+      declarationName,
+      declarationDate,
+      passportPhotoDataUrl,
+      guardianName,
+      guardianSignatureDate,
+      witnessName,
+      witnessSignatureDate,
       state,
       lga,
       address,
@@ -119,6 +150,32 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.gender = gender;
     applicant.dob = dob;
     applicant.bloodGroup = bloodGroup;
+    applicant.genotype = genotype;
+    applicant.urinaryTest = urinaryTest;
+    applicant.religion = religion;
+    applicant.maritalStatus = maritalStatus;
+    applicant.placeOfBirth = placeOfBirth;
+    applicant.height = height;
+    applicant.nationality = nationality;
+    applicant.profession = profession;
+    applicant.professionAddress = professionAddress;
+    applicant.educationQualification = educationQualification;
+    applicant.disability = disability;
+    applicant.convictedBefore = convictedBefore;
+    applicant.convictionReasons = convictionReasons;
+    applicant.paramilitaryMember = paramilitaryMember;
+    applicant.paramilitaryName = paramilitaryName;
+    applicant.paramilitaryRank = paramilitaryRank;
+    applicant.paramilitaryPost = paramilitaryPost;
+    applicant.paramilitaryYears = paramilitaryYears;
+    applicant.leavingReasons = leavingReasons;
+    applicant.declarationName = declarationName;
+    applicant.declarationDate = declarationDate;
+    applicant.passportPhotoDataUrl = passportPhotoDataUrl;
+    applicant.guardianName = guardianName;
+    applicant.guardianSignatureDate = guardianSignatureDate;
+    applicant.witnessName = witnessName;
+    applicant.witnessSignatureDate = witnessSignatureDate;
     applicant.state = state;
     applicant.lga = lga;
     applicant.address = address;
