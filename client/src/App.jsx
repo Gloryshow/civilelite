@@ -732,10 +732,10 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       )}
 
       {/* HERO SECTION */}
-      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "80px 24px 40px" : "100px 60px" }}>
+      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "72px 24px 36px" : "90px 40px" }}>
         <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 800%22><defs><pattern id=%22grid%22 width=%2240%22 height=%2240%22 patternUnits=%22userSpaceOnUse%22><path d=%22M 40 0 L 0 0 0 40%22 fill=%22none%22 stroke=%22rgba(200,168,75,0.03)%22 stroke-width=%221%22/></pattern></defs><rect width=%221200%22 height=%22800%22 fill=%22url(%23grid)%22/></svg>')", opacity: 0.4, pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 40, alignItems: "center" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr minmax(220px,360px)", gap: isMobile ? 20 : 28, alignItems: "center" }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
 
@@ -764,8 +764,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             </div>
           </div>
 
-          <div style={{ display: isMobile ? "none" : "block", justifySelf: "center", alignSelf: "center" }}>
-            <img src="/logo.png" alt="Hero" style={{ width: isMobile ? '180px' : 'clamp(160px, 20vw, 340px)', maxWidth: '100%', maxHeight: 420, objectFit: "contain", display: "block", borderRadius: 6 }} />
+          <div style={{ display: isMobile ? "none" : "block", justifySelf: "end", alignSelf: "center", paddingRight: 12 }}>
+            <img src="/logo.png" alt="Hero" style={{ width: isMobile ? '180px' : 'clamp(160px, 18vw, 320px)', maxWidth: '100%', maxHeight: 360, objectFit: "contain", display: "block", borderRadius: 6 }} />
           </div>
         </div>
 
