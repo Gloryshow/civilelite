@@ -6,6 +6,37 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
+// Public QR verification lookup
+router.get("/verify/:applicantId", async (req, res) => {
+  try {
+    const applicant = await Applicant.findOne({ applicantId: req.params.applicantId })
+      .populate("userId", "email name applicantId serviceStatus");
+
+    if (!applicant) {
+      return res.status(404).json({ error: "Applicant not found" });
+    }
+
+    res.json({
+      applicantId: applicant.applicantId,
+      fullName: applicant.fullName || "",
+      email: applicant.userId?.email || "",
+      phone: applicant.phone || "",
+      gender: applicant.gender || "",
+      bloodGroup: applicant.bloodGroup || "",
+      genotype: applicant.genotype || "",
+      status: applicant.status,
+      serviceStatus: applicant.serviceStatus,
+      paramilitaryRank: applicant.paramilitaryRank || "",
+      paramilitaryPost: applicant.paramilitaryPost || "",
+      submittedAt: applicant.submittedAt || null,
+      updatedAt: applicant.updatedAt || null,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Get applicant profile
 router.get("/profile", authMiddleware, async (req, res) => {
   try {

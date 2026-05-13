@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react";
-import { authAPI, applicantAPI, adminAPI, tokenManager } from "./api.js";
+import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
 
@@ -117,22 +117,10 @@ const createUniqueApplicantId = (users) => {
   return id;
 };
 
-const buildQrPayload = ({
-  applicantId,
-  fullName,
-  bloodGroup,
-  genotype,
-  serviceStatus,
-  status,
-}) => JSON.stringify({
-  type: "CES_USER",
-  applicantId,
-  fullName,
-  bloodGroup,
-  genotype,
-  serviceStatus,
-  status,
-});
+const buildQrPayload = ({ applicantId }) => {
+  if (typeof window === "undefined") return `/?verify=${encodeURIComponent(applicantId)}`;
+  return `${window.location.origin}/?verify=${encodeURIComponent(applicantId)}`;
+};
 
 const parseQrPayload = (raw) => {
   try {
@@ -146,7 +134,18 @@ const parseQrPayload = (raw) => {
       return data;
     }
   } catch {
-    return null;
+    try {
+      const url = new URL(raw);
+      const applicantId = url.searchParams.get("verify") || url.searchParams.get("applicantId");
+      if (applicantId) {
+        return {
+          type: "CES_USER",
+          applicantId,
+        };
+      }
+    } catch {
+      return null;
+    }
   }
   return null;
 };
@@ -357,6 +356,127 @@ const ThemeToggle = ({ theme, onToggle }) => (
     {theme === "light" ? "Switch to dark" : "Switch to light"}
   </button>
 );
+
+const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
+  const t = getTheme(theme);
+  const isLight = theme === "light";
+  const [loading, setLoading] = useState(true);
+  const [record, setRecord] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadVerification = async () => {
+      if (!applicantId) {
+        setError("Missing applicant ID in verification link.");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await publicAPI.getVerification(applicantId);
+        if (!active) return;
+        setRecord(data);
+      } catch (err) {
+        if (!active) return;
+        setRecord(null);
+        setError(err.message || "Unable to verify applicant.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadVerification();
+
+    return () => {
+      active = false;
+    };
+  }, [applicantId]);
+
+  const cardStyle = {
+    maxWidth: 980,
+    margin: "0 auto",
+    padding: "24px 18px 60px",
+  };
+
+  const panelStyle = {
+    borderRadius: 24,
+    border: `1px solid ${t.border}`,
+    background: isLight ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.04)",
+    boxShadow: isLight ? "0 24px 60px rgba(15,23,42,0.08)" : "0 24px 60px rgba(0,0,0,0.28)",
+    padding: 28,
+  };
+
+  const field = (label, value) => (
+    <div style={{ padding: "14px 0", borderBottom: `1px solid ${t.border}` }}>
+      <div style={{ color: t.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</div>
+      <div style={{ color: t.text, fontWeight: 700, fontSize: 15 }}>{value || "Not provided"}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: isLight ? "linear-gradient(180deg,#eef4fb 0%,#f7f9fc 100%)" : "linear-gradient(180deg,#090d18 0%,#060a12 100%)", color: t.text }}>
+      <div style={{ ...cardStyle, paddingTop: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ color: "#c9952a", fontWeight: 800, letterSpacing: 1, fontSize: 12, textTransform: "uppercase" }}>Civil Elite Service</div>
+            <h1 style={{ margin: "8px 0 0", fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1, color: t.text, fontWeight: 900 }}>Applicant Verification</h1>
+          </div>
+          <GoldBtn outline onClick={() => onNavigate("home")} style={{ padding: "10px 16px" }}>Back to Home</GoldBtn>
+        </div>
+
+        <div style={panelStyle}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 22 }}>
+            <div>
+              <div style={{ color: t.muted, fontSize: 13, marginBottom: 6 }}>Verification link</div>
+              <div style={{ color: t.text, fontWeight: 800, fontSize: 18 }}>{applicantId || "Not available"}</div>
+            </div>
+            {record?.status ? <StatusBadge s={record.status} /> : null}
+          </div>
+
+          {loading && <div style={{ color: t.muted, fontSize: 15 }}>Loading applicant record...</div>}
+
+          {!loading && error && (
+            <div style={{ color: "#e57373", fontWeight: 700, background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.2)", borderRadius: 14, padding: 16 }}>
+              {error}
+            </div>
+          )}
+
+          {!loading && record && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 18 }}>
+              <div>
+                {field("Full Name", record.fullName)}
+                {field("Applicant ID", record.applicantId)}
+                {field("Blood Group", record.bloodGroup)}
+                {field("Genotype", record.genotype)}
+              </div>
+              <div>
+                {field("Service Status", record.serviceStatus)}
+                {field("Application Status", record.status)}
+                {field("Assigned Rank", record.paramilitaryRank)}
+                {field("Assigned Post", record.paramilitaryPost)}
+              </div>
+              <div>
+                {field("Phone", record.phone)}
+                {field("Email", record.email)}
+                {field("Submitted At", record.submittedAt ? new Date(record.submittedAt).toLocaleString() : "Not provided")}
+                {field("Last Updated", record.updatedAt ? new Date(record.updatedAt).toLocaleString() : "Not provided")}
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && !record && (
+            <div style={{ color: t.muted, fontSize: 15 }}>No verification record available.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const LandingPage = ({ onNavigate, theme = "light" }) => {
   const t = getTheme(theme);
@@ -858,14 +978,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   });
   const [printSlipType, setPrintSlipType] = useState("application");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const qrPayload = appData.id ? buildQrPayload({
-    applicantId: appData.id,
-    fullName: appData.fullName,
-    bloodGroup: appData.bloodGroup,
-    genotype: appData.genotype,
-    serviceStatus: appData.serviceStatus,
-    status: appData.status,
-  }) : "";
+  const qrPayload = appData.id ? buildQrPayload({ applicantId: appData.id }) : "";
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -1054,15 +1167,15 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
       showToast("No applicant ID yet.", "error");
       return;
     }
-    const text = `Civil Elite Applicant QR\nApplicant ID: ${appData.id}\nService Status: ${appData.serviceStatus}\nPayload: ${qrPayload}`;
+    const text = `Civil Elite Applicant Verification URL\nApplicant ID: ${appData.id}\nURL: ${qrPayload}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Civil Elite Applicant QR", text });
-        showToast("QR details shared.");
+        await navigator.share({ title: "Civil Elite Applicant Verification", text });
+        showToast("Verification link shared.");
         return;
       }
       await navigator.clipboard.writeText(qrPayload);
-      showToast("QR payload copied to clipboard.");
+      showToast("Verification link copied to clipboard.");
     } catch {
       showToast("Unable to share QR right now.", "error");
     }
@@ -1104,17 +1217,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
 
   useEffect(() => {
     if (appData.id) {
-      const payload = buildQrPayload({
-        applicantId: appData.id,
-        fullName: appData.fullName,
-        bloodGroup: appData.bloodGroup,
-        genotype: appData.genotype,
-        serviceStatus: appData.serviceStatus,
-        status: appData.status,
-      });
+      const payload = buildQrPayload({ applicantId: appData.id });
       QRCode.toDataURL(payload).then(url => setQrDataUrl(url)).catch(() => setQrDataUrl(null));
     } else setQrDataUrl(null);
-  }, [appData.id, appData.fullName, appData.bloodGroup, appData.genotype, appData.serviceStatus, appData.status, appData.submitted]);
+  }, [appData.id]);
 
   useEffect(() => {
     loadAnnouncements();
@@ -1452,7 +1558,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ color: t.muted, marginBottom: 20 }}>You have not submitted an application yet.</div>
                   {qrDataUrl && (
                     <div style={{ marginBottom: 18 }}>
-                      <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Your unique QR is already active and shareable.</div>
+                      <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Your live verification QR is already active and shareable.</div>
                       <img src={qrDataUrl} alt="Applicant QR" style={{ width: 170, height: 170, borderRadius: 12, background: "#fff", padding: 8 }} />
                     </div>
                   )}
@@ -2484,7 +2590,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           {tab === "scanner" && (
             <div>
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 16 }}>QR Scanner</h2>
-              <p style={{ color: t.muted, marginBottom: 18 }}>Scan applicant QR to fetch Applicant ID and current service status for camp/events.</p>
+              <p style={{ color: t.muted, marginBottom: 18 }}>Scan applicant QR to open the live verification record for camp/events.</p>
               <div style={{ ...S2.card, maxWidth: 620 }}>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
                   {!scannerActive
@@ -2687,11 +2793,15 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 //  ROOT APP (ROUTER)
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [page, setPage] = useState("home"); // home | login | register | dashboard
+  const initialVerifyApplicantId = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("verify") || ""
+    : "";
+  const [page, setPage] = useState(initialVerifyApplicantId ? "verify" : "home"); // home | login | register | dashboard | verify
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState("light");
   const [userRegistry, setUserRegistry] = useState(() => loadUserRegistry());
   const [loading, setLoading] = useState(false);
+  const verifyApplicantId = initialVerifyApplicantId;
 
   useEffect(() => {
     saveUserRegistry(userRegistry);
@@ -2699,6 +2809,7 @@ export default function App() {
 
   useEffect(() => {
     const restoreSession = async () => {
+      if (page === "verify") return;
       const token = tokenManager.getToken();
       if (!token) return;
 
@@ -2747,7 +2858,7 @@ export default function App() {
     };
 
     restoreSession();
-  }, []);
+  }, [page]);
 
   const handleAuth = async (authResult) => {
     setLoading(true);
@@ -2830,6 +2941,7 @@ export default function App() {
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
 
   if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
   if (page === "dashboard" && user) {

@@ -57,6 +57,11 @@ export const applicantAPI = {
     apiCall("/applicants/submit", "POST", data),
 };
 
+export const publicAPI = {
+  getVerification: (applicantId) =>
+    apiCall(`/applicants/verify/${encodeURIComponent(applicantId)}`),
+};
+
 export const adminAPI = {
   getApplicants: () => apiCall("/admin/applicants"),
   updateStatus: (id, status) =>

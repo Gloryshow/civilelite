@@ -243,7 +243,21 @@ router.post(
       try {
         parsed = JSON.parse(qrPayload);
       } catch {
-        return res.status(400).json({ error: "Invalid QR payload format" });
+        try {
+          const url = new URL(qrPayload);
+          const applicantId = url.searchParams.get("verify") || url.searchParams.get("applicantId");
+          if (applicantId) {
+            parsed = { type: "CES_USER", applicantId };
+          } else {
+            const segments = url.pathname.split("/").filter(Boolean);
+            const applicantSegment = segments[segments.length - 1];
+            if (applicantSegment) {
+              parsed = { type: "CES_USER", applicantId: applicantSegment };
+            }
+          }
+        } catch {
+          return res.status(400).json({ error: "Invalid QR payload format" });
+        }
       }
 
       if (
