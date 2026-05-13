@@ -644,8 +644,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   const gallery = [
     { src: "elite.jpg", caption: "Command Presence" },
     { src: "20250830_172445.jpg", caption: "Field Readiness" },
-    { src: "20250831_083759.jpg", caption: "Drill Formation" },
-    { src: "20250831_083836.jpg", caption: "Unit Coordination" },
+    { src: "20250831_083759.jpg", caption: "Drill Formation", position: "center 70%" },
+    { src: "20250831_083836.jpg", caption: "Unit Coordination", position: "center 75%" },
     { src: "IMG-20260508-WA0011.jpg", caption: "Discipline in Action" },
     { src: "IMG-20260508-WA0012.jpg", caption: "Team Cohesion" },
     { src: "IMG-20260508-WA0013.jpg", caption: "Operational Focus" },
@@ -798,7 +798,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                   src={`/images/${item.src}`}
                   alt={`gallery-${idx + 1}`}
                   loading="lazy"
-                  style={{ width: "100%", height: isMobile ? 260 : 200, objectFit: "cover", objectPosition: isMobile ? "top center" : "center", display: "block", transition: "transform .35s ease" }}
+                  style={{ width: "100%", height: isMobile ? 260 : 200, objectFit: "cover", objectPosition: item.position || (isMobile ? "top center" : "center"), display: "block", transition: "transform .35s ease" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
                 />
