@@ -838,6 +838,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     id: user.applicantId || "", serviceStatus: user.serviceStatus || "active",
     status: "pending", submitted: false,
   });
+  const [printSlipType, setPrintSlipType] = useState("application");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const qrPayload = appData.id ? buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus }) : "";
 
@@ -1055,7 +1056,21 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
       showToast("Submit your application before printing the slip.", "error");
       return;
     }
-    window.print();
+    setPrintSlipType("application");
+    requestAnimationFrame(() => window.print());
+  };
+
+  const printAcceptanceSlip = () => {
+    if (!appData.submitted) {
+      showToast("Submit your application before printing the slip.", "error");
+      return;
+    }
+    if (appData.status !== "approved") {
+      showToast("Acceptance slip is available only for approved applicants.", "error");
+      return;
+    }
+    setPrintSlipType("acceptance");
+    requestAnimationFrame(() => window.print());
   };
 
   useEffect(() => {
@@ -1093,10 +1108,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           body * {
             visibility: hidden !important;
           }
-          .print-slip, .print-slip * {
+          .print-slip, .print-slip *, .print-acceptance-slip, .print-acceptance-slip * {
             visibility: visible !important;
           }
-          .print-slip {
+          .print-slip, .print-acceptance-slip {
             display: block !important;
             position: absolute !important;
             left: 0 !important;
@@ -1434,9 +1449,15 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <GoldBtn outline onClick={printApplicationSlip}>
                     <Download /> Print Application Slip
                   </GoldBtn>
+                  {appData.status === "approved" && (
+                    <GoldBtn outline onClick={printAcceptanceSlip} style={{ marginLeft: 10 }}>
+                      <Download /> Print Acceptance Slip
+                    </GoldBtn>
+                  )}
                 </div>
               )}
               <div className="print-slip" style={{ display: "none" }}>
+                {printSlipType === "application" && (
                 <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
                     <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
@@ -1456,9 +1477,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
                     <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
                     <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
-                    <div><strong>General Aptitude Score:</strong> {appData.generalAptitudeScore || "N/A"}</div>
-                    <div><strong>Vocational Aptitude Score:</strong> {appData.vocationalAptitudeScore || "N/A"}</div>
-                    <div><strong>Oral Test Score:</strong> {appData.oralTestScore || "N/A"}</div>
                     <div><strong>Religion:</strong> {appData.religion || "N/A"}</div>
                     <div><strong>Marital Status:</strong> {appData.maritalStatus || "N/A"}</div>
                     <div><strong>Nationality:</strong> {appData.nationality || "N/A"}</div>
@@ -1471,24 +1489,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       <img src={appData.passportPhotoDataUrl} alt="Passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
                     </div>
                   )}
-
-                  <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
-                  <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
-                    <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
-                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
-                      <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.eliteAdminOfficerName || "N/A"}</div>
-                      <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.eliteAdminOfficerPortfolio || "N/A"}</div>
-                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.eliteAdminOfficerSignatureDate || "________________"}</div>
-                    </div>
-                    <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
-                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
-                      <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.directorateName || "N/A"}</div>
-                      <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.directoratePortfolio || "N/A"}</div>
-                      <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.directorateSignatureDate || "________________"}</div>
-                    </div>
-                  </div>
 
                   <div style={{ marginBottom: 14 }}><strong>Declaration</strong></div>
                   <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14, marginBottom: 16 }}>
@@ -1526,6 +1526,60 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     Generated from the Civil Elite Service portal.
                   </div>
                 </div>
+                )}
+              </div>
+
+              <div className="print-acceptance-slip" style={{ display: "none" }}>
+                {printSlipType === "acceptance" && appData.status === "approved" && (
+                  <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
+                      <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                      <div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
+                        <div style={{ fontSize: 12, color: "#6b7280" }}>Acceptance & Assessment Slip</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 14, fontWeight: 700, color: "#0f172a" }}>
+                      This certifies that {appData.fullName} ({appData.id}) has been accepted for Civil Elite Service camp.
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                      <div><strong>Applicant ID:</strong> {appData.id}</div>
+                      <div><strong>Full Name:</strong> {appData.fullName}</div>
+                      <div><strong>Status:</strong> {appData.status}</div>
+                      <div><strong>Service Status:</strong> {appData.serviceStatus}</div>
+                      <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
+                      <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
+                      <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
+                      <div><strong>General Aptitude Score:</strong> {appData.generalAptitudeScore || "N/A"}</div>
+                      <div><strong>Vocational Aptitude Score:</strong> {appData.vocationalAptitudeScore || "N/A"}</div>
+                      <div><strong>Oral Test Score:</strong> {appData.oralTestScore || "N/A"}</div>
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
+                    <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
+                      <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                        <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
+                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.eliteAdminOfficerName || "N/A"}</div>
+                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.eliteAdminOfficerPortfolio || "N/A"}</div>
+                        <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.eliteAdminOfficerSignatureDate || "________________"}</div>
+                      </div>
+                      <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
+                        <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
+                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.directorateName || "N/A"}</div>
+                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.directoratePortfolio || "N/A"}</div>
+                        <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.directorateSignatureDate || "________________"}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 22, fontSize: 12, color: "#6b7280" }}>
+                      Generated from the Civil Elite Service portal.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
