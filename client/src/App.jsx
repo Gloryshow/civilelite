@@ -554,25 +554,26 @@ const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
 };
 
 const LandingPage = ({ onNavigate, theme = "light" }) => {
-  const t = getTheme(theme);
+  const isLight = theme === "light";
   const [navScrolled, setNavScrolled] = useState(false);
-  const [faqOpen, setFaqOpen] = useState(0);
-  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 900 : false));
-  const [isSmall, setIsSmall] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 640 : false));
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 24);
+    const onScroll = () => setNavScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    const onResize = () => {
-      setIsMobile(window.innerWidth <= 900);
-      setIsSmall(window.innerWidth <= 640);
-    };
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentSlide(s => (s + 1) % 3), 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -632,245 +633,205 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     { q: "Can I switch themes?", a: "Yes. The theme toggle remains available for users who prefer dark mode." },
   ];
 
-  const pageSection = { padding: "88px 60px" };
+  const [faqOpen, setFaqOpen] = useState(-1);
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const pageColors = isLight ? { text: "#0f172a", muted: "#526173", page: "#f8fafc", nav: "#ffffff", border: "rgba(15,23,42,0.1)" } : { text: "#f8fbff", muted: "#b7c2d0", page: "#060a12", nav: "rgba(6,10,18,0.95)", border: "rgba(255,255,255,0.07)" };
+  const t = pageColors;
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Segoe UI',sans-serif", overflowX: "hidden" }}>
+    <div style={{ width: "100%", minHeight: "100vh", background: t.page, color: t.text, fontFamily: "'Barlow', 'Segoe UI', sans-serif", overflowX: "hidden" }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         html, body { max-width: 100%; overflow-x: hidden; }
         @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
         ::selection { background: rgba(201,149,42,0.24); }
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: ${t.page}; }
-        ::-webkit-scrollbar-thumb { background: rgba(201,149,42,0.34); border-radius: 999px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(201,149,42,0.5); border-radius: 999px; }
       `}</style>
 
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, padding: isMobile ? "8px 14px" : "0 24px", background: navScrolled ? t.nav : "transparent", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", transition: "all .25s ease" }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto", minHeight: isMobile ? 64 : 76, display: "flex", alignItems: "center", justifyContent: "space-between", gap: isMobile ? 12 : 20, flexWrap: "wrap", padding: isMobile ? "8px 14px" : "0 60px" }}>
-          <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", color: t.text, minWidth: 0 }}>
-            <img src="/logo.png" alt="logo" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 8, boxShadow: "0 6px 18px rgba(0,0,0,0.08)" }} />
-            <span style={{ fontWeight: 900, letterSpacing: 0.6, fontSize: isMobile ? 14 : 18, whiteSpace: "normal", lineHeight: 1.2 }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</span>
+      {/* TOP BAR */}
+      <div style={{ background: "#004d26", color: "#ccc", fontSize: 12, padding: "6px 0", borderBottom: "2px solid #c9952a" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+          <div style={{ display: "flex", gap: isMobile ? 16 : 20, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>📞 <span style={{ color: "#c9952a", fontWeight: 600 }}>24/7: Contact Portal Support</span></span>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <a href="#" onClick={e => e.preventDefault()} style={{ color: "#ccc", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, border: "1px solid rgba(255,255,255,.2)", padding: "2px 8px", borderRadius: 2, transition: "all .2s", cursor: "pointer" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#ccc"; }}>Help</a>
+          </div>
+        </div>
+      </div>
+
+      {/* STICKY HEADER */}
+      <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "sticky", top: 0, zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
+          <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
+            <div style={{ textAlign: "left", lineHeight: 1.2 }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a", fontWeight: 700 }}>SERVICE PORTAL</span></div>
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 24, flexWrap: "nowrap", justifyContent: isMobile ? "flex-start" : "center", width: isMobile ? "100%" : "auto", overflowX: isMobile ? "auto" : "visible", WebkitOverflowScrolling: "touch" }}>
-            {navLinks.map(([label, id]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: t.muted, fontWeight: 700, cursor: "pointer", fontSize: isMobile ? 13 : 14, padding: isMobile ? "4px 0" : 0 }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = t.muted}>{label}</button>
+          <nav style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flex: 1 }}>
+            {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+              <button key={id} onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: "#004d26", fontWeight: 600, cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "#004d26"}>{label}</button>
             ))}
-            <GoldBtn onClick={() => onNavigate("register")} style={{ padding: isMobile ? "8px 14px" : "10px 20px", fontSize: 13 }}>Apply Now</GoldBtn>
-          </div>
+          </nav>
+          <button onClick={() => onNavigate("register")} style={{ background: "#c9952a", color: "#000", border: "none", borderRadius: 2, padding: "11px 24px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, fontSize: 12.5, cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Apply Now</button>
         </div>
-      </nav>
+      </header>
 
-      <section id="hero" style={{ minHeight: "100vh", paddingTop: isSmall ? 124 : isMobile ? 148 : 106, display: "grid", alignItems: "center", position: "relative", background: theme === "light" ? "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #f7f9fc 0%, #eef3f7 100%)" : "radial-gradient(circle at top right, rgba(201,149,42,0.12), transparent 28%), linear-gradient(180deg, #0a0e1a 0%, #0d1b2a 100%)" }}>
-        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-          {[...Array(8)].map((_, i) => <span key={i} style={{ position: "absolute", left: `${10 + i * 10}%`, top: -30, width: 1, height: "125%", background: `rgba(201,149,42,${0.03 + i * 0.004})`, transform: "rotate(-18deg)" }} />)}
-        </div>
-        <div style={{ maxWidth: 1440, margin: "0 auto", padding: isMobile ? "0 14px" : "0 60px", width: "100%", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.1fr 0.9fr", gap: isMobile ? 24 : 40, alignItems: "center", position: "relative", zIndex: 1 }}>
-          <div style={{ animation: "rise .7s ease both", textAlign: isSmall ? "center" : "left" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: 999, border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.14)" : "rgba(255,255,255,0.12)"}`, background: theme === "light" ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.04)", color: t.muted, fontSize: 12, letterSpacing: 1.4, fontWeight: 800, textTransform: "uppercase" }}>Official Recruitment Portal</div>
-            <h1 style={{ marginTop: 22, fontSize: "clamp(32px, 9vw, 86px)", lineHeight: 0.98, letterSpacing: isMobile ? -1 : -2, fontWeight: 900, color: theme === "light" ? "#0f172a" : "#fff", maxWidth: isSmall ? "100%" : 760, marginLeft: isSmall ? "auto" : 0, marginRight: isSmall ? "auto" : 0 }}>Build a disciplined career in <span style={{ color: "#c9952a" }}>Civil Elite</span> Service.</h1>
-            <p style={{ marginTop: 16, fontSize: "clamp(15px, 3.4vw, 20px)", lineHeight: 1.8, maxWidth: isSmall ? "100%" : 640, color: t.muted, marginLeft: isSmall ? "auto" : 0, marginRight: isSmall ? "auto" : 0 }}>A modern recruitment experience for applicants who want structure, purpose, and national service. Apply, track progress, and stay informed from one clean portal.</p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24, justifyContent: isSmall ? "center" : "flex-start" }}>
-              <GoldBtn onClick={() => onNavigate("register")} style={{ padding: "15px 26px" }}>Start Application <ArrowRight /></GoldBtn>
-              <GoldBtn outline onClick={() => scrollTo("divisions")} style={{ padding: "15px 26px" }}>Explore Divisions</GoldBtn>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginTop: 28, maxWidth: isSmall ? "100%" : 760 }}>
-              {pillars.map(p => (
-                <div key={p.title} style={{ animation: "rise .7s ease both", background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.04)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.08)"}`, borderRadius: 18, padding: 18 }}>
-                  <div style={{ fontSize: 24, marginBottom: 10 }}>{p.icon}</div>
-                  <div style={{ fontWeight: 800, color: theme === "light" ? "#0f172a" : "#fff", marginBottom: 6 }}>{p.title}</div>
-                  <div style={{ color: t.muted, fontSize: 14, lineHeight: 1.6 }}>{p.text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ animation: "rise .85s ease both", display: "grid", gap: 14 }}>
-            <img src="/logo.png" alt="Hero" style={{ width: "100%", borderRadius: 18, objectFit: "contain", maxHeight: isSmall ? 180 : isMobile ? 240 : 380, display: "block", marginBottom: 6 }} />
-            <div style={{ borderRadius: 24, padding: isMobile ? 18 : 24, background: theme === "light" ? "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,244,248,0.95))" : "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}`, boxShadow: theme === "light" ? "0 24px 70px rgba(15,23,42,0.08)" : "0 24px 70px rgba(0,0,0,0.35)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <div>
-                  <div style={{ color: "#c9952a", fontWeight: 800, letterSpacing: 1, fontSize: 12, textTransform: "uppercase" }}>Portal Overview</div>
-                  <div style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900, fontSize: 22, marginTop: 4 }}>Ready for new applicants</div>
-                </div>
-                <div style={{ width: 54, height: 54, borderRadius: 18, background: "rgba(201,149,42,0.14)", display: "grid", placeItems: "center", color: "#c9952a", fontSize: 24 }}>◎</div>
-              </div>
-              <div style={{ display: "grid", gap: 12 }}>
-                {stats.map(([value, label]) => (
-                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: isMobile ? "12px 14px" : "16px 18px", borderRadius: 16, background: theme === "light" ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.06)"}` }}>
-                    <span style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800 }}>{label}</span>
-                    <span style={{ color: "#c9952a", fontWeight: 900, fontSize: 20 }}>{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{ borderRadius: 24, padding: isMobile ? 18 : 24, background: theme === "light" ? "rgba(255,255,255,0.76)" : "rgba(255,255,255,0.04)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.12)" : "rgba(255,255,255,0.08)"}` }}>
-              <div style={{ color: t.muted, fontSize: 12, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 800 }}>Application Snapshot</div>
-              <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-                {[["Eligibility", "18-35 years, medically fit"], ["Documents", "ID, certificates, passport photo"], ["Selection", "Screening, assessment, placement"]].map(([a, b]) => (
-                  <div key={a} style={{ padding: "14px 16px", borderRadius: 14, background: theme === "light" ? "#f8fafc" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.06)"}` }}>
-                    <div style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800, marginBottom: 4 }}>{a}</div>
-                    <div style={{ color: t.muted, fontSize: 14 }}>{b}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* HERO SECTION */}
+      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "80px 24px 40px" : "100px 60px" }}>
+        <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 800%22><defs><pattern id=%22grid%22 width=%2240%22 height=%2240%22 patternUnits=%22userSpaceOnUse%22><path d=%22M 40 0 L 0 0 0 40%22 fill=%22none%22 stroke=%22rgba(200,168,75,0.03)%22 stroke-width=%221%22/></pattern></defs><rect width=%221200%22 height=%22800%22 fill=%22url(%23grid)%22/></svg>')", opacity: 0.4, pointerEvents: "none" }} />
 
-      <section id="gallery" style={{ padding: isMobile ? "40px 14px" : "72px 60px", background: theme === "light" ? "#fff" : "#07101a" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <Badge label="Gallery" />
-            <div style={{ color: t.muted, fontSize: 13 }}>{gallery.length} images</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-            {gallery.map((f, i) => (
-              <div key={f} style={{ borderRadius: 12, overflow: "hidden", background: "#f6f8fa", display: "block" }}>
-                <img src={`/images/${f}`} alt={`photo-${i+1}`} loading="lazy" style={{ width: "100%", height: isMobile ? 200 : 220, objectFit: "contain", display: "block", backgroundColor: theme === "light" ? "#f6f8fa" : "#1a2a3a" }} onError={(e)=>{e.currentTarget.style.display='none'}} />
+        <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 40, alignItems: "center" }}>
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
+
+            <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 600 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
+
+            <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <button onClick={() => onNavigate("register")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Start Application ➜</button>
+              <button onClick={() => scrollTo("divisions")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid rgba(255,255,255,.45)", color: "#fff", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.45)"; e.currentTarget.style.color = "#fff"; }}>Explore Divisions</button>
+            </div>
+
+            <div style={{ display: "flex", gap: 28, marginTop: 28, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "rgba(255,255,255,.7)" }}>
+                <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>12.4K+</strong>
+                Applications Processed
               </div>
-            ))}
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "rgba(255,255,255,.7)" }}>
+                <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>36</strong>
+                States Covered
+              </div>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "rgba(255,255,255,.7)" }}>
+                <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>4</strong>
+                Selection Phases
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: isMobile ? "none" : "block" }}>
+            <img src="/logo.png" alt="Hero" style={{ width: "100%", maxWidth: 400, objectFit: "contain", display: "block" }} />
           </div>
         </div>
-      </section>
 
-      <section style={{ background: theme === "light" ? "#ffffff" : "rgba(255,255,255,0.02)", borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}` }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto", padding: isMobile ? "22px 14px" : "22px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
-          {stats.map(([value, label]) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <div style={{ color: "#c9952a", fontWeight: 900, fontSize: 28, lineHeight: 1 }}>{value}</div>
-              <div style={{ color: t.muted, fontSize: 13, marginTop: 6 }}>{label}</div>
-            </div>
+        <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8, zIndex: 10 }}>
+          {[0, 1, 2].map(i => (
+            <button key={i} onClick={() => setCurrentSlide(i)} style={{ width: i === currentSlide ? 24 : 8, height: 8, borderRadius: 4, background: i === currentSlide ? "#c9952a" : "rgba(255,255,255,.35)", cursor: "pointer", border: "none", transition: "all .3s" }} />
           ))}
         </div>
       </section>
 
-      <section id="about" style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto", padding: isMobile ? "0 14px" : "0 60px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 20 : 36, alignItems: "start" }}>
+      {/* DIVISIONS SECTION */}
+      <section id="divisions" style={{ background: "#f5f5f0", padding: isMobile ? "72px 24px" : "72px 60px", position: "relative" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #004d26, #c9952a, #004d26)" }} />
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto 44px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2.5, color: "#c9952a", marginBottom: 8 }}>Our Structure</div>
+            <h2 style={{ fontSize: 34, color: "#004d26", textTransform: "uppercase", lineHeight: 1.15, marginBottom: 12, fontWeight: 900 }}>Divisions with Clear Purpose</h2>
+            <p style={{ fontSize: 14.5, color: "#666", lineHeight: 1.7 }}>Civil Elite Service comprises specialized operational units, each with distinct mandates aligned to national defense and civil protection.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 24 }}>
+            {[["Operations", "🧭", "Field coordination, incident response, and national deployment support."], ["Intelligence", "🔎", "Information gathering, threat analysis, and situational awareness."], ["Training", "📘", "Recruits are molded through structured drills, ethics, and leadership."]].map(([name, icon, desc], idx) => (
+              <div key={name} style={{ background: "#fff", padding: 30, borderTop: "4px solid #004d26", borderRadius: 2, transition: "all .3s", position: "relative", overflow: "hidden" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,.1)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 0"; }}>
+                <div style={{ position: "absolute", bottom: 0, left: 0, width: "0%", height: 3, background: "#c9952a", transition: "width .4s", pointerEvents: "none" }} className="mandate-bottom" />
+                <div style={{ width: 52, height: 52, background: "#004d26", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, fontSize: 24 }}>{icon}</div>
+                <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 17, color: "#004d26", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.3, fontWeight: 900 }}>{name}</h3>
+                <p style={{ fontSize: 13.5, color: "#555", lineHeight: 1.75, marginBottom: 18 }}>{desc}</p>
+                <a href="#apply" onClick={() => scrollTo("apply")} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#004d26", cursor: "pointer", transition: "gap .2s, color .2s" }} onMouseEnter={e => { e.currentTarget.style.gap = "10px"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.gap = "5px"; e.currentTarget.style.color = "#004d26"; }}>Learn More ➜</a>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 34 }}>
+            <button onClick={() => scrollTo("process")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid #004d26", color: "#004d26", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.background = "#004d26"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#004d26"; }}>View Application Process</button>
+          </div>
+        </div>
+      </section>
+
+      {/* MISSION SECTION */}
+      <section style={{ background: "#004d26", padding: isMobile ? "72px 24px" : "72px 60px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(-45deg, transparent, transparent 28px, rgba(255,255,255,.02) 28px, rgba(255,255,255,.02) 56px)" }} />
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 40 }}>
+          <div style={{ padding: 34, border: "1px solid rgba(255,255,255,.11)", borderTop: "4px solid #c9952a", background: "rgba(255,255,255,.04)" }}>
+            <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, fontWeight: 900 }}>Our Vision</h3>
+            <p style={{ color: "rgba(255,255,255,.78)", fontSize: 14.5, lineHeight: 1.85 }}>To establish a transparent, merit-based recruitment system where every applicant receives fair consideration and clear communication throughout the selection process.</p>
+          </div>
+
+          <div style={{ padding: 34, border: "1px solid rgba(255,255,255,.11)", borderTop: "4px solid #c9952a", background: "rgba(255,255,255,.04)" }}>
+            <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, fontWeight: 900 }}>Our Mission</h3>
+            <p style={{ color: "rgba(255,255,255,.78)", fontSize: 14.5, lineHeight: 1.85 }}>To recruit, train, and deploy disciplined personnel committed to national security and civic protection. We uphold the highest standards of integrity and professionalism.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS SECTION */}
+      <section id="process" style={{ padding: isMobile ? "72px 24px" : "72px 60px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto 44px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2.5, color: "#c9952a", marginBottom: 8 }}>How It Works</div>
+            <h2 style={{ fontSize: 34, color: "#004d26", textTransform: "uppercase", lineHeight: 1.15, marginBottom: 12, fontWeight: 900 }}>Four Steps to Your Career</h2>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: 16 }}>
+            {[["01", "Register", "Create your applicant profile and verify your contact details."], ["02", "Screening", "Submit documents and complete the eligibility review."], ["03", "Assessment", "Attend aptitude, physical, and medical examinations."], ["04", "Placement", "Successful candidates move into training and deployment."]].map(([step, title, text]) => (
+              <div key={step} style={{ textAlign: "center", padding: isMobile ? 18 : 26, border: "1px solid rgba(255,255,255,.1)", background: isLight ? "#f8fafc" : "rgba(255,255,255,.04)", transition: "all .3s" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = isLight ? "#f8fafc" : "rgba(255,255,255,.04)"; e.currentTarget.style.color = t.text; }}>
+                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 28, color: "#c9952a", fontWeight: 900, marginBottom: 12 }}>{step}</div>
+                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 17, color: "#004d26", textTransform: "uppercase", marginBottom: 10, fontWeight: 900 }}>{title}</div>
+                <div style={{ fontSize: 14, color: "#555", lineHeight: 1.6 }}>{text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* APPLY CTA */}
+      <section id="apply" style={{ background: `linear-gradient(135deg, ${isLight ? "#f5f5f0" : "#1a2a3a"} 0%, ${isLight ? "#e5ede5" : "#1a2a1a"} 100%)`, padding: isMobile ? "60px 24px" : "60px 60px", borderTop: "4px solid #004d26" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", alignItems: "center", gap: 40 }}>
           <div>
-            <Badge label="About the Service" />
-            <h2 style={{ marginTop: 16, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Built for disciplined public service.</h2>
-            <p style={{ marginTop: 18, color: t.muted, lineHeight: 1.8, fontSize: 16, maxWidth: 620 }}>Civil Elite Service is presented as a structured recruitment and applicant management platform. The design now focuses on clarity, trust, and a clean first impression.</p>
+            <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 26, color: "#004d26", textTransform: "uppercase", marginBottom: 8, fontWeight: 900 }}>Ready to Serve?</h2>
+            <p style={{ fontSize: 14.5, color: "#555", maxWidth: 540, lineHeight: 1.7 }}>Apply now through our streamlined recruitment portal. Track your progress in real-time and stay updated every step of the way.</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,minmax(0,1fr))", gap: 14 }}>
-            {divisions.map(item => (
-              <div key={item.name} style={{ padding: 18, borderRadius: 18, background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.08)"}` }}>
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{item.icon}</div>
-                <div style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800, marginBottom: 6 }}>{item.name}</div>
-                <div style={{ color: t.muted, fontSize: 14, lineHeight: 1.6 }}>{item.desc}</div>
-              </div>
-            ))}
-          </div>
+          <button onClick={() => onNavigate("register")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)", whiteSpace: "nowrap" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Begin Application ➜</button>
         </div>
       </section>
 
-      <section id="divisions" style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding, background: theme === "light" ? "#f7f9fc" : "rgba(255,255,255,0.02)" }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <Badge label="Divisions" />
-            <h2 style={{ marginTop: 16, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Operational divisions with clear purpose.</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 18 }}>
-            {divisions.map((item, index) => (
-              <div key={item.name} style={{ animation: `rise .5s ease ${index * 0.04}s both`, padding: 22, borderRadius: 18, background: theme === "light" ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.07)"}` }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{item.icon}</div>
-                <div style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800, fontSize: 16, marginBottom: 8 }}>{item.name}</div>
-                <div style={{ color: t.muted, lineHeight: 1.7, fontSize: 14 }}>{item.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="process" style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <Badge label="Process" />
-            <h2 style={{ marginTop: 16, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Four steps from registration to placement.</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 16 }}>
-            {steps.map(step => (
-              <div key={step.step} style={{ padding: 22, borderRadius: 18, background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.07)"}` }}>
-                <div style={{ color: "#c9952a", fontWeight: 900, fontSize: 13, letterSpacing: 2 }}>{step.step}</div>
-                <div style={{ marginTop: 10, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 800, fontSize: 18 }}>{step.title}</div>
-                <div style={{ marginTop: 10, color: t.muted, lineHeight: 1.7, fontSize: 14 }}>{step.text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="requirements" style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding, background: theme === "light" ? "#f7f9fc" : "rgba(255,255,255,0.02)" }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <Badge label="Requirements" />
-            <h2 style={{ marginTop: 16, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Check eligibility before you apply.</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 16 }}>
-            {[["Age", "18-35 years"], ["Nationality", "Nigerian citizen"], ["Education", "WAEC / NECO minimum"], ["Medical", "Fit for active service"], ["Documents", "ID, certificates, passport photo"], ["Conduct", "No pending disciplinary issues"]].map(([label, value]) => (
-              <div key={label} style={{ padding: 20, borderRadius: 16, background: theme === "light" ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.07)"}` }}>
-                <div style={{ color: "#c9952a", fontWeight: 800, fontSize: 13, marginBottom: 8 }}>{label}</div>
-                <div style={{ color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 700, lineHeight: 1.6 }}>{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding, background: theme === "light" ? "linear-gradient(135deg, #eef4f8 0%, #f6f9fb 100%)" : "linear-gradient(135deg, #0d1b2a 0%, #1a2a1a 100%)" }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto", padding: isMobile ? "0 14px" : "0 60px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "center" }}>
+      {/* FOOTER */}
+      <footer style={{ background: "#07150a", color: "rgba(255,255,255,.72)", padding: isMobile ? "56px 24px 0" : "56px 60px 0", borderTop: "4px solid #c9952a" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1.5fr", gap: 36, marginBottom: 40 }}>
           <div>
-            <div style={{ color: "#c9952a", fontWeight: 800, letterSpacing: 2, fontSize: 12, textTransform: "uppercase" }}>Apply Today</div>
-            <h2 style={{ marginTop: 10, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Start your application in a focused, professional portal.</h2>
-            <p style={{ marginTop: 12, color: t.muted, maxWidth: 720, lineHeight: 1.8 }}>The landing page has been rebuilt from scratch to feel more intentional, more readable, and more trustworthy. It now gives applicants a clear path into the portal.</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <img src="/logo.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
+              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1, color: "#fff" }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a" }}>SERVICE</span></div>
+            </div>
+            <p style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(255,255,255,.55)", marginTop: 14 }}>A disciplined recruitment platform built for transparency, merit, and national service excellence.</p>
           </div>
-          <GoldBtn onClick={() => onNavigate("register")} style={{ padding: "16px 24px" }}>Begin Application <ArrowRight /></GoldBtn>
-        </div>
-      </section>
-
-      <section id="faq" style={{ ...pageSection, padding: isMobile ? "72px 14px" : pageSection.padding }}>
-        <div style={{ maxWidth: 980, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <Badge label="FAQ" />
-            <h2 style={{ marginTop: 16, fontSize: "clamp(30px,4.5vw,52px)", lineHeight: 1.05, color: theme === "light" ? "#0f172a" : "#fff", fontWeight: 900 }}>Common questions, answered.</h2>
-          </div>
-          <div style={{ display: "grid", gap: 12 }}>
-            {faqs.map((item, index) => (
-              <div key={item.q} style={{ borderRadius: 16, overflow: "hidden", background: theme === "light" ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.03)", border: `1px solid ${theme === "light" ? "rgba(26,107,60,0.1)" : "rgba(255,255,255,0.07)"}` }}>
-                <button onClick={() => setFaqOpen(faqOpen === index ? -1 : index)} style={{ width: "100%", background: "none", border: "none", color: theme === "light" ? "#0f172a" : "#fff", padding: "18px 20px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700, fontSize: 15 }}>
-                  {item.q}
-                  <span style={{ color: "#c9952a", transform: faqOpen === index ? "rotate(180deg)" : "none", transition: "transform .2s" }}><ChevronDown /></span>
-                </button>
-                {faqOpen === index && <div style={{ padding: "0 20px 18px", color: t.muted, lineHeight: 1.8, fontSize: 14 }}>{item.a}</div>}
+          <div>
+            <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Quick Links</h4>
+            {[["Home", "hero"], ["About", "about"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+              <div key={id} style={{ marginBottom: 7 }}>
+                <a href="#" onClick={e => { e.preventDefault(); scrollTo(id); }} style={{ fontSize: 12.5, color: "rgba(255,255,255,.58)", transition: "color .2s", cursor: "pointer", textDecoration: "none" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.58)"}>{label}</a>
               </div>
             ))}
           </div>
+          <div>
+            <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Support</h4>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />0818 302 0916<br />Portal Support:<br />24/7 Available</div>
+          </div>
+          <div>
+            <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Follow Us</h4>
+            <div style={{ display: "flex", gap: 8 }}>
+              {["📘", "𝕏", "▶️"].map(icon => (
+                <a key={icon} href="#" onClick={e => e.preventDefault()} style={{ width: 32, height: 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", fontSize: 13 }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; }}>{icon}</a>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
-
-      <footer style={{ background: theme === "light" ? "#ffffff" : "#060a12", borderTop: `1px solid ${t.border}`, padding: isMobile ? "40px 14px 26px" : "40px 60px 26px" }}>
-        <div style={{ maxWidth: 1440, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 28 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <img src="/logo.png" alt="footer-logo" style={{ width: 30, height: 30, objectFit: "cover", borderRadius: 6 }} />
-                <span style={{ fontWeight: 900 }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</span>
-              </div>
-              <div style={{ color: t.muted, lineHeight: 1.8, fontSize: 13 }}>A voluntary uniformed organization established to build and develop youths through various learning programs and training.</div>
-            </div>
-            <div>
-              <div style={{ color: theme === "light" ? "#0f172a" : "#e8d8a0", fontWeight: 800, fontSize: 13, letterSpacing: 1, marginBottom: 12 }}>Quick Links</div>
-              {navLinks.map(([label, id]) => <div key={id} style={{ color: t.muted, fontSize: 13, marginBottom: 8, cursor: "pointer" }} onClick={() => scrollTo(id)}>{label}</div>)}
-            </div>
-            <div>
-              <div style={{ color: theme === "light" ? "#0f172a" : "#e8d8a0", fontWeight: 800, fontSize: 13, letterSpacing: 1, marginBottom: 12 }}>Contact</div>
-              <div style={{ color: t.muted, fontSize: 13, lineHeight: 1.8 }}>civileliteservice@gmail.com<br />0818 302 0916</div>
-            </div>
-          </div>
-          <div style={{ marginTop: 26, paddingTop: 18, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12, display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-            <span>© {new Date().getFullYear()} Civil Elite Service</span>
-            <span>Built for clarity, trust, and national service</span>
-          </div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, color: "rgba(255,255,255,.35)", flexWrap: "wrap", gap: 8 }}>
+          <span>© {new Date().getFullYear()} Civil Elite Service</span>
+          <span>Built for discipline, transparency, and national service</span>
         </div>
       </footer>
     </div>
