@@ -557,6 +557,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   const isLight = theme === "light";
   const [navScrolled, setNavScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -570,6 +571,10 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    if (!isMobile) setMobileMenuOpen(false);
+  }, [isMobile]);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentSlide(s => (s + 1) % 3), 5000);
@@ -668,14 +673,37 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
             <div style={{ textAlign: "left", lineHeight: 1.2 }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a", fontWeight: 700 }}>SERVICE PORTAL</span></div>
           </button>
-          <nav style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flex: 1 }}>
-            {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: "#004d26", fontWeight: 600, cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "#004d26"}>{label}</button>
-            ))}
-          </nav>
+          {/* Desktop nav or mobile hamburger */}
+          {!isMobile ? (
+            <nav style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flex: 1 }}>
+              {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+                <button key={id} onClick={() => { scrollTo(id); }} style={{ background: "none", border: "none", color: "#004d26", fontWeight: 600, cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "#004d26"}>{label}</button>
+              ))}
+            </nav>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button aria-label="menu" onClick={() => setMobileMenuOpen(v => !v)} style={{ background: "none", border: "1px solid rgba(0,0,0,0.06)", padding: 8, borderRadius: 6, cursor: "pointer" }}>
+                <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="2" rx="1" fill="#004d26"/><rect y="6" width="20" height="2" rx="1" fill="#004d26"/><rect y="12" width="20" height="2" rx="1" fill="#004d26"/></svg>
+              </button>
+            </div>
+          )}
           <button onClick={() => onNavigate("register")} style={{ background: "#c9952a", color: "#000", border: "none", borderRadius: 2, padding: "11px 24px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, fontSize: 12.5, cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Apply Now</button>
         </div>
       </header>
+
+      {/* Mobile menu overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div style={{ position: "fixed", top: 78, left: 0, right: 0, background: "#fff", zIndex: 9999, boxShadow: "0 10px 30px rgba(0,0,0,.12)", borderBottom: "4px solid #c9952a" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+              <button key={id} onClick={() => { scrollTo(id); setMobileMenuOpen(false); }} style={{ textAlign: "left", padding: "12px 10px", border: "none", background: "none", fontSize: 16, fontWeight: 700, color: "#004d26", cursor: "pointer" }}>{label}</button>
+            ))}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button onClick={() => { onNavigate("register"); setMobileMenuOpen(false); }} style={{ flex: 1, padding: "10px 12px", background: "#c9952a", color: "#000", border: "none", borderRadius: 4, fontWeight: 800 }}>Apply Now</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HERO SECTION */}
       <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "80px 24px 40px" : "100px 60px" }}>
