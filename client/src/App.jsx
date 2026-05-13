@@ -117,10 +117,21 @@ const createUniqueApplicantId = (users) => {
   return id;
 };
 
-const buildQrPayload = ({ applicantId, serviceStatus }) => JSON.stringify({
+const buildQrPayload = ({
+  applicantId,
+  fullName,
+  bloodGroup,
+  genotype,
+  serviceStatus,
+  status,
+}) => JSON.stringify({
   type: "CES_USER",
   applicantId,
+  fullName,
+  bloodGroup,
+  genotype,
   serviceStatus,
+  status,
 });
 
 const parseQrPayload = (raw) => {
@@ -130,7 +141,7 @@ const parseQrPayload = (raw) => {
       data &&
       data.type === "CES_USER" &&
       typeof data.applicantId === "string" &&
-      SERVICE_STATUS_OPTIONS.includes(data.serviceStatus)
+      (data.serviceStatus === undefined || SERVICE_STATUS_OPTIONS.includes(data.serviceStatus))
     ) {
       return data;
     }
@@ -847,7 +858,14 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   });
   const [printSlipType, setPrintSlipType] = useState("application");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const qrPayload = appData.id ? buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus }) : "";
+  const qrPayload = appData.id ? buildQrPayload({
+    applicantId: appData.id,
+    fullName: appData.fullName,
+    bloodGroup: appData.bloodGroup,
+    genotype: appData.genotype,
+    serviceStatus: appData.serviceStatus,
+    status: appData.status,
+  }) : "";
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -997,6 +1015,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           id: a.applicantId || d.id,
           status: a.status || "under_review",
           submitted: a.submitted ?? true,
+          fullName: a.fullName || d.fullName,
+          bloodGroup: a.bloodGroup || d.bloodGroup,
+          genotype: a.genotype || d.genotype,
+          serviceStatus: a.serviceStatus || d.serviceStatus,
         }));
       } else {
         const id = appData.id || createApplicantId();
@@ -1082,10 +1104,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
 
   useEffect(() => {
     if (appData.id) {
-      const payload = buildQrPayload({ applicantId: appData.id, serviceStatus: appData.serviceStatus });
+      const payload = buildQrPayload({
+        applicantId: appData.id,
+        fullName: appData.fullName,
+        bloodGroup: appData.bloodGroup,
+        genotype: appData.genotype,
+        serviceStatus: appData.serviceStatus,
+        status: appData.status,
+      });
       QRCode.toDataURL(payload).then(url => setQrDataUrl(url)).catch(() => setQrDataUrl(null));
     } else setQrDataUrl(null);
-  }, [appData.id, appData.serviceStatus]);
+  }, [appData.id, appData.fullName, appData.bloodGroup, appData.genotype, appData.serviceStatus, appData.status, appData.submitted]);
 
   useEffect(() => {
     loadAnnouncements();
