@@ -798,7 +798,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                   src={`/images/${item.src}`}
                   alt={`gallery-${idx + 1}`}
                   loading="lazy"
-                  style={{ width: "100%", height: isMobile ? 220 : 200, objectFit: "cover", display: "block", transition: "transform .35s ease" }}
+                  style={{ width: "100%", height: isMobile ? 260 : 200, objectFit: "cover", objectPosition: isMobile ? "top center" : "center", display: "block", transition: "transform .35s ease" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
                 />
