@@ -878,7 +878,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Support</h4>
-            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />Portal Support:<br />Use the Help button (24/7)</div>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />Portal Support:<br />Use the Help button (24/7) or call 07066304322</div>
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Follow Us</h4>
