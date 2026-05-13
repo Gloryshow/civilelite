@@ -688,10 +688,13 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       <div style={{ background: "#004d26", color: "#ccc", fontSize: 12, padding: "6px 0", borderBottom: "2px solid #c9952a" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
           <div style={{ display: "flex", gap: isMobile ? 16 : 20, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>📞 <span style={{ color: "#c9952a", fontWeight: 600 }}>24/7: Portal Support 07066304322</span></span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>📞 <span style={{ color: "#c9952a", fontWeight: 600 }}>24/7: Portal Support</span></span>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <a href="#" onClick={e => e.preventDefault()} style={{ color: "#ccc", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, border: "1px solid rgba(255,255,255,.2)", padding: "2px 8px", borderRadius: 2, transition: "all .2s", cursor: "pointer" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#ccc"; }}>Help</a>
+            <a href="tel:07066304322" aria-label="Call portal support" style={{ color: "#ccc", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, border: "1px solid rgba(255,255,255,.2)", padding: "2px 8px", borderRadius: 2, transition: "all .2s", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#ccc"; }}>
+              <span aria-hidden="true">📞</span>
+              Help
+            </a>
           </div>
         </div>
       </div>
@@ -875,7 +878,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Support</h4>
-            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />07066304322<br />Portal Support:<br />24/7 Available</div>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />Portal Support:<br />Use the Help button (24/7)</div>
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Follow Us</h4>
