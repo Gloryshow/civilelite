@@ -1378,7 +1378,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
             </span>
           </div>
           {menuItems.map(m => (
-            <button key={m.id} onClick={() => setTab(m.id)} style={{
+            <button key={m.id} onClick={() => { setTab(m.id); setSidebarOpen(false); }} style={{
               display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
               borderRadius: 10, marginBottom: 4, width: "100%", textAlign: "left",
               background: tab === m.id ? "rgba(201,168,76,0.1)" : "transparent",
@@ -2354,7 +2354,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
           </div>
           <div style={{ color: faintText, fontSize: 11, marginBottom: 28 }}>Control Panel</div>
           {menuItems.map(m => (
-            <button key={m.id} onClick={() => setTab(m.id)} style={{
+            <button key={m.id} onClick={() => { setTab(m.id); setSidebarOpen(false); }} style={{
               display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
               borderRadius: 10, marginBottom: 4, width: "100%", textAlign: "left",
               background: tab === m.id ? "rgba(201,168,76,0.1)" : "transparent",
