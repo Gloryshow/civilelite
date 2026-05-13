@@ -1611,6 +1611,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       <div><strong>Full Name:</strong> {appData.fullName}</div>
                       <div><strong>Status:</strong> {appData.status}</div>
                       <div><strong>Service Status:</strong> {appData.serviceStatus}</div>
+                      <div><strong>Assigned Rank:</strong> {appData.paramilitaryRank || "N/A"}</div>
+                      <div><strong>Assigned Post:</strong> {appData.paramilitaryPost || "N/A"}</div>
                       <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
                       <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
                       <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
@@ -1725,6 +1727,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     generalAptitudeScore: "",
     vocationalAptitudeScore: "",
     oralTestScore: "",
+    paramilitaryRank: "",
+    paramilitaryPost: "",
     documentsPresented: "",
     remarks: "",
     eliteAdminOfficerName: "",
@@ -1755,6 +1759,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       generalAptitudeScore: selectedApplicant.generalAptitudeScore || "",
       vocationalAptitudeScore: selectedApplicant.vocationalAptitudeScore || "",
       oralTestScore: selectedApplicant.oralTestScore || "",
+      paramilitaryRank: selectedApplicant.paramilitaryRank || "",
+      paramilitaryPost: selectedApplicant.paramilitaryPost || "",
       documentsPresented: selectedApplicant.documentsPresented || "",
       remarks: selectedApplicant.remarks || "",
       eliteAdminOfficerName: selectedApplicant.eliteAdminOfficerName || "",
@@ -2360,6 +2366,14 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
 
                     <div style={{ marginTop: 14 }}>
+                      <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Accepted applicant posting details</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
+                        <Input light={isLight} label="Assigned Rank" value={assessmentDraft.paramilitaryRank} onChange={e => setAssessmentDraft(d => ({ ...d, paramilitaryRank: e.target.value }))} placeholder="e.g. Recruit / Lance Corporal" />
+                        <Input light={isLight} label="Assigned Post" value={assessmentDraft.paramilitaryPost} onChange={e => setAssessmentDraft(d => ({ ...d, paramilitaryPost: e.target.value }))} placeholder="e.g. Operations / Training Unit" />
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 14 }}>
                       <Textarea light={isLight} label="Documents Presented" value={assessmentDraft.documentsPresented} onChange={e => setAssessmentDraft(d => ({ ...d, documentsPresented: e.target.value }))} rows={3} placeholder="List all documents presented by the applicant" />
                       <Textarea light={isLight} label="Remarks" value={assessmentDraft.remarks} onChange={e => setAssessmentDraft(d => ({ ...d, remarks: e.target.value }))} rows={3} placeholder="General remarks, observations, or decision notes" />
                     </div>
@@ -2471,6 +2485,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         ["General Aptitude", scannedResult.generalAptitudeScore || "Not provided"],
                         ["Vocational Aptitude", scannedResult.vocationalAptitudeScore || "Not provided"],
                         ["Oral Test", scannedResult.oralTestScore || "Not provided"],
+                        ["Assigned Rank", scannedResult.paramilitaryRank || "Not provided"],
+                        ["Assigned Post", scannedResult.paramilitaryPost || "Not provided"],
                         ["Phone", scannedResult.phone || "N/A"],
                         ["Email", scannedResult.email || "N/A"],
                         ["Gender", scannedResult.gender || "N/A"],
