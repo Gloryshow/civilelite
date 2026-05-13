@@ -642,16 +642,16 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   ];
 
   const gallery = [
-    "elite.jpg",
-    "20250830_172445.jpg",
-    "20250831_083759.jpg",
-    "20250831_083836.jpg",
-    "IMG-20260508-WA0011.jpg",
-    "IMG-20260508-WA0012.jpg",
-    "IMG-20260508-WA0013.jpg",
-    "IMG-20260508-WA0014.jpg",
-    "IMG-20260508-WA0015.jpg",
-    "IMG-20260508-WA0016.jpg",
+    { src: "elite.jpg", caption: "Command Presence" },
+    { src: "20250830_172445.jpg", caption: "Field Readiness" },
+    { src: "20250831_083759.jpg", caption: "Drill Formation" },
+    { src: "20250831_083836.jpg", caption: "Unit Coordination" },
+    { src: "IMG-20260508-WA0011.jpg", caption: "Discipline in Action" },
+    { src: "IMG-20260508-WA0012.jpg", caption: "Team Cohesion" },
+    { src: "IMG-20260508-WA0013.jpg", caption: "Operational Focus" },
+    { src: "IMG-20260508-WA0014.jpg", caption: "Leadership & Service" },
+    { src: "IMG-20260508-WA0015.jpg", caption: "Training Grounds" },
+    { src: "IMG-20260508-WA0016.jpg", caption: "Prepared to Serve" },
   ];
 
   const steps = [
@@ -792,16 +792,18 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
-            {gallery.map((src, idx) => (
-              <div key={src} style={{ position: "relative", overflow: "hidden", borderRadius: 10, background: "#0d1f14", boxShadow: "0 12px 26px rgba(0,0,0,0.14)" }}>
+            {gallery.map((item, idx) => (
+              <div key={item.src} style={{ position: "relative", overflow: "hidden", borderRadius: 10, background: "#0d1f14", boxShadow: "0 12px 26px rgba(0,0,0,0.14)" }}>
                 <img
-                  src={`/images/${src}`}
+                  src={`/images/${item.src}`}
                   alt={`gallery-${idx + 1}`}
                   loading="lazy"
                   style={{ width: "100%", height: isMobile ? 220 : 200, objectFit: "cover", display: "block", transition: "transform .35s ease" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
                 />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", left: 12, right: 12, bottom: 12, color: "#fff", fontSize: 12.5, letterSpacing: 0.6, fontWeight: 700, textTransform: "uppercase", textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{item.caption}</div>
                 <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(255,255,255,0.08)", pointerEvents: "none" }} />
               </div>
             ))}
