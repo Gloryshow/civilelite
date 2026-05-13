@@ -83,6 +83,13 @@ const buildApplicationTimeline = (status) => {
   ];
 };
 
+const SOCIAL_LINKS = [
+  { label: "WhatsApp Group", href: "#", icon: "💬", note: "Get live updates and alerts" },
+  { label: "Facebook Page", href: "#", icon: "📘", note: "News, photos, and notices" },
+  { label: "TikTok", href: "#", icon: "🎵", note: "Short updates and highlights" },
+  { label: "YouTube", href: "#", icon: "▶️", note: "Training clips and announcements" },
+];
+
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
 const USER_REGISTRY_KEY = "ces_user_registry";
@@ -1224,6 +1231,38 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                 </div>
               )}
 
+              <div style={{ ...S2.card, marginTop: 20 }}>
+                <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 10 }}>Join our socials to get updated</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+                  {SOCIAL_LINKS.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        textDecoration: "none",
+                        color: t.text,
+                        border: `1px solid ${t.border}`,
+                        borderRadius: 12,
+                        padding: 16,
+                        background: isLight ? "#fff" : "rgba(255,255,255,0.03)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                      }}
+                    >
+                      <div style={{ fontSize: 24 }}>{social.icon}</div>
+                      <div>
+                        <div style={{ fontWeight: 800 }}>{social.label}</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>{social.note}</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+                <div style={{ color: t.muted, fontSize: 12, marginTop: 12 }}>Replace the placeholder links in the code with your official WhatsApp, Facebook, TikTok, and YouTube URLs.</div>
+              </div>
+
               <div style={{ marginTop: 28 }}>
                 <div style={{ color: isLight ? "#9a6b1a" : "#e8d8a0", fontWeight: 700, marginBottom: 14 }}>Latest Announcements</div>
                 {announcements.map((a, i) => (
@@ -1242,6 +1281,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <div style={{ color: t.muted, fontSize: 13 }}>No announcements available.</div>
                 )}
               </div>
+
+              <div style={{ ...S2.card, marginTop: 20 }}>
+                <div style={{ color: theme === "light" ? "#0f172a" : "#e8d8a0", fontWeight: 800, fontSize: 13, letterSpacing: 1, marginBottom: 12 }}>Join Our Socials</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {SOCIAL_LINKS.map((social) => (
+                    <a key={social.label} href={social.href} target="_blank" rel="noreferrer" style={{ color: t.muted, textDecoration: "none", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span>{social.icon}</span>
+                      <span>{social.label}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1258,6 +1309,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
               )}
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 0 }}>
+                <div>
+                  <div style={{ color: theme === "light" ? "#0f172a" : "#e8d8a0", fontWeight: 800, fontSize: 13, letterSpacing: 1, marginBottom: 12 }}>Join Our Socials</div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {SOCIAL_LINKS.map((social) => (
+                      <a key={social.label} href={social.href} target="_blank" rel="noreferrer" style={{ color: t.muted, textDecoration: "none", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+                        <span>{social.icon}</span>
+                        <span>{social.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ paddingRight: 16 }}>
                   <div style={{ color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 16 }}>PERSONAL INFORMATION</div>
                   <Input light={isLight} label="Full Name" value={appData.fullName} onChange={e => setAppData(d => ({ ...d, fullName: e.target.value }))} required />
