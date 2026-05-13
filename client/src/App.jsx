@@ -642,6 +642,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   ];
 
   const gallery = [
+    "elite.jpg",
     "20250830_172445.jpg",
     "20250831_083759.jpg",
     "20250831_083836.jpg",
@@ -651,8 +652,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     "IMG-20260508-WA0014.jpg",
     "IMG-20260508-WA0015.jpg",
     "IMG-20260508-WA0016.jpg",
-    "IMG_8348.heif",
-    "IMG_8368.heif",
   ];
 
   const steps = [
@@ -780,6 +779,33 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           {[0, 1, 2].map(i => (
             <button key={i} onClick={() => setCurrentSlide(i)} style={{ width: i === currentSlide ? 24 : 8, height: 8, borderRadius: 4, background: i === currentSlide ? "#c9952a" : "rgba(255,255,255,.35)", cursor: "pointer", border: "none", transition: "all .3s" }} />
           ))}
+        </div>
+      </section>
+
+      {/* GALLERY SECTION */}
+      <section id="gallery" style={{ background: isLight ? "#f3f5ef" : "#0c1510", padding: isMobile ? "64px 24px" : "72px 40px", borderTop: "4px solid #c9952a" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 36px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2.2, color: "#c9952a", marginBottom: 8 }}>In Action</div>
+            <h2 style={{ fontSize: "clamp(26px, 3.4vw, 38px)", color: "#004d26", textTransform: "uppercase", lineHeight: 1.2, marginBottom: 10, fontWeight: 900 }}>Training & Service Moments</h2>
+            <p style={{ fontSize: 14.5, color: "#586168", lineHeight: 1.7 }}>A glimpse into the discipline, teamwork, and professionalism at the heart of Civil Elite Service.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
+            {gallery.map((src, idx) => (
+              <div key={src} style={{ position: "relative", overflow: "hidden", borderRadius: 10, background: "#0d1f14", boxShadow: "0 12px 26px rgba(0,0,0,0.14)" }}>
+                <img
+                  src={`/images/${src}`}
+                  alt={`gallery-${idx + 1}`}
+                  loading="lazy"
+                  style={{ width: "100%", height: isMobile ? 220 : 200, objectFit: "cover", display: "block", transition: "transform .35s ease" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+                />
+                <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(255,255,255,0.08)", pointerEvents: "none" }} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
