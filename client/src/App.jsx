@@ -426,11 +426,37 @@ const getLgaOptions = (state) => {
   return LGA_OPTIONS[state] || [];
 };
 
-const ThemeToggle = ({ theme, onToggle }) => (
-  <button onClick={onToggle} style={{ position: "fixed", right: 24, bottom: 24, zIndex: 1100, border: "1px solid rgba(201,149,42,0.5)", background: theme === "light" ? "#111827" : "#f8fafc", color: theme === "light" ? "#fff" : "#0f172a", borderRadius: 999, padding: "10px 16px", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 24px rgba(0,0,0,0.18)" }}>
-    {theme === "light" ? "Switch to dark" : "Switch to light"}
-  </button>
-);
+const ThemeToggle = ({ theme, onToggle }) => {
+  const [isMobileToggle, setIsMobileToggle] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 420 : false));
+
+  useEffect(() => {
+    const onResize = () => setIsMobileToggle(window.innerWidth <= 420);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const style = {
+    position: 'fixed',
+    right: isMobileToggle ? 12 : 24,
+    bottom: isMobileToggle ? 96 : 24,
+    zIndex: 1100,
+    border: '1px solid rgba(201,149,42,0.5)',
+    background: theme === 'light' ? '#111827' : '#f8fafc',
+    color: theme === 'light' ? '#fff' : '#0f172a',
+    borderRadius: 999,
+    padding: isMobileToggle ? '8px 12px' : '10px 16px',
+    fontWeight: 800,
+    cursor: 'pointer',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+    fontSize: isMobileToggle ? 12 : 14,
+  };
+
+  return (
+    <button onClick={onToggle} style={style}>
+      {theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+    </button>
+  );
+};
 
 const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
   const t = getTheme(theme);
@@ -717,9 +743,9 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 
             <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <button onClick={() => onNavigate("register")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Start Application ➜</button>
-              <button onClick={() => scrollTo("divisions")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid rgba(255,255,255,.45)", color: "#fff", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.45)"; e.currentTarget.style.color = "#fff"; }}>Explore Divisions</button>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? 'column' : 'row' }}>
+              <button onClick={() => onNavigate("register")} style={{ display: "inline-flex", width: isMobile ? '100%' : 'auto', justifyContent: 'center', alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s", boxShadow: "0 6px 18px rgba(200,168,75,.4)" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Start Application ➜</button>
+              <button onClick={() => scrollTo("divisions")} style={{ display: "inline-flex", width: isMobile ? '100%' : 'auto', justifyContent: 'center', alignItems: "center", gap: 7, padding: "11px 24px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid rgba(255,255,255,.45)", color: "#fff", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.45)"; e.currentTarget.style.color = "#fff"; }}>Explore Divisions</button>
             </div>
 
             <div style={{ display: "flex", gap: 28, marginTop: 28, flexWrap: "wrap" }}>
