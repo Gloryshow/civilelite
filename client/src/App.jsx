@@ -808,7 +808,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                 States Covered
               </div>
               <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "rgba(255,255,255,.7)" }}>
-                <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>4</strong>
+                <strong style={{ display: "block", fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#c9952a" }}>2015</strong>
                 Established in 2015
               </div>
             </div>
