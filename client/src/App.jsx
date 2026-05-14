@@ -889,15 +889,15 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 
       {/* FOOTER */}
       <footer style={{ background: "#07150a", color: "rgba(255,255,255,.72)", padding: isMobile ? "56px 24px 0" : "56px 60px 0", borderTop: "4px solid #c9952a" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1.5fr", gap: 28, marginBottom: 40, alignItems: "start" }}>
-          <div>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(260px, 1.45fr) repeat(3, minmax(0, 1fr))", gap: isMobile ? 28 : "24px 40px", marginBottom: 40, alignItems: "start", justifyItems: "start" }}>
+          <div style={{ maxWidth: 320 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <img src="/logo.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
               <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1, color: "#fff" }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a" }}>SERVICE</span></div>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(255,255,255,.55)", marginTop: 14 }}>Together we can protect ourselves. Motto: Always @ Alert</p>
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Quick Links</h4>
             {[["Home", "hero"], ["About", "about"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
               <div key={id} style={{ marginBottom: 7 }}>
@@ -905,11 +905,11 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
               </div>
             ))}
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Support</h4>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.62)", lineHeight: 1.6 }}>civileliteservice@gmail.com<br />Portal Support:<br />Use the Help button (24/7) or call 07066304322</div>
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Follow Us</h4>
             <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "center" }}>
               {["📘", "𝕏", "▶️"].map(icon => (
