@@ -721,7 +721,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       `}</style>
 
       {/* STICKY HEADER */}
-      <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "sticky", top: 0, zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
+      <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "fixed", top: 0, left: 0, right: 0, width: "100%", zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
           <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
             <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
@@ -760,7 +760,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       )}
 
       {/* HERO SECTION */}
-      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "72px 24px 36px" : isNarrow ? "86px 32px" : "90px 40px" }}>
+      <section id="hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", background: "linear-gradient(105deg, rgba(0,35,12,.95) 35%, rgba(0,60,25,.7) 100%), linear-gradient(180deg, #004d26 0%, #003d1f 100%)", display: "flex", alignItems: "center", padding: isMobile ? "150px 24px 36px" : isNarrow ? "164px 32px" : "168px 40px" }}>
         <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 800%22><defs><pattern id=%22grid%22 width=%2240%22 height=%2240%22 patternUnits=%22userSpaceOnUse%22><path d=%22M 40 0 L 0 0 0 40%22 fill=%22none%22 stroke=%22rgba(200,168,75,0.03)%22 stroke-width=%221%22/></pattern></defs><rect width=%221200%22 height=%22800%22 fill=%22url(%23grid)%22/></svg>')", opacity: 0.4, pointerEvents: "none" }} />
 
         <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: isNarrow ? "1fr" : "minmax(0, 620px) minmax(260px, 380px)", gap: isNarrow ? 22 : 22, alignItems: "center", justifyContent: "center", justifyItems: isNarrow ? "center" : "start" }}>
