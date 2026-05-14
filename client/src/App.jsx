@@ -702,7 +702,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "sticky", top: 0, zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
           <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
+            <img src="/images/logo-removebg-preview.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
             <div style={{ textAlign: "left", lineHeight: 1.2 }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a", fontWeight: 700 }}>SERVICE PORTAL</span></div>
           </button>
           {/* Desktop nav or mobile hamburger */}
@@ -771,7 +771,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
 
           <div style={{ display: isMobile ? "none" : "block", justifySelf: "center", alignSelf: "center" }}>
-            <img src="/logo.png" alt="Hero" style={{ width: 'clamp(220px, 22vw, 380px)', maxWidth: '100%', maxHeight: 420, objectFit: "contain", display: "block", borderRadius: 6 }} />
+            <img src="/images/logo-removebg-preview.png" alt="Hero" style={{ width: 'clamp(220px, 22vw, 380px)', maxWidth: '100%', maxHeight: 420, objectFit: "contain", display: "block", borderRadius: 6 }} />
           </div>
         </div>
 
@@ -891,7 +891,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1.5fr", gap: 36, marginBottom: 40 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <img src="/logo.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
+              <img src="/images/logo-removebg-preview.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
               <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1, color: "#fff" }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a" }}>SERVICE</span></div>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(255,255,255,.55)", marginTop: 14 }}>A disciplined recruitment platform built for transparency, merit, and national service excellence.</p>
@@ -985,7 +985,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
       }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <img src="/logo.png" alt="panel-logo" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, display: "block", margin: "0 auto 10px" }} />
+          <img src="/images/logo-removebg-preview.png" alt="panel-logo" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, display: "block", margin: "0 auto 10px" }} />
           <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: 1, color: t.text }}>CIVIL <span style={{ color: "#c9952a" }}>ELITE</span> SERVICE</div>
           <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>SECURE RECRUITMENT PORTAL</div>
         </div>
@@ -1421,7 +1421,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
       }}>
         <div style={{ padding: "24px 20px", minWidth: 240 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
-            <img src="/logo.png" alt="sid-logo" style={{ width: 28, height: 28, objectFit: "cover", borderRadius: 6 }} />
+            <img src="/images/logo-removebg-preview.png" alt="sid-logo" style={{ width: 28, height: 28, objectFit: "cover", borderRadius: 6 }} />
             <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1, whiteSpace: "nowrap" }}>
               CES <span style={{ color: "#c9952a" }}>PORTAL</span>
             </span>
@@ -1804,7 +1804,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                 {printSlipType === "application" && (
                 <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
-                    <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                    <img src="/images/logo-removebg-preview.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
                     <div>
                       <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
                       <div style={{ fontSize: 12, color: "#6b7280" }}>Applicant Application Slip</div>
@@ -1877,7 +1877,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                 {printSlipType === "acceptance" && appData.status === "approved" && (
                   <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
-                      <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                      <img src="/images/logo-removebg-preview.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
                       <div>
                         <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
                         <div style={{ fontSize: 12, color: "#6b7280" }}>Acceptance & Assessment Slip</div>
@@ -2432,7 +2432,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       }}>
         <div style={{ padding: "24px 20px", minWidth: 240 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <img src="/logo.png" alt="sid-admin-logo" style={{ width: 22, height: 22, objectFit: "cover", borderRadius: 6 }} />
+            <img src="/images/logo-removebg-preview.png" alt="sid-admin-logo" style={{ width: 22, height: 22, objectFit: "cover", borderRadius: 6 }} />
             <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1, whiteSpace: "nowrap" }}>
               CES <span style={{ color: "#c9952a" }}>ADMIN</span>
             </span>
@@ -2725,7 +2725,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   {selectedApplicant && (
                     <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, borderBottom: "2px solid #c9952a", paddingBottom: 14 }}>
-                        <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
+                        <img src="/images/logo-removebg-preview.png" alt="Civil Elite Service logo" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 10 }} />
                         <div>
                           <div style={{ fontSize: 22, fontWeight: 800 }}>Civil Elite Service</div>
                           <div style={{ fontSize: 12, color: "#6b7280" }}>Detailed Recruitment Result</div>
@@ -3182,3 +3182,4 @@ export default function App() {
   }
   return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
 }
+
