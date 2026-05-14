@@ -3036,12 +3036,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       <input value={settings?.manualPayment?.accountName || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), accountName: e.target.value } }))} placeholder="Account name" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
                       <label style={{ color: t.muted, fontSize: 13 }}>Account number</label>
                       <input value={settings?.manualPayment?.accountNumber || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), accountNumber: e.target.value } }))} placeholder="Account number" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
-                      <label style={{ color: t.muted, fontSize: 13 }}>Branch</label>
-                      <input value={settings?.manualPayment?.bankBranch || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), bankBranch: e.target.value } }))} placeholder="Branch or location" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
                       <label style={{ color: t.muted, fontSize: 13 }}>Receipt requirement</label>
                       <textarea value={settings?.manualPayment?.receiptRequirement || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), receiptRequirement: e.target.value } }))} placeholder="Come to camp with your receipt for verification." rows={3} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, resize: "vertical" }} />
-                      <label style={{ color: t.muted, fontSize: 13 }}>Payment note</label>
-                      <textarea value={settings?.manualPayment?.note || ""} onChange={e => setSettings(s => ({ ...s, manualPayment: { ...(s?.manualPayment || {}), note: e.target.value } }))} placeholder="Paystack and Flutterwave are not enabled yet." rows={3} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, resize: "vertical" }} />
                       <GoldBtn onClick={() => saveSettings({ manualPayment: settings?.manualPayment })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
                     </div>
                   </div>
