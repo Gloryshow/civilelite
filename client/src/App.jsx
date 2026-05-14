@@ -83,6 +83,28 @@ const buildApplicationTimeline = (status) => {
   ];
 };
 
+const getCurrentStage = (status, submitted) => {
+  if (!submitted) return "Pre-Application";
+  const stageMap = {
+    pending: "Application Received",
+    under_review: "Under Review",
+    approved: "Approved - Ready for Camp",
+    rejected: "Application Rejected",
+  };
+  return stageMap[status] || "Under Review";
+};
+
+const getStageColor = (status, submitted) => {
+  if (!submitted) return "#c9952a";
+  const colorMap = {
+    pending: "#ffc107",
+    under_review: "#2196f3",
+    approved: "#4caf50",
+    rejected: "#f44336",
+  };
+  return colorMap[status] || "#aab";
+};
+
 const createDefaultSettings = () => ({
   recruitmentOpen: true,
   emailNotifications: { enabled: false, address: "" },
@@ -1574,7 +1596,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   { icon: "📋", label: "Application Status", val: appData.submitted ? "Submitted" : "Not Started", color: appData.submitted ? "#81c784" : "#c9952a" },
                   { icon: "🛂", label: "Verification", val: "Physical check in camp", color: "#64b5f6" },
                   { icon: "📢", label: "Announcements", val: `${announcements.length} New`, color: "#c9952a" },
-                  { icon: "🎯", label: "Current Stage", val: appData.submitted ? "Under Review" : "Pre-Application", color: "#aab" },
+                  { icon: "🎯", label: "Current Stage", val: getCurrentStage(appData.status, appData.submitted), color: getStageColor(appData.status, appData.submitted) },
                 ].map(c => (
                   <div key={c.label} style={{ ...S2.card }}>
                     <div style={{ fontSize: 28, marginBottom: 10 }}>{c.icon}</div>
