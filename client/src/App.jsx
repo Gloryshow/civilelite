@@ -919,7 +919,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         </div>
         <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, color: "rgba(255,255,255,.35)", flexWrap: "wrap", gap: 8 }}>
           <span>© {new Date().getFullYear()} Civil Elite Service</span>
-          <span>Built for discipline, transparency, and national service</span>
+          <span>Together we can protect ourselves. Motto: Always @ Alert</span>
         </div>
       </footer>
     </div>
