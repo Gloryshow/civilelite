@@ -435,6 +435,22 @@ router.delete("/announcements/:id", authMiddleware, adminMiddleware, async (req,
   }
 });
 
+// Delete applicant
+router.delete("/applicants/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const applicant = await Applicant.findByIdAndDelete(req.params.id);
+
+    if (!applicant) {
+      return res.status(404).json({ error: "Applicant not found" });
+    }
+
+    res.json({ success: true, id: applicant._id, message: "Applicant deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Get admin settings
 router.get("/settings", authMiddleware, adminMiddleware, async (req, res) => {
   try {

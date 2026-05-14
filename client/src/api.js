@@ -89,6 +89,8 @@ export const adminAPI = {
     apiCall(`/admin/announcements/${id}`, "PATCH", { title, body }),
   deleteAnnouncement: (id) =>
     apiCall(`/admin/announcements/${id}`, "DELETE"),
+  deleteApplicant: (id) =>
+    apiCall(`/admin/applicants/${id}`, "DELETE"),
   getRegistrations: () => apiCall("/admin/registrations"),
   approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
   rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),

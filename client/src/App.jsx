@@ -2380,6 +2380,19 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
+  const deleteApplicant = async (id) => {
+    if (!confirm("Are you sure you want to delete this applicant? This action cannot be undone.")) return;
+    try {
+      await adminAPI.deleteApplicant(id);
+      setApplicants((current) => current.filter((item) => item.id !== id));
+      if (selectedApplicantId === id) setSelectedApplicantId(null);
+      await loadStats(true);
+      showToast("Applicant deleted successfully.");
+    } catch (err) {
+      showToast("Failed to delete applicant: " + err.message, "error");
+    }
+  };
+
   const saveAssessment = async () => {
     if (!selectedApplicant) {
       showToast("Select an applicant first.", "error");
@@ -2737,6 +2750,12 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                               background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: t.text,
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
                             }}>View</button>
+                            {a.status === "approved" && (
+                              <button onClick={() => deleteApplicant(a.id)} style={{
+                                background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.25)", color: "#e57373",
+                                borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
+                              }}>Delete</button>
+                            )}
                           </div>
                         </td>
                       </tr>
