@@ -726,12 +726,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           <div style={{ display: "flex", gap: isMobile ? 16 : 20, alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>📞 <span style={{ color: "#c9952a", fontWeight: 600 }}>24/7: Portal Support</span></span>
           </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <a href="tel:07066304322" aria-label="Call portal support" style={{ color: "#ccc", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, border: "1px solid rgba(255,255,255,.2)", padding: "2px 8px", borderRadius: 2, transition: "all .2s", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#ccc"; }}>
-              <span aria-hidden="true">📞</span>
-              Help
-            </a>
-          </div>
         </div>
       </div>
 
