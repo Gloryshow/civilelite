@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
+import crypto from "crypto";
 import User from "../models/User.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -147,3 +148,54 @@ router.get("/me", authMiddleware, async (req, res) => {
 });
 
 export default router;
+
+// ---------------------------------------------------------------------------
+// Password reset (Forgot password) routes
+// ---------------------------------------------------------------------------
+
+// Request password reset - generates a one-time token saved on user and returns success.
+router.post("/forgot", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(200).json({ message: "If that account exists, a reset link has been sent." });
+
+    const token = crypto.randomBytes(24).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 60; // 1 hour
+    await user.save();
+
+    // In a real app, send this link via email. For now we log it so deployers can copy it.
+    const resetLink = `${(process.env.FRONTEND_URL || "http://localhost:3000")}/reset-password/${token}`;
+    console.log(`Password reset requested for ${user.email}. Reset link: ${resetLink}`);
+
+    res.json({ message: "If that account exists, a reset link has been sent." });
+  } catch (err) {
+    console.error(err);
+    res.status(503).json({ error: "Unable to process request" });
+  }
+});
+
+// Reset password using token
+router.post("/reset/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ error: "New password is required" });
+
+    const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+    if (!user) return res.status(400).json({ error: "Invalid or expired token" });
+
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(503).json({ error: "Unable to reset password" });
+  }
+});

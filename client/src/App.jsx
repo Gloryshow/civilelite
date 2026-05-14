@@ -982,6 +982,10 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
   const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
 
@@ -1084,9 +1088,29 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {isLogin && (
           <div style={{ textAlign: "center", marginBottom: 12 }}>
-            <span style={{ color: t.muted, fontSize: 12 }}>Demo: </span>
-            <span style={{ color: "#c9952a", fontSize: 12 }}>admin@ces.gov.ng</span>
-            <span style={{ color: t.muted, fontSize: 12 }}> or any email for applicant</span>
+            {!showForgot ? (
+              <div>
+                <button onClick={() => { setShowForgot(true); setForgotMsg(""); setForgotEmail(""); }} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontWeight: 700 }}>Forgot password?</button>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: 8 }}>
+                <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Enter your account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                  <button onClick={async () => {
+                    setForgotMsg("");
+                    setForgotLoading(true);
+                    try {
+                      await authAPI.forgotPassword(forgotEmail);
+                      setForgotMsg("If that account exists, a reset link has been sent. Check console for development link.");
+                    } catch (err) {
+                      setForgotMsg(err.message || "Unable to process request");
+                    } finally { setForgotLoading(false); }
+                  }} disabled={forgotLoading} style={{ background: "#c9952a", border: "none", color: "#000", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>{forgotLoading ? "Sending…" : "Send reset link"}</button>
+                  <button onClick={() => { setShowForgot(false); setForgotMsg(""); }} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: t.muted, padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Cancel</button>
+                </div>
+                {forgotMsg && <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", textAlign: "center" }}>{forgotMsg}</div>}
+              </div>
+            )}
           </div>
         )}
 
