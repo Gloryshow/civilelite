@@ -888,7 +888,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 
       {/* FOOTER */}
       <footer style={{ background: "#07150a", color: "rgba(255,255,255,.72)", padding: isMobile ? "56px 24px 0" : "56px 60px 0", borderTop: "4px solid #c9952a" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1.5fr", gap: 36, marginBottom: 40 }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1.5fr", gap: 28, marginBottom: 40, alignItems: "start" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <img src="/logo.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
@@ -910,7 +910,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Follow Us</h4>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "center" }}>
               {["📘", "𝕏", "▶️"].map(icon => (
                 <a key={icon} href="#" onClick={e => e.preventDefault()} style={{ width: 32, height: 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", fontSize: 13 }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; }}>{icon}</a>
               ))}
