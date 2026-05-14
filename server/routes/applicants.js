@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import Announcement from "../models/Announcement.js";
 import Setting from "../models/Setting.js";
 import { authMiddleware } from "../middleware/auth.js";
+import QRCode from "qrcode";
+import archiver from "archiver";
 
 const router = express.Router();
 
@@ -281,5 +283,68 @@ router.get("/settings", async (req, res) => {
     res.status(503).json({ error: "Database unavailable" });
   }
 });
+
+  // Generate QR code for single applicant (admin only)
+  router.get("/admin/qr-code/:applicantId", authMiddleware, async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const applicant = await Applicant.findOne({ applicantId: req.params.applicantId });
+      if (!applicant) {
+        return res.status(404).json({ error: "Applicant not found" });
+      }
+
+      if (applicant.status !== "approved") {
+        return res.status(400).json({ error: "Only approved applicants can have QR codes" });
+      }
+
+      // Generate QR code containing verification URL
+      const baseUrl = process.env.CLIENT_URL || "http://localhost:5173";
+      const verificationUrl = `${baseUrl}/verify/${applicant.applicantId}`;
+      const qrDataUrl = await QRCode.toDataURL(verificationUrl);
+
+      res.json({ qrDataUrl });
+    } catch (error) {
+      console.error(error);
+      res.status(503).json({ error: "Failed to generate QR code" });
+    }
+  });
+
+  // Bulk download QR codes for all approved applicants (admin only)
+  router.get("/admin/qr-codes/download", authMiddleware, async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const approvedApplicants = await Applicant.find({ status: "approved" });
+
+      if (approvedApplicants.length === 0) {
+        return res.status(400).json({ error: "No approved applicants found" });
+      }
+
+      const archive = archiver("zip", { zlib: { level: 9 } });
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", 'attachment; filename="qr-codes.zip"');
+
+      archive.pipe(res);
+
+      const baseUrl = process.env.CLIENT_URL || "http://localhost:5173";
+
+      for (const applicant of approvedApplicants) {
+        const verificationUrl = `${baseUrl}/verify/${applicant.applicantId}`;
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl);
+        const buffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
+        archive.append(buffer, { name: `${applicant.applicantId}-qr.png` });
+      }
+
+      await archive.finalize();
+    } catch (error) {
+      console.error(error);
+      res.status(503).json({ error: "Failed to generate QR codes" });
+    }
+  });
 
 export default router;

@@ -2118,6 +2118,9 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [loadingSettings, setLoadingSettings] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [editingAnnouncementId, setEditingAnnouncementId] = useState(null);
+    const [selectedApplicantForQR, setSelectedApplicantForQR] = useState("");
+    const [qrDataUrl, setQrDataUrl] = useState("");
+    const [qrLoading, setQrLoading] = useState(false);
   const selectedApplicant = applicants.find((item) => item.id === selectedApplicantId) || null;
 
   useEffect(() => {
@@ -2234,6 +2237,53 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   };
 
   const loadStats = async (silent = false) => {
+    const generateQRCode = async () => {
+      if (!selectedApplicantForQR) {
+        showToast("Please select an applicant", "error");
+        return;
+      }
+
+      setQrLoading(true);
+      try {
+        const data = await adminAPI.getQRCode(selectedApplicantForQR);
+        setQrDataUrl(data.qrDataUrl);
+        showToast("QR code generated successfully");
+      } catch (err) {
+        showToast("Failed to generate QR code: " + err.message, "error");
+        setQrDataUrl("");
+      } finally {
+        setQrLoading(false);
+      }
+    };
+
+    const downloadQRCode = () => {
+      if (!qrDataUrl) return;
+      const link = document.createElement("a");
+      link.href = qrDataUrl;
+      link.download = `qr-code-${selectedApplicantForQR}.png`;
+      link.click();
+      showToast("QR code downloaded");
+    };
+
+    const downloadAllQRCodes = async () => {
+      setQrLoading(true);
+      try {
+        const response = await adminAPI.downloadAllQRCodes();
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `qr-codes-${Date.now()}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("QR codes downloaded as ZIP");
+      } catch (err) {
+        showToast("Failed to download QR codes: " + err.message, "error");
+      } finally {
+        setQrLoading(false);
+      }
+    };
+
     try {
       const data = await adminAPI.getStats();
       setStats({
@@ -3052,6 +3102,45 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               </div>
             </div>
           )}
+                <div style={{ ...S2.card }}>
+                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>QR Codes for ID Cards</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Generate and download QR codes for approved applicants' ID cards.</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <div>
+                      <label style={{ color: t.muted, fontSize: 13, display: "block", marginBottom: 4 }}>Select Applicant</label>
+                      <select
+                        value={selectedApplicantForQR}
+                        onChange={e => {
+                          setSelectedApplicantForQR(e.target.value);
+                          setQrDataUrl("");
+                        }}
+                        style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, width: "100%" }}
+                      >
+                        <option value="">-- Select an approved applicant --</option>
+                        {applicants.filter(a => a.status === "approved").map(a => (
+                          <option key={a.applicantId} value={a.applicantId}>
+                            {a.fullName} ({a.applicantId})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <GoldBtn onClick={generateQRCode} disabled={qrLoading} style={{ padding: "8px 14px" }}>
+                      {qrLoading ? "Generating..." : "Generate QR Code"}
+                    </GoldBtn>
+                    {qrDataUrl && (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 6 }}>
+                        <img src={qrDataUrl} alt="QR Code" style={{ width: 150, height: 150, border: `2px solid ${t.border}`, borderRadius: 4 }} />
+                        <GoldBtn onClick={downloadQRCode} style={{ padding: "6px 12px", fontSize: 12 }}>Download QR Code</GoldBtn>
+                      </div>
+                    )}
+                    <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 8, marginTop: 8 }}>
+                      <div style={{ color: t.muted, fontSize: 12, marginBottom: 8 }}>Download QR codes for all approved applicants:</div>
+                      <GoldBtn onClick={downloadAllQRCodes} disabled={qrLoading} style={{ padding: "8px 14px", width: "100%" }}>
+                        {qrLoading ? "Downloading..." : "Download All QR Codes (ZIP)"}
+                      </GoldBtn>
+                    </div>
+                  </div>
+                </div>
         </div>
       </div>
     </div>
