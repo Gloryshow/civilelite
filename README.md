@@ -16,14 +16,8 @@
 
 - Health check: `GET /api/health`
 
-## Password Reset Email
+## Password Reset
 
-Set one of the following in the server environment so forgot-password codes can be emailed:
+Forgot-password uses direct verification, similar to the ABS flow.
 
-- `SMTP_URL` or
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`
-
-Optional:
-
-- `SMTP_FROM`
-- `FRONTEND_URL`
+Provide the account email plus an Applicant ID or phone number, then set a new password.
