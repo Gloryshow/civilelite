@@ -2244,8 +2244,9 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
     setQrLoading(true);
     try {
-      const data = await adminAPI.getQRCode(selectedApplicantForQR);
-      setQrDataUrl(data.qrDataUrl);
+      const verificationUrl = `${window.location.origin}/?verify=${encodeURIComponent(selectedApplicantForQR)}`;
+      const qrDataUrl = await QRCode.toDataURL(verificationUrl);
+      setQrDataUrl(qrDataUrl);
       showToast("QR code generated successfully");
     } catch (err) {
       showToast("Failed to generate QR code: " + err.message, "error");
@@ -2259,7 +2260,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     if (!qrDataUrl) return;
     const link = document.createElement("a");
     link.href = qrDataUrl;
-    link.download = `qr-code-${selectedApplicantForQR}.png`;
+    link.download = `${selectedApplicantForQR}-qr.png`;
     link.click();
     showToast("QR code downloaded");
   };
@@ -2267,8 +2268,29 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const downloadAllQRCodes = async () => {
     setQrLoading(true);
     try {
-      const response = await adminAPI.downloadAllQRCodes();
-      const blob = await response.blob();
+      const approvedApplicants = applicants.filter(a => a.status === "approved");
+      if (approvedApplicants.length === 0) {
+        showToast("No approved applicants found", "error");
+        setQrLoading(false);
+        return;
+      }
+
+      // Dynamically import JSZip for client-side ZIP creation
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      
+      for (const applicant of approvedApplicants) {
+        try {
+          const verificationUrl = `${window.location.origin}/?verify=${encodeURIComponent(applicant.applicantId)}`;
+          const qrDataUrl = await QRCode.toDataURL(verificationUrl);
+          const base64Data = qrDataUrl.split(",")[1];
+          zip.file(`${applicant.applicantId}-qr.png`, base64Data, { base64: true });
+        } catch (err) {
+          console.error(`Error generating QR for ${applicant.applicantId}:`, err);
+        }
+      }
+
+      const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -3100,7 +3122,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
                 <div style={{ ...S2.card }}>
                   <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>QR Codes for ID Cards</div>
-                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Generate and download QR codes for approved applicants' ID cards.</div>
+                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Generate QR codes from applicant IDs (same as applicant portal).</div>
                   <div style={{ display: "grid", gap: 8 }}>
                     <div>
                       <label style={{ color: t.muted, fontSize: 13, display: "block", marginBottom: 4 }}>Select Applicant</label>
