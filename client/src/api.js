@@ -78,16 +78,16 @@ export const adminAPI = {
   getSettings: () => apiCall(`/admin/settings`),
   updateSettings: (payload) => apiCall(`/admin/settings`, "PATCH", payload),
   getAuditLogs: (limit = 50) => apiCall(`/admin/audit-logs?limit=${limit}`),
-    getQRCode: (applicantId) =>
-      apiCall(`/admin/applicants/qr-code/${encodeURIComponent(applicantId)}`),
-    downloadAllQRCodes: async () => {
-      const token = getAuthToken();
-      const response = await fetch(`${API_BASE}/admin/applicants/qr-codes/download`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Failed to download QR codes");
-      return response;
-    },
+  getQRCode: (applicantId) =>
+    apiCall(`/applicants/admin/qr-code/${encodeURIComponent(applicantId)}`),
+  downloadAllQRCodes: async () => {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE}/applicants/admin/qr-codes/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error("Failed to download QR codes");
+    return response;
+  },
   exportApplicants: () => apiCall(`/admin/export`, "POST", {}, { raw: true }),
   scanQr: (qrPayload) =>
     apiCall("/admin/scan-qr", "POST", { qrPayload }),

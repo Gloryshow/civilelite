@@ -2236,54 +2236,54 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
+  const generateQRCode = async () => {
+    if (!selectedApplicantForQR) {
+      showToast("Please select an applicant", "error");
+      return;
+    }
+
+    setQrLoading(true);
+    try {
+      const data = await adminAPI.getQRCode(selectedApplicantForQR);
+      setQrDataUrl(data.qrDataUrl);
+      showToast("QR code generated successfully");
+    } catch (err) {
+      showToast("Failed to generate QR code: " + err.message, "error");
+      setQrDataUrl("");
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
+  const downloadQRCode = () => {
+    if (!qrDataUrl) return;
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `qr-code-${selectedApplicantForQR}.png`;
+    link.click();
+    showToast("QR code downloaded");
+  };
+
+  const downloadAllQRCodes = async () => {
+    setQrLoading(true);
+    try {
+      const response = await adminAPI.downloadAllQRCodes();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-codes-${Date.now()}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("QR codes downloaded as ZIP");
+    } catch (err) {
+      showToast("Failed to download QR codes: " + err.message, "error");
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
   const loadStats = async (silent = false) => {
-    const generateQRCode = async () => {
-      if (!selectedApplicantForQR) {
-        showToast("Please select an applicant", "error");
-        return;
-      }
-
-      setQrLoading(true);
-      try {
-        const data = await adminAPI.getQRCode(selectedApplicantForQR);
-        setQrDataUrl(data.qrDataUrl);
-        showToast("QR code generated successfully");
-      } catch (err) {
-        showToast("Failed to generate QR code: " + err.message, "error");
-        setQrDataUrl("");
-      } finally {
-        setQrLoading(false);
-      }
-    };
-
-    const downloadQRCode = () => {
-      if (!qrDataUrl) return;
-      const link = document.createElement("a");
-      link.href = qrDataUrl;
-      link.download = `qr-code-${selectedApplicantForQR}.png`;
-      link.click();
-      showToast("QR code downloaded");
-    };
-
-    const downloadAllQRCodes = async () => {
-      setQrLoading(true);
-      try {
-        const response = await adminAPI.downloadAllQRCodes();
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `qr-codes-${Date.now()}.zip`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast("QR codes downloaded as ZIP");
-      } catch (err) {
-        showToast("Failed to download QR codes: " + err.message, "error");
-      } finally {
-        setQrLoading(false);
-      }
-    };
-
     try {
       const data = await adminAPI.getStats();
       setStats({
