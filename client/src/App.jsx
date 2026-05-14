@@ -720,15 +720,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         ::-webkit-scrollbar-thumb { background: rgba(201,149,42,0.5); border-radius: 999px; }
       `}</style>
 
-      {/* TOP BAR */}
-      <div style={{ background: "#004d26", color: "#ccc", fontSize: 12, padding: "6px 0", borderBottom: "2px solid #c9952a" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
-          <div style={{ display: "flex", gap: isMobile ? 16 : 20, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>📞 <span style={{ color: "#c9952a", fontWeight: 600 }}>24/7: Portal Support</span></span>
-          </div>
-        </div>
-      </div>
-
       {/* STICKY HEADER */}
       <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "sticky", top: 0, zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
