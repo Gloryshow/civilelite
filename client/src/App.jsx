@@ -714,6 +714,15 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     { src: "IMG-20260508-WA0016.jpg", caption: "Prepared to Serve" },
   ];
 
+  const pressReleases = [
+    {
+      title: "Civil Elite Service opens press coverage for the latest recruitment cycle",
+      date: "May 2026",
+      image: new URL("../../images/press release 1.jpg", import.meta.url).href,
+      summary: "Official coverage highlighting the launch of the current recruitment window, applicant guidance, and service expectations.",
+    },
+  ];
+
   const steps = [
     { step: "01", title: "Register", text: "Create your applicant profile and verify your details." },
     { step: "02", title: "Screening", text: "Submit documents and complete the eligibility review." },
@@ -755,7 +764,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           {/* Desktop nav or mobile hamburger */}
           {!isMobile ? (
             <nav style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flex: 1 }}>
-              {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+              {[ ["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Press Releases", "press-releases"], ["Apply", "apply"] ].map(([label, id]) => (
                 <button key={id} onClick={() => { scrollTo(id); }} style={{ background: "none", border: "none", color: "#004d26", fontWeight: 600, cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "#004d26"}>{label}</button>
               ))}
             </nav>
@@ -774,7 +783,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       {isMobile && mobileMenuOpen && (
         <div style={{ position: "fixed", top: 78, left: 0, right: 0, background: "#fff", zIndex: 9999, boxShadow: "0 10px 30px rgba(0,0,0,.12)", borderBottom: "4px solid #c9952a" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+            {[ ["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Press Releases", "press-releases"], ["Apply", "apply"] ].map(([label, id]) => (
               <button key={id} onClick={() => { scrollTo(id); setMobileMenuOpen(false); }} style={{ textAlign: "left", padding: "12px 10px", border: "none", background: "none", fontSize: 16, fontWeight: 700, color: "#004d26", cursor: "pointer" }}>{label}</button>
             ))}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -875,6 +884,44 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                 <div style={{ position: "absolute", left: 12, right: 12, bottom: 12, color: "#fff", fontSize: 12.5, letterSpacing: 0.6, fontWeight: 700, textTransform: "uppercase", textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{item.caption}</div>
                 <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(255,255,255,0.08)", pointerEvents: "none" }} />
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRESS RELEASE SECTION */}
+      <section id="press-releases" style={{ background: isLight ? "#ffffff" : "#07111a", padding: isMobile ? "64px 24px" : "76px 40px", borderTop: "1px solid rgba(201,149,42,0.18)" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 680, margin: "0 auto 36px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2.2, color: "#c9952a", marginBottom: 8 }}>Media Room</div>
+            <h2 style={{ fontSize: "clamp(26px, 3.4vw, 38px)", color: "#004d26", textTransform: "uppercase", lineHeight: 1.2, marginBottom: 10, fontWeight: 900 }}>Press Releases</h2>
+            <p style={{ fontSize: 14.5, color: "#586168", lineHeight: 1.7 }}>Official updates, announcements, and public-facing coverage from Civil Elite Service.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.1fr) minmax(0, .9fr)", gap: 20, alignItems: "stretch" }}>
+            {pressReleases.map((item, idx) => (
+              <article key={item.title} style={{ gridColumn: idx === 0 ? "1 / -1" : "auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.2fr) minmax(0, .8fr)", background: isLight ? "#f8fafc" : "rgba(255,255,255,0.04)", border: "1px solid rgba(201,149,42,0.18)", borderRadius: 18, overflow: "hidden", boxShadow: "0 18px 38px rgba(0,0,0,0.08)" }}>
+                <div style={{ position: "relative", minHeight: isMobile ? 260 : 360, background: "#0d1f14" }}>
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", left: 16, top: 16, background: "#c9952a", color: "#000", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1.1, padding: "7px 10px", borderRadius: 999 }}>Featured</div>
+                </div>
+
+                <div style={{ padding: isMobile ? 22 : 28, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                  <div style={{ color: "#c9952a", fontSize: 11.5, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1.4, marginBottom: 10 }}>{item.date}</div>
+                  <h3 style={{ fontSize: "clamp(22px, 2.6vw, 30px)", lineHeight: 1.15, color: "#004d26", marginBottom: 14, fontWeight: 900 }}>{item.title}</h3>
+                  <p style={{ fontSize: 15, color: "#56606a", lineHeight: 1.8, marginBottom: 18 }}>{item.summary}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    <button onClick={() => scrollTo("apply")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Apply Now</button>
+                    <button onClick={() => scrollTo("hero")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid #004d26", color: "#004d26", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.background = "#004d26"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#004d26"; }}>Back to Top</button>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>
