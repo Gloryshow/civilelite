@@ -1,5 +1,4 @@
 import QRCode from "qrcode";
-import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react";
 import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
@@ -2083,8 +2082,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [announcement, setAnnouncement] = useState({ title: "", body: "" });
-  const [scannerActive, setScannerActive] = useState(false);
-  const [scannedResult, setScannedResult] = useState(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState(null);
   const [assessmentDraft, setAssessmentDraft] = useState({
     bloodGroup: "",
@@ -2104,7 +2101,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     directoratePortfolio: "",
     directorateSignatureDate: "",
   });
-  const scannerRef = useRef(null);
+
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -2455,62 +2452,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
-  const stopScanner = async () => {
-    if (!scannerRef.current) {
-      setScannerActive(false);
-      return;
-    }
-    try {
-      await scannerRef.current.stop();
-    } catch {
-      // no-op
-    }
-    try {
-      await scannerRef.current.clear();
-    } catch {
-      // no-op
-    }
-    scannerRef.current = null;
-    setScannerActive(false);
-  };
 
-  const startScanner = async () => {
-    if (scannerActive) return;
-    try {
-      const scanner = new Html5Qrcode("admin-qr-reader");
-      scannerRef.current = scanner;
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        async (decodedText) => {
-          const parsed = parseQrPayload(decodedText);
-          if (!parsed) {
-            showToast("Invalid QR payload scanned.", "error");
-            return;
-          }
-          try {
-            const result = await adminAPI.scanQr(decodedText);
-            setScannedResult(result);
-            showToast(`Scanned ${result.applicantId}`);
-          } catch (err) {
-            showToast("Applicant not found: " + err.message, "error");
-          }
-          await stopScanner();
-        },
-        () => {}
-      );
-      setScannerActive(true);
-    } catch {
-      showToast("Unable to start camera scanner. Check permission and HTTPS context.", "error");
-    }
-  };
-
-  useEffect(() => () => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {});
-      scannerRef.current.clear().catch(() => {});
-    }
-  }, []);
 
   const filtered = applicants.filter(a =>
     a.applicantId.toLowerCase().includes(search.toLowerCase()) ||
@@ -2550,7 +2492,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     { id: "overview", icon: <BarChart />, label: "Overview" },
     { id: "applicants", icon: <UsersIcon />, label: "Applicants" },
     { id: "registrations", icon: <ShieldIcon />, label: "Registrations" },
-    { id: "scanner", icon: "📷", label: "QR Scanner" },
     { id: "announcements", icon: <BellIcon />, label: "Announcements" },
     { id: "analytics", icon: <TrendingUp />, label: "Analytics" },
     { id: "settings", icon: <Settings />, label: "Settings" },
@@ -2932,65 +2873,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
             </div>
           )}
 
-          {/* ─ QR SCANNER ─ */}
-          {tab === "scanner" && (
-            <div>
-              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 16 }}>QR Scanner</h2>
-              <p style={{ color: t.muted, marginBottom: 18 }}>Scan applicant QR to open the live verification record for camp/events.</p>
-              <div style={{ ...S2.card, maxWidth: 620 }}>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-                  {!scannerActive
-                    ? <GoldBtn onClick={startScanner} style={{ padding: "10px 16px" }}>Start Camera Scan</GoldBtn>
-                    : <GoldBtn outline onClick={stopScanner} style={{ padding: "10px 16px" }}>Stop Scan</GoldBtn>}
-                  <GoldBtn outline onClick={() => setScannedResult(null)} style={{ padding: "10px 16px" }}>Clear Result</GoldBtn>
-                </div>
-                <div id="admin-qr-reader" style={{ width: "100%", minHeight: 260, border: `1px dashed ${t.border}`, borderRadius: 12, padding: 8, marginBottom: 14 }} />
-                {scannedResult && (
-                  <div style={{ background: isLight ? "#f8fafc" : "rgba(255,255,255,0.03)", border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
-                      <div>
-                        <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 4 }}>Scan Result</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Verified applicant profile</div>
-                      </div>
-                      <div style={{ background: scannedResult.serviceStatus === "active" ? "rgba(129,199,132,0.16)" : "rgba(201,168,76,0.16)", color: scannedResult.serviceStatus === "active" ? "#81c784" : "#e8d8a0", borderRadius: 999, padding: "6px 10px", fontSize: 12, fontWeight: 700, textTransform: "capitalize" }}>
-                        {scannedResult.serviceStatus}
-                      </div>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-                      {[
-                        ["Full Name", scannedResult.fullName || scannedResult.name || "N/A"],
-                        ["Applicant ID", scannedResult.applicantId || "N/A"],
-                        ["Blood Group", scannedResult.bloodGroup || "Not provided"],
-                        ["Genotype", scannedResult.genotype || "Not provided"],
-                        ["Urinary Test", scannedResult.urinaryTest || "Not provided"],
-                        ["General Aptitude", scannedResult.generalAptitudeScore || "Not provided"],
-                        ["Vocational Aptitude", scannedResult.vocationalAptitudeScore || "Not provided"],
-                        ["Oral Test", scannedResult.oralTestScore || "Not provided"],
-                        ["Assigned Rank", scannedResult.paramilitaryRank || "Not provided"],
-                        ["Assigned Post", scannedResult.paramilitaryPost || "Not provided"],
-                        ["Phone", scannedResult.phone || "N/A"],
-                        ["Email", scannedResult.email || "N/A"],
-                        ["Gender", scannedResult.gender || "N/A"],
-                        ["State", scannedResult.state || "N/A"],
-                        ["LGA", scannedResult.lga || "N/A"],
-                        ["Documents Presented", scannedResult.documentsPresented || "Not provided"],
-                      ].map(([label, value]) => (
-                        <div key={label} style={{ background: isLight ? "#fff" : "rgba(255,255,255,0.04)", border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 12px" }}>
-                          <div style={{ color: t.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
-                          <div style={{ color: t.text, fontSize: 14, fontWeight: 700, wordBreak: "break-word" }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                      <div><strong>Remarks:</strong> {scannedResult.remarks || "Not provided"}</div>
-                      <div><strong>Elite Admin Officer:</strong> {(scannedResult.eliteAdminOfficerName || "N/A") + " | " + (scannedResult.eliteAdminOfficerPortfolio || "N/A") + " | " + (scannedResult.eliteAdminOfficerSignatureDate || "N/A")}</div>
-                      <div><strong>Directorate of Recruitment:</strong> {(scannedResult.directorateName || "N/A") + " | " + (scannedResult.directoratePortfolio || "N/A") + " | " + (scannedResult.directorateSignatureDate || "N/A")}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
 
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
