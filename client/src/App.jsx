@@ -3098,10 +3098,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   <GoldBtn onClick={exportApplicants} style={{ padding: "8px 14px" }}>Export Now</GoldBtn>
                 </div>
 
-
-              </div>
-            </div>
-          )}
                 <div style={{ ...S2.card }}>
                   <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>QR Codes for ID Cards</div>
                   <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Generate and download QR codes for approved applicants' ID cards.</div>
@@ -3141,6 +3137,11 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
                   </div>
                 </div>
+
+
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
