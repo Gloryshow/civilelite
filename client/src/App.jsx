@@ -458,6 +458,43 @@ const ThemeToggle = ({ theme, onToggle }) => {
   );
 };
 
+const FloatingHelpButton = () => {
+  const [isMobileToggle, setIsMobileToggle] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 420 : false));
+
+  useEffect(() => {
+    const onResize = () => setIsMobileToggle(window.innerWidth <= 420);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const style = {
+    position: 'fixed',
+    right: isMobileToggle ? 12 : 24,
+    bottom: isMobileToggle ? 148 : 72,
+    zIndex: 1100,
+    border: '1px solid rgba(201,149,42,0.65)',
+    background: '#c9952a',
+    color: '#000',
+    borderRadius: 999,
+    padding: isMobileToggle ? '8px 12px' : '10px 16px',
+    fontWeight: 900,
+    cursor: 'pointer',
+    boxShadow: '0 10px 24px rgba(0,0,0,0.22)',
+    fontSize: isMobileToggle ? 12 : 14,
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+  };
+
+  return (
+    <a href="tel:07066304322" aria-label="Call portal support" style={style}>
+      <span aria-hidden="true">📞</span>
+      Help
+    </a>
+  );
+};
+
 const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
@@ -3172,14 +3209,14 @@ export default function App() {
 
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
 
-  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
-  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
   if (page === "dashboard" && user) {
     return user.role === "admin"
-      ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>
-      : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+      ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>
+      : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
   }
-  return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /></>;
+  return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
 }
