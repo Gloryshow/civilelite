@@ -3,7 +3,7 @@ import Applicant from "../models/Applicant.js";
 import User from "../models/User.js";
 import Announcement from "../models/Announcement.js";
 import Setting from "../models/Setting.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 import QRCode from "qrcode";
 import archiver from "archiver";
 
@@ -285,12 +285,8 @@ router.get("/settings", async (req, res) => {
 });
 
   // Generate QR code for single applicant (admin only)
-  router.get("/admin/qr-code/:applicantId", authMiddleware, async (req, res) => {
+  router.get("/admin/qr-code/:applicantId", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-      if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Unauthorized" });
-      }
-
       const applicant = await Applicant.findOne({ applicantId: req.params.applicantId });
       if (!applicant) {
         return res.status(404).json({ error: "Applicant not found" });
@@ -307,18 +303,14 @@ router.get("/settings", async (req, res) => {
 
       res.json({ qrDataUrl });
     } catch (error) {
-      console.error(error);
+      console.error("QR code generation error:", error);
       res.status(503).json({ error: "Failed to generate QR code" });
     }
   });
 
   // Bulk download QR codes for all approved applicants (admin only)
-  router.get("/admin/qr-codes/download", authMiddleware, async (req, res) => {
+  router.get("/admin/qr-codes/download", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-      if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Unauthorized" });
-      }
-
       const approvedApplicants = await Applicant.find({ status: "approved" });
 
       if (approvedApplicants.length === 0) {
@@ -334,16 +326,22 @@ router.get("/settings", async (req, res) => {
       const baseUrl = process.env.CLIENT_URL || "http://localhost:5173";
 
       for (const applicant of approvedApplicants) {
-        const verificationUrl = `${baseUrl}/verify/${applicant.applicantId}`;
-        const qrDataUrl = await QRCode.toDataURL(verificationUrl);
-        const buffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
-        archive.append(buffer, { name: `${applicant.applicantId}-qr.png` });
+        try {
+          const verificationUrl = `${baseUrl}/verify/${applicant.applicantId}`;
+          const qrDataUrl = await QRCode.toDataURL(verificationUrl);
+          const buffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
+          archive.append(buffer, { name: `${applicant.applicantId}-qr.png` });
+        } catch (err) {
+          console.error(`Error generating QR for ${applicant.applicantId}:`, err);
+        }
       }
 
       await archive.finalize();
     } catch (error) {
-      console.error(error);
-      res.status(503).json({ error: "Failed to generate QR codes" });
+      console.error("Bulk QR download error:", error);
+      if (!res.headersSent) {
+        res.status(503).json({ error: "Failed to generate QR codes" });
+      }
     }
   });
 
