@@ -746,6 +746,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
 
             <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 560 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
+            <div style={{ display: "inline-block", background: "#c9952a", color: "#000", padding: "6px 14px", borderRadius: 8, fontWeight: 800, marginBottom: 14, marginTop: 8, textTransform: "uppercase", letterSpacing: 1, fontSize: 12 }}>Together we can protect ourselves — Always @ Alert</div>
 
             <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
 
