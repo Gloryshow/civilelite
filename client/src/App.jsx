@@ -894,7 +894,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
               <img src="/logo.png" alt="Logo" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }} />
               <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1, color: "#fff" }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a" }}>SERVICE</span></div>
             </div>
-            <p style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(255,255,255,.55)", marginTop: 14 }}>A disciplined recruitment platform built for transparency, merit, and national service excellence.</p>
+            <p style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(255,255,255,.55)", marginTop: 14 }}>Together we can protect ourselves. Motto: Always @ Alert</p>
           </div>
           <div>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: 14, fontWeight: 900 }}>Quick Links</h4>
