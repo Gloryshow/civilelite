@@ -1119,7 +1119,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
                   }} style={{ background: "#0f766e", border: "none", color: "#fff", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Reset password</button>
                   <button onClick={() => { setShowForgot(false); setForgotMsg(""); }} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: t.muted, padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Cancel</button>
                 </div>
-                {forgotMsg && <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", textAlign: "center" }}>{forgotMsg}</div>}
+                {forgotMsg && <div style={{ fontSize: 13, color: isLight ? "#0f172a" : "#fef3c7", textAlign: "center", fontWeight: 600, marginTop: 8 }}>{forgotMsg}</div>}
               </div>
             )}
           </div>
