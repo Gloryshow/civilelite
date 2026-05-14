@@ -485,6 +485,7 @@ const FloatingHelpButton = () => {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 8,
+    animation: 'helpFloat 2.8s ease-in-out infinite, helpPulse 2.8s ease-in-out infinite',
   };
 
   return (
@@ -714,6 +715,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         *, *::before, *::after { box-sizing: border-box; }
         html, body { max-width: 100%; overflow-x: hidden; }
         @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes helpFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes helpPulse { 0%, 100% { box-shadow: 0 10px 24px rgba(0,0,0,0.22); } 50% { box-shadow: 0 14px 30px rgba(0,0,0,0.28); } }
         ::selection { background: rgba(201,149,42,0.24); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
