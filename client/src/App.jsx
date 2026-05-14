@@ -768,7 +768,28 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#c9952a", color: "#000", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "5px 16px", marginBottom: 18, clipPath: "polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%)" }}>⭐ Official Portal</div>
 
             <h1 style={{ fontSize: "clamp(28px, 4vw, 50px)", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: "#fff", fontWeight: 900, maxWidth: 560 }}>Defend the Nation.<br /><span style={{ color: "#c9952a" }}>Build Your Career</span> in Service.</h1>
-            <div style={{ display: "inline-block", background: "#c9952a", color: "#000", padding: "6px 14px", borderRadius: 8, fontWeight: 800, marginBottom: 14, marginTop: 8, textTransform: "uppercase", letterSpacing: 1, fontSize: 12 }}>Together we can protect ourselves — Always @ Alert</div>
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              maxWidth: isMobile ? 420 : 560,
+              padding: isMobile ? "0" : "6px 12px",
+              marginBottom: 14,
+              marginTop: 8,
+              color: isMobile ? "rgba(255,255,255,.78)" : "#d8b04b",
+              background: isMobile ? "transparent" : "rgba(201,149,42,0.08)",
+              border: isMobile ? "none" : "1px solid rgba(201,149,42,0.18)",
+              borderRadius: 999,
+              fontWeight: 700,
+              textTransform: "none",
+              letterSpacing: isMobile ? 0 : 0.4,
+              fontSize: isMobile ? 11.5 : 12,
+              lineHeight: 1.5,
+              textAlign: "center"
+            }}>
+              <span>Together we can protect ourselves.</span>
+              <span style={{ display: "block", fontWeight: 900, color: isMobile ? "#fff" : "#c9952a" }}>Motto: Always @ Alert</span>
+            </div>
 
             <p style={{ fontSize: 14.5, color: "rgba(255,255,255,.8)", maxWidth: 500, lineHeight: 1.75, marginBottom: 26 }}>A modern, transparent recruitment experience for applicants seeking structured national service. Apply online, track your progress, and secure a role in Civil Elite Service.</p>
 
