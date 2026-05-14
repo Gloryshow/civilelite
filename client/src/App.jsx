@@ -3024,30 +3024,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Admin Settings</h2>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 20 }}>
-                <div style={{ ...S2.card }}>
-                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Recruitment Status</div>
-                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Toggle the portal open/closed for new applications</div>
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <input type="checkbox" checked={!!settings?.recruitmentOpen} onChange={e => setSettings(s => ({ ...s, recruitmentOpen: e.target.checked }))} />
-                      <span style={{ color: t.muted }}>{settings?.recruitmentOpen ? "Open" : "Closed"}</span>
-                    </label>
-                    <GoldBtn onClick={() => saveSettings({ recruitmentOpen: !!settings?.recruitmentOpen })} style={{ padding: "8px 14px" }}>Save</GoldBtn>
-                  </div>
-                </div>
-
-                <div style={{ ...S2.card }}>
-                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Email Notifications</div>
-                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Configure system email alerts to applicants</div>
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <label style={{ color: t.muted, fontSize: 13 }}>Enable notifications</label>
-                    <input type="checkbox" checked={!!settings?.emailNotifications?.enabled} onChange={e => setSettings(s => ({ ...s, emailNotifications: { ...(s?.emailNotifications||{}), enabled: e.target.checked } }))} />
-                    <label style={{ color: t.muted, fontSize: 13 }}>From address</label>
-                    <input value={settings?.emailNotifications?.address || ""} onChange={e => setSettings(s => ({ ...s, emailNotifications: { ...(s?.emailNotifications||{}), address: e.target.value } }))} placeholder="no-reply@example.com" style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
-                    <GoldBtn onClick={() => saveSettings({ emailNotifications: settings?.emailNotifications })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
-                  </div>
-                </div>
-
                   <div style={{ ...S2.card }}>
                     <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Form Fee & Manual Payment</div>
                     <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>Set the fee and bank details applicants should use for manual payment.</div>
@@ -3076,24 +3052,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   <GoldBtn onClick={exportApplicants} style={{ padding: "8px 14px" }}>Export Now</GoldBtn>
                 </div>
 
-                <div style={{ ...S2.card }}>
-                  <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 6 }}>Audit Logs</div>
-                  <div style={{ color: t.muted, fontSize: 14, marginBottom: 12 }}>View recent admin actions</div>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                    <GoldBtn onClick={fetchAuditLogs} outline style={{ padding: "8px 14px" }}>Refresh Logs</GoldBtn>
-                    <GoldBtn onClick={() => { setAuditLogs([]); showToast('Cleared logs locally') }} outline style={{ padding: "8px 14px" }}>Clear Local</GoldBtn>
-                  </div>
-                  <div style={{ maxHeight: 220, overflow: 'auto', borderTop: `1px solid ${t.border}`, paddingTop: 8 }}>
-                    {auditLogs.length === 0 && <div style={{ color: t.muted }}>No logs yet.</div>}
-                    {auditLogs.map(l => (
-                      <div key={l.id} style={{ borderBottom: `1px solid ${t.border}`, padding: '8px 4px' }}>
-                        <div style={{ fontWeight: 700 }}>{l.action}</div>
-                        <div style={{ color: t.muted, fontSize: 12 }}>{l.actorName} · {new Date(l.createdAt).toLocaleString()}</div>
-                        <div style={{ color: t.muted, fontSize: 13, marginTop: 6, whiteSpace: 'pre-wrap' }}>{l.details}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
               </div>
             </div>
           )}
