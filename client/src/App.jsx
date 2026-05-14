@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
@@ -958,8 +959,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: isMobile ? 11 : 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: isMobile ? 8 : 14, fontWeight: 900 }}>Follow Us</h4>
             <div style={{ display: "flex", gap: isMobile ? 6 : 8, marginTop: isMobile ? 4 : 6, alignItems: "center" }}>
-              {["📘", "𝕏", "▶️"].map(icon => (
-                <a key={icon} href="#" onClick={e => e.preventDefault()} style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", fontSize: isMobile ? 11 : 13 }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; }}>{icon}</a>
+              {[{ Icon: FaFacebook, url: "#" }, { Icon: FaInstagram, url: "#" }, { Icon: FaTiktok, url: "#" }].map(({ Icon, url }, idx) => (
+                <a key={idx} href={url} onClick={e => e.preventDefault()} style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", color: "rgba(255,255,255,.72)" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,.72)"; }}><Icon size={isMobile ? 14 : 16} /></a>
               ))}
             </div>
           </div>
