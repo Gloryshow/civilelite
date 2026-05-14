@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import { useState, useEffect, useRef } from "react";
-import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
@@ -112,10 +112,10 @@ const formatCurrency = (amount, currency = "NGN") => {
 };
 
 const SOCIAL_LINKS = [
-  { label: "WhatsApp Group", href: "#", icon: "💬", note: "Get live updates and alerts" },
-  { label: "Facebook Page", href: "#", icon: "📘", note: "News, photos, and notices" },
-  { label: "TikTok", href: "#", icon: "🎵", note: "Short updates and highlights" },
-  { label: "YouTube", href: "#", icon: "▶️", note: "Training clips and announcements" },
+  { label: "WhatsApp Group", href: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t", icon: "💬", note: "Get live updates and alerts" },
+  { label: "Facebook Page", href: "https://www.facebook.com/profile.php?id=100067616334695", icon: "📘", note: "News, photos, and notices" },
+  { label: "TikTok", href: "https://vm.tiktok.com/ZS9F3dEAjwbdg-UR6EN/", icon: "🎵", note: "Short updates and highlights" },
+  { label: "Instagram", href: "https://www.instagram.com/civileliteservice?igsh=MXNra3g3enhjbWZ3Yw==", icon: "📷", note: "Photos and stories" },
 ];
 
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
@@ -958,8 +958,8 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: isMobile ? 11 : 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: isMobile ? 8 : 14, fontWeight: 900 }}>Follow Us</h4>
             <div style={{ display: "flex", gap: isMobile ? 6 : 8, marginTop: isMobile ? 4 : 6, alignItems: "center" }}>
-              {[{ Icon: FaFacebook, url: "#" }, { Icon: FaInstagram, url: "#" }, { Icon: FaTiktok, url: "#" }].map(({ Icon, url }, idx) => (
-                <a key={idx} href={url} onClick={e => e.preventDefault()} style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", color: "rgba(255,255,255,.72)" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,.72)"; }}><Icon size={isMobile ? 14 : 16} /></a>
+              {[{ Icon: FaFacebook, url: "https://www.facebook.com/profile.php?id=100067616334695" }, { Icon: FaInstagram, url: "https://www.instagram.com/civileliteservice?igsh=MXNra3g3enhjbWZ3Yw==" }, { Icon: FaTiktok, url: "https://vm.tiktok.com/ZS9F3dEAjwbdg-UR6EN/" }, { Icon: FaWhatsapp, url: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t" }].map(({ Icon, url }, idx) => (
+                <a key={idx} href={url} target="_blank" rel="noreferrer" style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", color: "rgba(255,255,255,.72)" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,.72)"; }}><Icon size={isMobile ? 14 : 16} /></a>
               ))}
             </div>
           </div>
