@@ -984,6 +984,9 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [error, setError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotCode, setForgotCode] = useState("");
+  const [forgotPassword, setForgotPassword] = useState("");
+  const [forgotConfirm, setForgotConfirm] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
@@ -1090,22 +1093,40 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
           <div style={{ textAlign: "center", marginBottom: 12 }}>
             {!showForgot ? (
               <div>
-                <button onClick={() => { setShowForgot(true); setForgotMsg(""); setForgotEmail(""); }} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontWeight: 700 }}>Forgot password?</button>
+                <button onClick={() => { setShowForgot(true); setForgotMsg(""); setForgotEmail(""); setForgotCode(""); setForgotPassword(""); setForgotConfirm(""); }} style={{ background: "none", border: "none", color: "#c9952a", cursor: "pointer", fontWeight: 700 }}>Forgot password?</button>
               </div>
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
                 <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Enter your account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotCode} onChange={e => setForgotCode(e.target.value)} placeholder="Enter reset code from email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotPassword} onChange={e => setForgotPassword(e.target.value)} type="password" placeholder="New password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type="password" placeholder="Confirm new password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                   <button onClick={async () => {
                     setForgotMsg("");
                     setForgotLoading(true);
                     try {
+                      if (!forgotEmail) throw new Error("Email is required");
                       await authAPI.forgotPassword(forgotEmail);
-                      setForgotMsg("If that account exists, a reset link has been sent. Check console for development link.");
+                      setForgotMsg("Reset code sent. Check your email, then enter the code and new password below.");
                     } catch (err) {
                       setForgotMsg(err.message || "Unable to process request");
                     } finally { setForgotLoading(false); }
-                  }} disabled={forgotLoading} style={{ background: "#c9952a", border: "none", color: "#000", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>{forgotLoading ? "Sending…" : "Send reset link"}</button>
+                  }} disabled={forgotLoading} style={{ background: "#c9952a", border: "none", color: "#000", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>{forgotLoading ? "Sending…" : "Send reset code"}</button>
+                  <button onClick={async () => {
+                    setForgotMsg("");
+                    setForgotLoading(true);
+                    try {
+                      if (!forgotEmail || !forgotCode || !forgotPassword) throw new Error("Email, code, and new password are required");
+                      if (forgotPassword !== forgotConfirm) throw new Error("Passwords do not match");
+                      await authAPI.resetPassword(forgotEmail, forgotCode, forgotPassword);
+                      setForgotMsg("Password updated successfully. You can sign in now.");
+                      setShowForgot(false);
+                      setForm(f => ({ ...f, email: forgotEmail, password: "" }));
+                    } catch (err) {
+                      setForgotMsg(err.message || "Unable to reset password");
+                    } finally { setForgotLoading(false); }
+                  }} disabled={forgotLoading} style={{ background: "#0f766e", border: "none", color: "#fff", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Reset password</button>
                   <button onClick={() => { setShowForgot(false); setForgotMsg(""); }} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: t.muted, padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Cancel</button>
                 </div>
                 {forgotMsg && <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", textAlign: "center" }}>{forgotMsg}</div>}

@@ -15,3 +15,15 @@
 ## API
 
 - Health check: `GET /api/health`
+
+## Password Reset Email
+
+Set one of the following in the server environment so forgot-password codes can be emailed:
+
+- `SMTP_URL` or
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`
+
+Optional:
+
+- `SMTP_FROM`
+- `FRONTEND_URL`

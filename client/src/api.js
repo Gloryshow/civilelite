@@ -49,7 +49,7 @@ export const authAPI = {
     apiCall("/auth/login", "POST", { email, password }),
   me: () => apiCall("/auth/me"),
   forgotPassword: (email) => apiCall("/auth/forgot", "POST", { email }),
-  resetPassword: (token, password) => apiCall(`/auth/reset/${token}`, "POST", { password }),
+  resetPassword: (email, code, password) => apiCall("/auth/reset", "POST", { email, code, password }),
 };
 
 export const applicantAPI = {
