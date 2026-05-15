@@ -1050,12 +1050,16 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotApplicantId, setForgotApplicantId] = useState("");
   const [forgotPhone, setForgotPhone] = useState("");
   const [forgotNewPassword, setForgotNewPassword] = useState("");
   const [forgotConfirm, setForgotConfirm] = useState("");
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [showForgotConfirm, setShowForgotConfirm] = useState(false);
   const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
   const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
@@ -1154,8 +1158,32 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-        <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
-        {!isLogin && <Input light={isLight} label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
+        
+        {/* Password with Show/Hide Toggle */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Password <span style={{ color: "#c9952a" }}>*</span></label>
+          <div style={{ position: "relative" }}>
+            <input value={form.password} onChange={set("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" style={{ width: "100%", background: isLight ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", paddingRight: "44px", color: isLight ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 18 }}>
+              {showPassword ? "👁" : "👁‍🗨"}
+            </button>
+          </div>
+        </div>
+        
+        {!isLogin && (
+          <>
+            {/* Confirm Password with Show/Hide Toggle */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Confirm Password <span style={{ color: "#c9952a" }}>*</span></label>
+              <div style={{ position: "relative" }}>
+                <input value={form.confirm} onChange={set("confirm")} type={showConfirm ? "text" : "password"} placeholder="••••••••" style={{ width: "100%", background: isLight ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", paddingRight: "44px", color: isLight ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 18 }}>
+                  {showConfirm ? "👁" : "👁‍🗨"}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {isLogin && (
           <div style={{ textAlign: "center", marginBottom: 12 }}>
@@ -1165,11 +1193,26 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
               </div>
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
-                <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} type="password" placeholder="New password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type="password" placeholder="Confirm new password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
+                <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
+                <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
+                
+                {/* New Password with Show/Hide Toggle */}
+                <div style={{ position: "relative" }}>
+                  <input value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} type={showForgotNewPassword ? "text" : "password"} placeholder="New password" style={{ width: "100%", padding: "10px 12px", paddingRight: 44, borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
+                  <button type="button" onClick={() => setShowForgotNewPassword(!showForgotNewPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 16 }}>
+                    {showForgotNewPassword ? "👁" : "👁‍🗨"}
+                  </button>
+                </div>
+                
+                {/* Confirm Password with Show/Hide Toggle */}
+                <div style={{ position: "relative" }}>
+                  <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type={showForgotConfirm ? "text" : "password"} placeholder="Confirm new password" style={{ width: "100%", padding: "10px 12px", paddingRight: 44, borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
+                  <button type="button" onClick={() => setShowForgotConfirm(!showForgotConfirm)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 16 }}>
+                    {showForgotConfirm ? "👁" : "👁‍🗨"}
+                  </button>
+                </div>
+                
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                   <button onClick={async () => {
                     setForgotMsg("");
