@@ -671,7 +671,19 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollTo = (id) => {
+    if (id === "top" || id === "hero") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const headerOffset = 88;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+  };
 
   const navLinks = [
     ["About", "about"],
@@ -757,7 +769,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       {/* STICKY HEADER */}
       <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "fixed", top: 0, left: 0, right: 0, width: "100%", zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
-          <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          <button onClick={() => scrollTo("top")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
             <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
             <div style={{ textAlign: "left", lineHeight: 1.2 }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a", fontWeight: 700 }}>SERVICE PORTAL</span></div>
           </button>
@@ -1013,7 +1025,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
           <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: isMobile ? 11 : 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: isMobile ? 8 : 14, fontWeight: 900 }}>Quick Links</h4>
-            {[["Home", "hero"], ["About", "about"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
+            {[ ["Home", "top"], ["About", "about"], ["Process", "process"], ["Apply", "apply"] ].map(([label, id]) => (
               <div key={id} style={{ marginBottom: isMobile ? 4 : 7 }}>
                 <a href="#" onClick={e => { e.preventDefault(); scrollTo(id); }} style={{ fontSize: isMobile ? 11 : 12.5, color: "rgba(255,255,255,.58)", transition: "color .2s", cursor: "pointer", textDecoration: "none" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.58)"}>{label}</a>
               </div>
