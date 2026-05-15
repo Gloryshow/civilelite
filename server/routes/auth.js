@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import Applicant from "../models/Applicant.js";
 import User from "../models/User.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { sendMail } from "../utils/mailer.js";
 
 const router = express.Router();
 
@@ -48,35 +49,102 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    if (isAdmin) {
-      // Do not auto-issue token for admin - pending approval
-      res.json({
-        message: "Admin registration submitted and is pending admin approval",
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          applicantId: user.applicantId,
-          serviceStatus: user.serviceStatus,
-          registrationStatus: user.registrationStatus,
-        },
-      });
-    } else {
-      // Applicants auto-approved - issue token immediately
-      const token = generateToken(user._id, user.role);
-      res.json({
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          applicantId: user.applicantId,
-          serviceStatus: user.serviceStatus,
-          registrationStatus: user.registrationStatus,
-        },
-      });
+    // Send notifications
+    try {
+      const adminRecipients = (process.env.ADMIN_EMAILS || process.env.FROM_EMAIL || "").split(",").map(s => s.trim()).filter(Boolean);
+
+      if (isAdmin) {
+        // Notify admins about pending admin registration
+        if (adminRecipients.length) {
+          await sendMail({
+            to: adminRecipients.join(','),
+            subject: `New admin registration pending: ${user.name}`,
+            html: `<p>An admin account has been registered and requires approval.</p>
+                   <p><strong>Name:</strong> ${user.name}</p>
+                   <p><strong>Email:</strong> ${user.email}</p>
+                   <p><strong>Applicant ID:</strong> ${user.applicantId}</p>`
+          });
+        }
+
+        // Acknowledge to the registrant
+        await sendMail({
+          to: user.email,
+          subject: "Admin registration received",
+          html: `<p>Thanks ${user.name},</p><p>Your admin registration has been received and is pending approval. We will notify you when an administrator reviews your request.</p>`
+        });
+
+        // Do not auto-issue token for admin - pending approval
+        res.json({
+          message: "Admin registration submitted and is pending admin approval",
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            applicantId: user.applicantId,
+            serviceStatus: user.serviceStatus,
+            registrationStatus: user.registrationStatus,
+          },
+        });
+      } else {
+        // Applicants auto-approved - issue token immediately
+        const token = generateToken(user._id, user.role);
+
+        // Welcome email to applicant
+        try {
+          await sendMail({
+            to: user.email,
+            subject: "Welcome to Civil Elite Service",
+            html: `<p>Welcome ${user.name},</p><p>Your application account has been created. Your applicant ID is <strong>${user.applicantId}</strong>. Use this account to track your application.</p>`
+          });
+        } catch (err) {
+          console.error('Failed to send welcome email:', err);
+        }
+
+        res.json({
+          token,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            applicantId: user.applicantId,
+            serviceStatus: user.serviceStatus,
+            registrationStatus: user.registrationStatus,
+          },
+        });
+      }
+    } catch (notifyErr) {
+      console.error('Notification error:', notifyErr);
+      // Continue gracefully even if emails fail
+      if (isAdmin) {
+        res.json({
+          message: "Admin registration submitted and is pending admin approval",
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            applicantId: user.applicantId,
+            serviceStatus: user.serviceStatus,
+            registrationStatus: user.registrationStatus,
+          },
+        });
+      } else {
+        const token = generateToken(user._id, user.role);
+        res.json({
+          token,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            applicantId: user.applicantId,
+            serviceStatus: user.serviceStatus,
+            registrationStatus: user.registrationStatus,
+          },
+        });
+      }
     }
   } catch (error) {
     console.error(error);
@@ -192,6 +260,17 @@ router.post("/forgot", async (req, res) => {
 
     user.password = newPassword;
     await user.save();
+
+    // Send password-change notification
+    try {
+      await sendMail({
+        to: user.email,
+        subject: 'Your password has been changed',
+        html: `<p>Hello ${user.name || user.email},</p><p>Your account password was successfully updated. If you did not perform this action, please contact portal support immediately.</p>`
+      });
+    } catch (err) {
+      console.error('Failed to send password change email:', err);
+    }
 
     return res.json({ message: "Password updated successfully" });
   } catch (err) {
