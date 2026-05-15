@@ -944,7 +944,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                 <div style={{ width: 52, height: 52, background: "#004d26", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, fontSize: 24 }}>{icon}</div>
                 <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 17, color: "#004d26", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.3, fontWeight: 900 }}>{name}</h3>
                 <p style={{ fontSize: 13.5, color: "#555", lineHeight: 1.75, marginBottom: 18 }}>{desc}</p>
-                <a href="#apply" onClick={() => scrollTo("apply")} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#004d26", cursor: "pointer", transition: "gap .2s, color .2s" }} onMouseEnter={e => { e.currentTarget.style.gap = "10px"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.gap = "5px"; e.currentTarget.style.color = "#004d26"; }}>Learn More ➜</a>
               </div>
             ))}
           </div>
