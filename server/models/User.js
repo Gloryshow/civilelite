@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
-    createdAt: {
+    createdAt: {   
       type: Date,
       default: Date.now,
     },

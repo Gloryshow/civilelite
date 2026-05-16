@@ -1745,7 +1745,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     </a>
                   ))}
                 </div>
-                <div style={{ color: t.muted, fontSize: 12, marginTop: 12 }}>Replace the placeholder links in the code with your official WhatsApp, Facebook, TikTok, and YouTube URLs.</div>
               </div>
 
               <div style={{ marginTop: 28 }}>
