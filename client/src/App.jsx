@@ -142,6 +142,9 @@ const SOCIAL_LINKS = [
 
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
+// Starting serial number for applicants listing (first row will show this value)
+const APPLICANT_SERIAL_START = 123;
+
 const USER_REGISTRY_KEY = "ces_user_registry";
 
 const loadUserRegistry = () => {
@@ -2709,12 +2712,12 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(a => (
+                    {filtered.map((a, idx) => (
                       <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}
                         onMouseEnter={e => e.currentTarget.style.background = isLight ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.id}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{APPLICANT_SERIAL_START + idx}</td>
                         <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{a.applicantId}</td>
                         <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
