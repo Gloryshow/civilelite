@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    adminId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     serviceStatus: {
       type: String,
       enum: ["active", "dismissed", "retired"],

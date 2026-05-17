@@ -34,6 +34,8 @@ router.post("/register", async (req, res) => {
 
     // Generate unique applicant ID
     const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
+    // Generate adminId for admin accounts (persisted)
+    const adminId = `ADM-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
     // Normalize role from client and constrain to known values.
     const normalizedRole = String(role || "applicant").toLowerCase();
@@ -44,6 +46,7 @@ router.post("/register", async (req, res) => {
       name,
       role: isAdmin ? 'admin' : 'applicant',
       applicantId,
+      adminId: isAdmin ? adminId : undefined,
       serviceStatus: "active",
       registrationStatus: isAdmin ? 'pending' : 'approved',
     });
