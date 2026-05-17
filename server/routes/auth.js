@@ -49,6 +49,26 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
+    // Ensure newly registered applicants appear in admin listings immediately,
+    // even before completing the full application form.
+    if (!isAdmin) {
+      await Applicant.updateOne(
+        { userId: user._id },
+        {
+          $setOnInsert: {
+            userId: user._id,
+            applicantId: user.applicantId,
+            fullName: user.name,
+            email: user.email,
+            status: "pending",
+            serviceStatus: user.serviceStatus,
+            submitted: false,
+          },
+        },
+        { upsert: true }
+      );
+    }
+
     // Send notifications
     try {
       const adminRecipients = (process.env.ADMIN_EMAILS || process.env.FROM_EMAIL || "").split(",").map(s => s.trim()).filter(Boolean);
