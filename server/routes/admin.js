@@ -345,7 +345,7 @@ router.get("/admins", authMiddleware, adminMiddleware, async (req, res) => {
         id: u._id,
         email: u.email,
         name: u.name,
-        applicantId: u.applicantId,
+        adminId: String(u._id),
         serviceStatus: u.serviceStatus,
         registrationStatus: u.registrationStatus,
         createdAt: u.createdAt,
@@ -375,7 +375,7 @@ router.patch("/admins/:id", authMiddleware, adminMiddleware, async (req, res) =>
       id: user._id,
       email: user.email,
       name: user.name,
-      applicantId: user.applicantId,
+      adminId: String(user._id),
       serviceStatus: user.serviceStatus,
       registrationStatus: user.registrationStatus,
     });

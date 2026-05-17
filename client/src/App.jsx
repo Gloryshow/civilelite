@@ -2890,7 +2890,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </colgroup>
                   <thead>
                     <tr>
-                      {["#", "Email", "Name", "Applicant ID", "Status", "Registration", "Actions"].map(h => (
+                      {["#", "Email", "Name", "Admin ID", "Status", "Registration", "Actions"].map(h => (
                         <th key={h} style={{ textAlign: h === "Actions" ? "center" : "left", padding: "10px 10px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}`, whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
@@ -2901,7 +2901,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <td style={{ padding: "12px 10px", color: "#64748b", fontSize: 13 }}>{idx + 1}</td>
                         <td title={a.email} style={{ padding: "12px 10px", color: t.muted, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.email}</td>
                         <td title={a.name} style={{ padding: "12px 10px", color: t.text, fontSize: 14, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</td>
-                        <td title={a.applicantId || "-"} style={{ padding: "12px 10px", color: "#c9952a", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.applicantId || "-"}</td>
+                        <td title={a.adminId || "-"} style={{ padding: "12px 10px", color: "#c9952a", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.adminId || "-"}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{a.serviceStatus || "active"}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{a.registrationStatus || "approved"}</td>
                         <td style={{ padding: "12px 10px" }}>
