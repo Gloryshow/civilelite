@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import { useState, useEffect, useRef } from "react";
-import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
 // import heroImg from "./assets/hero.png";
@@ -671,19 +671,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const scrollTo = (id) => {
-    if (id === "top" || id === "hero") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    const target = document.getElementById(id);
-    if (!target) return;
-
-    const headerOffset = 88;
-    const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
-    window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
-  };
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const navLinks = [
     ["About", "about"],
@@ -726,15 +714,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     { src: "IMG-20260508-WA0016.jpg", caption: "Prepared to Serve" },
   ];
 
-  const pressReleases = [
-    {
-      title: "Civil Elite Service opens press coverage for the latest recruitment cycle",
-      date: "May 2026",
-      image: new URL("../../images/press release 1.jpg", import.meta.url).href,
-      summary: "Official coverage highlighting the launch of the current recruitment window, applicant guidance, and service expectations.",
-    },
-  ];
-
   const steps = [
     { step: "01", title: "Register", text: "Create your applicant profile and verify your details." },
     { step: "02", title: "Screening", text: "Submit documents and complete the eligibility review." },
@@ -769,14 +748,14 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       {/* STICKY HEADER */}
       <header style={{ background: navScrolled ? t.nav : "#fff", backdropFilter: navScrolled ? "blur(18px)" : "none", borderBottom: navScrolled ? `1px solid ${t.border}` : "none", position: "fixed", top: 0, left: 0, right: 0, width: "100%", zIndex: 1000, transition: "all .25s ease", boxShadow: navScrolled ? "0 2px 12px rgba(0,0,0,.08)" : "none" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 78 }}>
-          <button onClick={() => scrollTo("top")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          <button onClick={() => scrollTo("hero")} style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: "#004d26", fontWeight: 900, fontSize: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
             <img src="/logo.png" alt="CES" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }} />
             <div style={{ textAlign: "left", lineHeight: 1.2 }}>CIVIL ELITE<br /><span style={{ fontSize: 10, color: "#c9952a", fontWeight: 700 }}>SERVICE PORTAL</span></div>
           </button>
           {/* Desktop nav or mobile hamburger */}
           {!isMobile ? (
             <nav style={{ display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flex: 1 }}>
-              {[ ["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Press Releases", "press-releases"], ["Apply", "apply"] ].map(([label, id]) => (
+              {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
                 <button key={id} onClick={() => { scrollTo(id); }} style={{ background: "none", border: "none", color: "#004d26", fontWeight: 600, cursor: "pointer", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "#004d26"}>{label}</button>
               ))}
             </nav>
@@ -795,7 +774,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
       {isMobile && mobileMenuOpen && (
         <div style={{ position: "fixed", top: 78, left: 0, right: 0, background: "#fff", zIndex: 9999, boxShadow: "0 10px 30px rgba(0,0,0,.12)", borderBottom: "4px solid #c9952a" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {[ ["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Press Releases", "press-releases"], ["Apply", "apply"] ].map(([label, id]) => (
+            {[["About", "about"], ["Divisions", "divisions"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
               <button key={id} onClick={() => { scrollTo(id); setMobileMenuOpen(false); }} style={{ textAlign: "left", padding: "12px 10px", border: "none", background: "none", fontSize: 16, fontWeight: 700, color: "#004d26", cursor: "pointer" }}>{label}</button>
             ))}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -901,44 +880,6 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
         </div>
       </section>
 
-      {/* PRESS RELEASE SECTION */}
-      <section id="press-releases" style={{ background: isLight ? "#ffffff" : "#07111a", padding: isMobile ? "64px 24px" : "76px 40px", borderTop: "1px solid rgba(201,149,42,0.18)" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", maxWidth: 680, margin: "0 auto 36px" }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2.2, color: "#c9952a", marginBottom: 8 }}>Media Room</div>
-            <h2 style={{ fontSize: "clamp(26px, 3.4vw, 38px)", color: "#004d26", textTransform: "uppercase", lineHeight: 1.2, marginBottom: 10, fontWeight: 900 }}>Press Releases</h2>
-            <p style={{ fontSize: 14.5, color: "#586168", lineHeight: 1.7 }}>Official updates, announcements, and public-facing coverage from Civil Elite Service.</p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.1fr) minmax(0, .9fr)", gap: 20, alignItems: "stretch" }}>
-            {pressReleases.map((item, idx) => (
-              <article key={item.title} style={{ gridColumn: idx === 0 ? "1 / -1" : "auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.2fr) minmax(0, .8fr)", background: isLight ? "#f8fafc" : "rgba(255,255,255,0.04)", border: "1px solid rgba(201,149,42,0.18)", borderRadius: 18, overflow: "hidden", boxShadow: "0 18px 38px rgba(0,0,0,0.08)" }}>
-                <div style={{ position: "relative", minHeight: isMobile ? 260 : 360, background: "#0d1f14" }}>
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
-                  <div style={{ position: "absolute", left: 16, top: 16, background: "#c9952a", color: "#000", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1.1, padding: "7px 10px", borderRadius: 999 }}>Featured</div>
-                </div>
-
-                <div style={{ padding: isMobile ? 22 : 28, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                  <div style={{ color: "#c9952a", fontSize: 11.5, fontWeight: 900, textTransform: "uppercase", letterSpacing: 1.4, marginBottom: 10 }}>{item.date}</div>
-                  <h3 style={{ fontSize: "clamp(22px, 2.6vw, 30px)", lineHeight: 1.15, color: "#004d26", marginBottom: 14, fontWeight: 900 }}>{item.title}</h3>
-                  <p style={{ fontSize: 15, color: "#56606a", lineHeight: 1.8, marginBottom: 18 }}>{item.summary}</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                    <button onClick={() => scrollTo("apply")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, background: "#c9952a", color: "#000", border: "none", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.background = "#e0c06a"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.transform = "translateY(0)"; }}>Apply Now</button>
-                    <button onClick={() => scrollTo("hero")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", fontSize: 12.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, borderRadius: 2, border: "2px solid #004d26", color: "#004d26", background: "transparent", cursor: "pointer", transition: "all .25s" }} onMouseEnter={e => { e.currentTarget.style.background = "#004d26"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#004d26"; }}>Back to Top</button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* DIVISIONS SECTION */}
       <section id="divisions" style={{ background: "#f5f5f0", padding: isMobile ? "72px 24px" : "72px 60px", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #004d26, #c9952a, #004d26)" }} />
@@ -956,6 +897,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
                 <div style={{ width: 52, height: 52, background: "#004d26", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, fontSize: 24 }}>{icon}</div>
                 <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 17, color: "#004d26", textTransform: "uppercase", marginBottom: 10, lineHeight: 1.3, fontWeight: 900 }}>{name}</h3>
                 <p style={{ fontSize: 13.5, color: "#555", lineHeight: 1.75, marginBottom: 18 }}>{desc}</p>
+                <a href="#apply" onClick={() => scrollTo("apply")} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#004d26", cursor: "pointer", transition: "gap .2s, color .2s" }} onMouseEnter={e => { e.currentTarget.style.gap = "10px"; e.currentTarget.style.color = "#c9952a"; }} onMouseLeave={e => { e.currentTarget.style.gap = "5px"; e.currentTarget.style.color = "#004d26"; }}>Learn More ➜</a>
               </div>
             ))}
           </div>
@@ -1025,7 +967,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           </div>
           <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: isMobile ? 11 : 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: isMobile ? 8 : 14, fontWeight: 900 }}>Quick Links</h4>
-            {[ ["Home", "top"], ["About", "about"], ["Process", "process"], ["Apply", "apply"] ].map(([label, id]) => (
+            {[["Home", "hero"], ["About", "about"], ["Process", "process"], ["Apply", "apply"]].map(([label, id]) => (
               <div key={id} style={{ marginBottom: isMobile ? 4 : 7 }}>
                 <a href="#" onClick={e => { e.preventDefault(); scrollTo(id); }} style={{ fontSize: isMobile ? 11 : 12.5, color: "rgba(255,255,255,.58)", transition: "color .2s", cursor: "pointer", textDecoration: "none" }} onMouseEnter={e => e.currentTarget.style.color = "#c9952a"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.58)"}>{label}</a>
               </div>
@@ -1038,7 +980,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           <div style={{ minWidth: 0 }}>
             <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: isMobile ? 11 : 13, textTransform: "uppercase", letterSpacing: 1.5, color: "#c9952a", marginBottom: isMobile ? 8 : 14, fontWeight: 900 }}>Follow Us</h4>
             <div style={{ display: "flex", gap: isMobile ? 6 : 8, marginTop: isMobile ? 4 : 6, alignItems: "center" }}>
-              {[{ Icon: FaFacebook, url: "https://www.facebook.com/profile.php?id=100067616334695" }, { Icon: FaInstagram, url: "https://www.instagram.com/civileliteservice?igsh=MXNra3g3enhjbWZ3Yw==" }, { Icon: FaTiktok, url: "https://vm.tiktok.com/ZS9F3dEAjwbdg-UR6EN/" }].map(({ Icon, url }, idx) => (
+              {[{ Icon: FaFacebook, url: "https://www.facebook.com/profile.php?id=100067616334695" }, { Icon: FaInstagram, url: "https://www.instagram.com/civileliteservice?igsh=MXNra3g3enhjbWZ3Yw==" }, { Icon: FaTiktok, url: "https://vm.tiktok.com/ZS9F3dEAjwbdg-UR6EN/" }, { Icon: FaWhatsapp, url: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t" }].map(({ Icon, url }, idx) => (
                 <a key={idx} href={url} target="_blank" rel="noreferrer" style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, border: "1px solid rgba(255,255,255,.18)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", cursor: "pointer", color: "rgba(255,255,255,.72)" }} onMouseEnter={e => { e.currentTarget.style.background = "#c9952a"; e.currentTarget.style.borderColor = "#c9952a"; e.currentTarget.style.color = "#000"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,.18)"; e.currentTarget.style.color = "rgba(255,255,255,.72)"; }}><Icon size={isMobile ? 14 : 16} /></a>
               ))}
             </div>
@@ -1061,19 +1003,25 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotApplicantId, setForgotApplicantId] = useState("");
   const [forgotPhone, setForgotPhone] = useState("");
   const [forgotNewPassword, setForgotNewPassword] = useState("");
   const [forgotConfirm, setForgotConfirm] = useState("");
-  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
-  const [showForgotConfirm, setShowForgotConfirm] = useState(false);
   const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
   const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
+
+  useEffect(() => {
+    if (mode === "register-admin") {
+      setRegistrationRole("admin");
+      return;
+    }
+    if (mode === "register") {
+      setRegistrationRole("applicant");
+    }
+  }, [mode]);
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -1088,7 +1036,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         const result = await authAPI.login(form.email, form.password);
         onAuth(result);
       } else {
-        const result = await authAPI.register(form.email, form.password, form.name, isAdminRegister ? "admin" : "applicant");
+        const roleToRegister = mode === "register-admin" ? "admin" : registrationRole;
+        const result = await authAPI.register(form.email, form.password, form.name, roleToRegister);
         if (result.token && result.user) {
           tokenManager.setToken(result.token);
           onAuth(result);
@@ -1169,32 +1118,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-        
-        {/* Password with Show/Hide Toggle */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Password <span style={{ color: "#c9952a" }}>*</span></label>
-          <div style={{ position: "relative" }}>
-            <input value={form.password} onChange={set("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" style={{ width: "100%", background: isLight ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", paddingRight: "44px", color: isLight ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 18 }}>
-              {showPassword ? "👁" : "👁‍🗨"}
-            </button>
-          </div>
-        </div>
-        
-        {!isLogin && (
-          <>
-            {/* Confirm Password with Show/Hide Toggle */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Confirm Password <span style={{ color: "#c9952a" }}>*</span></label>
-              <div style={{ position: "relative" }}>
-                <input value={form.confirm} onChange={set("confirm")} type={showConfirm ? "text" : "password"} placeholder="••••••••" style={{ width: "100%", background: isLight ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 14px", paddingRight: "44px", color: isLight ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#c9952a"} onBlur={e => e.target.style.borderColor = isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"} />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 18 }}>
-                  {showConfirm ? "👁" : "👁‍🗨"}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+        <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
+        {!isLogin && <Input light={isLight} label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
 
         {isLogin && (
           <div style={{ textAlign: "center", marginBottom: 12 }}>
@@ -1204,26 +1129,11 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
               </div>
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
-                <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
-                <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
-                <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
-                
-                {/* New Password with Show/Hide Toggle */}
-                <div style={{ position: "relative" }}>
-                  <input value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} type={showForgotNewPassword ? "text" : "password"} placeholder="New password" style={{ width: "100%", padding: "10px 12px", paddingRight: 44, borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
-                  <button type="button" onClick={() => setShowForgotNewPassword(!showForgotNewPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 16 }}>
-                    {showForgotNewPassword ? "👁" : "👁‍🗨"}
-                  </button>
-                </div>
-                
-                {/* Confirm Password with Show/Hide Toggle */}
-                <div style={{ position: "relative" }}>
-                  <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type={showForgotConfirm ? "text" : "password"} placeholder="Confirm new password" style={{ width: "100%", padding: "10px 12px", paddingRight: 44, borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}`, background: isLight ? "#fff" : "rgba(255,255,255,0.05)", color: isLight ? "#000" : "#fff" }} />
-                  <button type="button" onClick={() => setShowForgotConfirm(!showForgotConfirm)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#c9952a", fontSize: 16 }}>
-                    {showForgotConfirm ? "👁" : "👁‍🗨"}
-                  </button>
-                </div>
-                
+                <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} type="password" placeholder="New password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type="password" placeholder="Confirm new password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                   <button onClick={async () => {
                     setForgotMsg("");
@@ -1745,6 +1655,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     </a>
                   ))}
                 </div>
+                <div style={{ color: t.muted, fontSize: 12, marginTop: 12 }}>Replace the placeholder links in the code with your official WhatsApp, Facebook, TikTok, and YouTube URLs.</div>
               </div>
 
               <div style={{ marginTop: 28 }}>
@@ -3347,8 +3258,8 @@ export default function App() {
 
   if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
   if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
-  if (page === "login") return <><AuthPage mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
-  if (page === "register") return <><AuthPage mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
   if (page === "dashboard" && user) {
     return user.role === "admin"
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>

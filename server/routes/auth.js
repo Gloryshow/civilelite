@@ -19,7 +19,7 @@ const normalizeDigits = (value) => String(value || "").replace(/\D/g, "");
 // Register
 router.post("/register", async (req, res) => {
   try {
-      const { email, password, name, role = 'applicant' } = req.body;
+  const { email, password, name, role = 'applicant' } = req.body;
 
     if (!email || !password || !name) {
       return res
@@ -35,8 +35,9 @@ router.post("/register", async (req, res) => {
     // Generate unique applicant ID
     const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
-    // If registering as admin, require approval. Applicants are auto-approved.
-    const isAdmin = role === 'admin';
+    // Normalize role from client and constrain to known values.
+    const normalizedRole = String(role || "applicant").toLowerCase();
+    const isAdmin = normalizedRole === "admin";
     const user = new User({
       email: email.toLowerCase(),
       password,
