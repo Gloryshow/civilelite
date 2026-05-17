@@ -34,8 +34,17 @@ router.post("/register", async (req, res) => {
 
     // Generate unique applicant ID
     const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
-    // Generate adminId for admin accounts (persisted)
-    const adminId = `ADM-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
+    // Helper to create a nicely formatted adminId: ADM-<YEAR>-<6 digits>
+    const createAdminId = (seq) => {
+      const year = new Date().getFullYear();
+      if (typeof seq === 'number') return `ADM-${year}-${String(seq).padStart(6, '0')}`;
+      const suffix = String(Date.now() % 1000000).padStart(6, '0');
+      return `ADM-${year}-${suffix}`;
+    };
+    // Generate an adminId for admin accounts (persisted). For newly created admins
+    // use a time-based 6-digit suffix as a fast fallback; migration will replace
+    // missing adminIds with sequential values when run.
+    const adminId = createAdminId();
 
     // Normalize role from client and constrain to known values.
     const normalizedRole = String(role || "applicant").toLowerCase();
