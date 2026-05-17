@@ -67,8 +67,8 @@ export const publicAPI = {
 
 export const adminAPI = {
   getApplicants: () => apiCall("/admin/applicants"),
-  updateStatus: (id, status) =>
-    apiCall(`/admin/applicants/${id}/status`, "PATCH", { status }),
+  updateStatus: (id, status, extra = {}) =>
+    apiCall(`/admin/applicants/${id}/status`, "PATCH", { status, ...extra }),
   updateServiceStatus: (id, serviceStatus) =>
     apiCall(`/admin/applicants/${id}/service-status`, "PATCH", {
       serviceStatus,

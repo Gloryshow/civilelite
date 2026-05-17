@@ -2343,10 +2343,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     loadSettings();
   }, []);
 
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (id, status, extra = {}) => {
     try {
-      await adminAPI.updateStatus(id, status);
-      setApplicants(a => a.map(ap => ap.id === id ? { ...ap, status } : ap));
+      const updated = await adminAPI.updateStatus(id, status, extra);
+      setApplicants(a => a.map(ap => ap.id === id ? { ...ap, ...updated } : ap));
       await loadStats(true);
       showToast(`Applicant status updated to ${status}.`);
     } catch (err) {
@@ -2706,7 +2706,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
                   <thead>
                     <tr>
-                      {["#", "Applicant ID", "Name", "Email", "State", "Gender", "Date", "Status", "Service", "Actions"].map(h => (
+                        {["#", "Applicant ID", "Name", "Email", "State", "Gender", "Date", "Status", "Service", "Service No.", "Department", "Actions"].map(h => (
                           <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
                       ))}
                     </tr>
@@ -2725,6 +2725,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.gender}</td>
                         <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.date}</td>
                         <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
+                        <td style={{ padding: "12px 14px" }}>{a.serviceNumber || "-"}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.department || "-"}</td>
                         <td style={{ padding: "12px 14px" }}>
                           <select value={a.serviceStatus} onChange={e => updateServiceStatus(a.id, e.target.value)} style={{ background: isLight ? "#fff" : "#0d1b2a", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 6, color: t.text, padding: "4px 8px", fontSize: 12, textTransform: "capitalize" }}>
                             {SERVICE_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -2732,7 +2734,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         </td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <button onClick={() => updateStatus(a.id, "approved")} style={{
+                            <button onClick={() => {
+                              const dept = prompt("Department for approved applicant (leave blank for General):", "General");
+                              updateStatus(a.id, "approved", dept ? { department: dept } : {});
+                            }} style={{
                               background: "rgba(76,175,80,0.15)", border: "1px solid rgba(76,175,80,0.3)", color: "#81c784",
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
                             }}>✓</button>

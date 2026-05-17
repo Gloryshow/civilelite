@@ -23,6 +23,8 @@ router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
       email: app.userId?.email || "N/A",
       state: app.state || "N/A",
       status: app.status,
+      serviceNumber: app.serviceNumber || null,
+      department: app.department || null,
       serviceStatus: app.serviceStatus,
       fullName: app.fullName || "N/A",
       phone: app.phone || "N/A",
@@ -102,21 +104,28 @@ router.patch(
   adminMiddleware,
   async (req, res) => {
     try {
-      const { status } = req.body;
+      const { status, department } = req.body;
 
       if (!["pending", "under_review", "approved", "rejected"].includes(status)) {
         return res.status(400).json({ error: "Invalid status" });
       }
 
-      const applicant = await Applicant.findByIdAndUpdate(
-        req.params.id,
-        { status },
-        { new: true }
-      );
+      let applicant = await Applicant.findById(req.params.id);
+      if (!applicant) return res.status(404).json({ error: "Applicant not found" });
 
-      if (!applicant) {
-        return res.status(404).json({ error: "Applicant not found" });
+      // If approving, assign a service number and department if not present
+      if (status === 'approved') {
+        if (!applicant.serviceNumber) {
+          const { getNextSequence } = await import("../utils/sequence.js");
+          const seq = await getNextSequence('service');
+          const year = new Date().getFullYear();
+          applicant.serviceNumber = `SV-${year}-${String(seq).padStart(6, '0')}`;
+        }
+        applicant.department = department || applicant.department || 'General';
       }
+
+      applicant.status = status;
+      await applicant.save();
 
       res.json(applicant);
     } catch (error) {
