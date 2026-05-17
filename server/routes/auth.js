@@ -63,23 +63,25 @@ router.post("/register", async (req, res) => {
     await user.save();
 
     // Ensure newly registered applicants appear in admin listings immediately,
-    // even before completing the full application form.
+    // even before completing the full application form. Assign a sequential
+    // serial number when creating the Applicant document.
     if (!isAdmin) {
-      await Applicant.updateOne(
-        { userId: user._id },
-        {
-          $setOnInsert: {
-            userId: user._id,
-            applicantId: user.applicantId,
-            fullName: user.name,
-            email: user.email,
-            status: "pending",
-            serviceStatus: user.serviceStatus,
-            submitted: false,
-          },
-        },
-        { upsert: true }
-      );
+      const existing = await Applicant.findOne({ userId: user._id });
+      if (!existing) {
+        // assign serial atomically
+        const { getNextSequence } = await import("../utils/sequence.js");
+        const serial = await getNextSequence("applicant");
+        await Applicant.create({
+          userId: user._id,
+          applicantId: user.applicantId,
+          fullName: user.name,
+          email: user.email,
+          status: "pending",
+          serviceStatus: user.serviceStatus,
+          submitted: false,
+          serial,
+        });
+      }
     }
 
     // Send notifications

@@ -17,6 +17,7 @@ router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
 
     const formatted = applicants.map((app) => ({
       id: app._id,
+      serial: app.serial,
       applicantId: app.applicantId,
       name: app.fullName || "N/A",
       email: app.userId?.email || "N/A",

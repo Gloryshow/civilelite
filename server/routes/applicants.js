@@ -171,9 +171,13 @@ router.post("/submit", authMiddleware, async (req, res) => {
     let applicant = await Applicant.findOne({ userId: req.user.id });
 
     if (!applicant) {
+      // Create new applicant and assign sequential serial
+      const { getNextSequence } = await import("../utils/sequence.js");
+      const serial = await getNextSequence("applicant");
       applicant = new Applicant({
         userId: req.user.id,
         applicantId: req.user.applicantId,
+        serial,
       });
     }
 

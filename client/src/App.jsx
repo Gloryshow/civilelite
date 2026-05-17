@@ -2717,7 +2717,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         onMouseEnter={e => e.currentTarget.style.background = isLight ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{APPLICANT_SERIAL_START + idx}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.serial || (APPLICANT_SERIAL_START + idx)}</td>
                         <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{a.applicantId}</td>
                         <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>

@@ -12,6 +12,11 @@ const applicantSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    serial: {
+      type: Number,
+      unique: true,
+      sparse: true,
+    },
     fullName: String,
     email: String,
     phone: String,
