@@ -143,7 +143,7 @@ const SOCIAL_LINKS = [
 const createApplicantId = () => `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
 
 // Starting serial number for applicants listing (first row will show this value)
-const APPLICANT_SERIAL_START = 123;
+const APPLICANT_SERIAL_START = 1;
 
 const USER_REGISTRY_KEY = "ces_user_registry";
 
