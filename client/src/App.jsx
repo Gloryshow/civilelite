@@ -2901,52 +2901,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </div>
                 )}
 
-              {/* ─ ADMINISTRATORS ─ */}
-              {tab === "administrators" && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                    <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24 }}>Administrators</h2>
-                    <div style={{ color: t.muted }}>Manage admin accounts</div>
-                  </div>
-
-                  <div style={{ ...S2.card, overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
-                      <thead>
-                        <tr>
-                          {["#", "Email", "Name", "Applicant ID", "Status", "Registration", "Actions"].map(h => (
-                            <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {admins.map((a, idx) => (
-                          <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}>
-                            <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{idx + 1}</td>
-                            <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
-                            <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
-                            <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13 }}>{a.applicantId || "-"}</td>
-                            <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.serviceStatus || "active"}</td>
-                            <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.registrationStatus || "approved"}</td>
-                            <td style={{ padding: "12px 14px" }}>
-                              <div style={{ display: "flex", gap: 8 }}>
-                                <button onClick={() => {
-                                  const newName = prompt("Edit name", a.name);
-                                  if (newName !== null) updateAdmin(a.id, { name: newName });
-                                }} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: t.text, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11 }}>Edit</button>
-                                <button onClick={() => deleteAdminUser(a.id)} style={{ background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.18)", color: "#e57373", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11 }}>Delete</button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {admins.length === 0 && (
-                      <div style={{ textAlign: "center", padding: 40, color: "#556" }}>No administrators found</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
                 <div className="admin-print-sheet" style={{ display: "none" }}>
                   {selectedApplicant && (
                     <div style={{ padding: 28, fontFamily: "Arial, sans-serif", color: "#111827" }}>
@@ -2988,6 +2942,52 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
                   )}
                 </div>
+            </div>
+          )}
+
+          {/* ─ ADMINISTRATORS ─ */}
+          {tab === "administrators" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24 }}>Administrators</h2>
+                <div style={{ color: t.muted }}>Manage admin accounts</div>
+              </div>
+
+              <div style={{ ...S2.card, overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+                  <thead>
+                    <tr>
+                      {["#", "Email", "Name", "Applicant ID", "Status", "Registration", "Actions"].map(h => (
+                        <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {admins.map((a, idx) => (
+                      <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{idx + 1}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
+                        <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
+                        <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13 }}>{a.applicantId || "-"}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.serviceStatus || "active"}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.registrationStatus || "approved"}</td>
+                        <td style={{ padding: "12px 14px" }}>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => {
+                              const newName = prompt("Edit name", a.name);
+                              if (newName !== null) updateAdmin(a.id, { name: newName });
+                            }} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: t.text, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11 }}>Edit</button>
+                            <button onClick={() => deleteAdminUser(a.id)} style={{ background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.18)", color: "#e57373", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11 }}>Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {admins.length === 0 && (
+                  <div style={{ textAlign: "center", padding: 40, color: "#556" }}>No administrators found</div>
+                )}
+              </div>
             </div>
           )}
 
