@@ -83,6 +83,10 @@ export const adminAPI = {
     apiCall("/admin/scan-qr", "POST", { qrPayload }),
   getStats: () => apiCall("/admin/stats"),
   getAnnouncements: () => apiCall("/admin/announcements"),
+  // Admin user management
+  getAdmins: () => apiCall(`/admin/admins`),
+  updateAdmin: (id, payload) => apiCall(`/admin/admins/${id}`, "PATCH", payload),
+  deleteAdmin: (id) => apiCall(`/admin/admins/${id}`, "DELETE"),
   createAnnouncement: (title, body) =>
     apiCall("/admin/announcements", "POST", { title, body }),
   updateAnnouncement: (id, title, body) =>

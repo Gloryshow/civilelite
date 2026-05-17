@@ -335,6 +335,80 @@ router.get("/stats", authMiddleware, adminMiddleware, async (req, res) => {
     res.status(503).json({ error: "Database unavailable" });
   }
 });
+ 
+// List admin users
+router.get("/admins", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const admins = await User.find({ role: "admin" }).sort({ createdAt: -1 });
+    res.json(
+      admins.map((u) => ({
+        id: u._id,
+        email: u.email,
+        name: u.name,
+        applicantId: u.applicantId,
+        serviceStatus: u.serviceStatus,
+        registrationStatus: u.registrationStatus,
+        createdAt: u.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Update admin user
+router.patch("/admins/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { name, email, serviceStatus, registrationStatus } = req.body;
+
+    const updates = {};
+    if (typeof name === "string") updates.name = name.trim();
+    if (typeof email === "string") updates.email = email.toLowerCase().trim();
+    if (typeof serviceStatus === "string") updates.serviceStatus = serviceStatus;
+    if (typeof registrationStatus === "string") updates.registrationStatus = registrationStatus;
+
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      applicantId: user.applicantId,
+      serviceStatus: user.serviceStatus,
+      registrationStatus: user.registrationStatus,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Delete admin user
+router.delete("/admins/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Prevent deleting the last admin
+    const adminCount = await User.countDocuments({ role: "admin" });
+    const isSelfDelete = String(req.user.id) === String(id);
+    if (adminCount <= 1 && isSelfDelete) {
+      return res.status(400).json({ error: "Cannot delete the last admin account" });
+    }
+
+    const user = await User.findByIdAndDelete(id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Also remove any Applicant record tied to this user
+    await Applicant.deleteOne({ userId: user._id });
+
+    res.json({ message: "Admin deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
 
 // List announcements
 router.get("/announcements", authMiddleware, adminMiddleware, async (req, res) => {
