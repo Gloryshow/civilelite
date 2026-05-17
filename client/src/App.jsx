@@ -2817,12 +2817,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                               background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: t.text,
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
                             }}>View</button>
-                            {a.status === "approved" && (
-                              <button onClick={() => deleteApplicant(a.id)} style={{
-                                background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.25)", color: "#e57373",
-                                borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
-                              }}>Delete</button>
-                            )}
+                            <button onClick={() => deleteApplicant(a.id)} style={{
+                              background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.25)", color: "#e57373",
+                              borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: 700,
+                            }}>Delete</button>
                           </div>
                         </td>
                       </tr>
