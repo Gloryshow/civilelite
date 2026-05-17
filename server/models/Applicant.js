@@ -83,6 +83,8 @@ const applicantSchema = new mongoose.Schema(
       default: false,
     },
     submittedAt: Date,
+    serviceNumber: { type: String, unique: true, sparse: true },
+    department: { type: String },
     createdAt: {
       type: Date,
       default: Date.now,

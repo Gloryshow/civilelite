@@ -24,6 +24,12 @@ const settingSchema = new mongoose.Schema(
         default: "Paystack and Flutterwave are not enabled yet.",
       },
     },
+    // Service number configuration
+    serviceYear: { type: Number, default: new Date().getFullYear() },
+    serviceBatch: { type: Number, default: 1 },
+    servicePrefix: { type: String, default: "CES" },
+    batchPadding: { type: Number, default: 2 },
+    positionPadding: { type: Number, default: 3 },
   },
   { timestamps: true }
 );
