@@ -320,81 +320,6 @@ const StatusBadge = ({ s }) => {
   return <span style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}44`, borderRadius: 999, padding: "3px 12px", fontSize: 12, fontWeight: 700 }}>{m.label}</span>;
 };
 
-// Registrations panel for admin approval
-const RegistrationsPanel = ({}) => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const data = await adminAPI.getRegistrations();
-      setItems(data || []);
-    } catch (err) {
-      console.log('Failed to load registrations', err);
-      setItems([]);
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const approve = async (id) => {
-    try {
-      await adminAPI.approveRegistration(id);
-      setItems(items.filter(i => i.id !== id));
-      showToast('User approved');
-    } catch (err) { showToast('Approve failed: ' + err.message, 'error'); }
-  };
-
-  const reject = async (id) => {
-    try {
-      await adminAPI.rejectRegistration(id);
-      setItems(items.filter(i => i.id !== id));
-      showToast('User rejected');
-    } catch (err) { showToast('Reject failed: ' + err.message, 'error'); }
-  };
-
-  return (
-    <div style={{ ...{ background: 'transparent' } }}>
-      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      <div style={{ ...{ background: 'transparent' } }}>
-        {loading ? <div style={{ color: '#666' }}>Loading…</div> : (
-          <div style={{ borderRadius: 8, overflowX: 'auto', border: '1px solid rgba(0,0,0,0.06)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['#','Email','Name','Applicant ID','Submitted','Action'].map(h => <th key={h} style={{ textAlign:'left', padding:'10px 12px', color:'#64748b' }}>{h}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((u,i) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                    <td style={{ padding:'10px 12px' }}>{i+1}</td>
-                    <td style={{ padding:'10px 12px' }}>{u.email}</td>
-                    <td style={{ padding:'10px 12px' }}>{u.name}</td>
-                    <td style={{ padding:'10px 12px' }}>{u.applicantId || '—'}</td>
-                    <td style={{ padding:'10px 12px' }}>{new Date(u.createdAt).toLocaleString()}</td>
-                    <td style={{ padding:'10px 12px' }}>
-                      <div style={{ display:'flex', gap:8 }}>
-                        <button onClick={() => approve(u.id)} style={{ background:'#e6f4ea', border:'1px solid #c8e6c9', color:'#2e7d32', padding:'6px 10px', borderRadius:6 }}>Approve</button>
-                        <button onClick={() => reject(u.id)} style={{ background:'#fff0f0', border:'1px solid #ffccd5', color:'#c62828', padding:'6px 10px', borderRadius:6 }}>Reject</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {items.length === 0 && <tr><td colSpan={6} style={{ padding:20, textAlign:'center', color:'#666' }}>No pending registrations</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
   "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
@@ -2570,7 +2495,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const menuItems = [
     { id: "overview", icon: <BarChart />, label: "Overview" },
     { id: "applicants", icon: <UsersIcon />, label: "Applicants" },
-    { id: "registrations", icon: <ShieldIcon />, label: "Registrations" },
     { id: "administrators", icon: <ShieldIcon />, label: "Administrators" },
     { id: "announcements", icon: <BellIcon />, label: "Announcements" },
     { id: "analytics", icon: <TrendingUp />, label: "Analytics" },
@@ -2990,20 +2914,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               </div>
             </div>
           )}
-
-          {/* ─ REGISTRATIONS ─ */}
-          {tab === "registrations" && (
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24 }}>Pending Registrations</h2>
-                <div style={{ color: t.muted }}>Approve or reject new user sign-ups</div>
-              </div>
-
-              <RegistrationsPanel />
-            </div>
-          )}
-
-
 
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
