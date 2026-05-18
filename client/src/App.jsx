@@ -2707,11 +2707,24 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 </div>
               </div>
               <div style={{ ...S2.card, overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1120, tableLayout: "fixed" }}>
                   <thead>
                     <tr>
-                        {["#", "Applicant ID", "Name", "Email", "State", "Gender", "Date", "Status", "Service", "Service No.", "Department", "Actions"].map(h => (
-                          <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}` }}>{h}</th>
+                        {[
+                          { label: "#", width: 44 },
+                          { label: "Applicant ID", width: 148 },
+                          { label: "Name", width: 160 },
+                          { label: "Email", width: 170 },
+                          { label: "State", width: 90 },
+                          { label: "Gender", width: 90 },
+                          { label: "Date", width: 110 },
+                          { label: "Status", width: 110 },
+                          { label: "Service No.", width: 150 },
+                          { label: "Department", width: 130 },
+                          { label: "Service Status", width: 130 },
+                          { label: "Actions", width: 170 },
+                        ].map(h => (
+                          <th key={h.label} style={{ textAlign: "left", padding: "10px 14px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}`, width: h.width, whiteSpace: "nowrap" }}>{h.label}</th>
                       ))}
                     </tr>
                   </thead>
@@ -2721,16 +2734,16 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         onMouseEnter={e => e.currentTarget.style.background = isLight ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.serial || (APPLICANT_SERIAL_START + idx)}</td>
-                        <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{a.applicantId}</td>
-                        <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600 }}>{a.name}</td>
-                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.email}</td>
-                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.state}</td>
-                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14 }}>{a.gender}</td>
-                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13 }}>{a.date}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.serial || (APPLICANT_SERIAL_START + idx)}</td>
+                        <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.applicantId}</td>
+                        <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.name}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.email}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.state}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.gender}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13, whiteSpace: "nowrap" }}>{a.date}</td>
                         <td style={{ padding: "12px 14px" }}><StatusBadge s={a.status} /></td>
-                        <td style={{ padding: "12px 14px" }}>{a.serviceNumber || "-"}</td>
-                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13 }}>{a.department || "-"}</td>
+                        <td style={{ padding: "12px 14px", color: t.text, fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.serviceNumber || "-"}</td>
+                        <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.department || "-"}</td>
                         <td style={{ padding: "12px 14px" }}>
                           <select value={a.serviceStatus} onChange={e => updateServiceStatus(a.id, e.target.value)} style={{ background: isLight ? "#fff" : "#0d1b2a", border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 6, color: t.text, padding: "4px 8px", fontSize: 12, textTransform: "capitalize" }}>
                             {SERVICE_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}

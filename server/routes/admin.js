@@ -222,6 +222,26 @@ router.patch(
         }
       });
 
+      if (applicant.status === "approved" && !applicant.serviceNumber) {
+        const s = await Setting.findOne();
+        const serviceYear = s?.serviceYear || new Date().getFullYear();
+        const serviceBatch = s?.serviceBatch || 1;
+        const prefix = s?.servicePrefix || "CES";
+        const padding = Number(s?.numberPadding || 2);
+
+        const { getNextSequence } = await import("../utils/sequence.js");
+        const counterName = `service_${serviceYear}_${serviceBatch}`;
+        const seq = await getNextSequence(counterName);
+        const yy = String(serviceYear).slice(-2);
+        const batchStr = String(serviceBatch).padStart(padding, "0");
+        const posStr = String(seq).padStart(padding, "0");
+        applicant.serviceNumber = `${yy}${prefix}/${batchStr}/${posStr}`;
+      }
+
+      if (applicant.status === "approved" && !applicant.department) {
+        applicant.department = "General";
+      }
+
       await applicant.save();
 
       res.json({
