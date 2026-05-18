@@ -119,16 +119,15 @@ router.patch(
         const serviceYear = s?.serviceYear || new Date().getFullYear();
         const serviceBatch = s?.serviceBatch || 1;
         const prefix = s?.servicePrefix || "CES";
-        const batchPad = Number(s?.batchPadding || 2);
-        const posPad = Number(s?.positionPadding || 3);
+        const padding = Number(s?.numberPadding || 2);
 
         if (!applicant.serviceNumber) {
           const { getNextSequence } = await import("../utils/sequence.js");
           const counterName = `service_${serviceYear}_${serviceBatch}`;
           const seq = await getNextSequence(counterName);
           const yy = String(serviceYear).slice(-2);
-          const batchStr = String(serviceBatch).padStart(batchPad, '0');
-          const posStr = String(seq).padStart(posPad, '0');
+          const batchStr = String(serviceBatch).padStart(padding, '0');
+          const posStr = String(seq).padStart(padding, '0');
           applicant.serviceNumber = `${yy}${prefix}/${batchStr}/${posStr}`;
         }
         applicant.department = department || applicant.department || 'General';
@@ -564,15 +563,14 @@ router.patch("/settings", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     let s = await Setting.findOne();
     if (!s) s = new Setting({});
-    const { recruitmentOpen, emailNotifications, manualPayment, serviceYear, serviceBatch, servicePrefix, batchPadding, positionPadding } = req.body;
+    const { recruitmentOpen, emailNotifications, manualPayment, serviceYear, serviceBatch, servicePrefix, numberPadding } = req.body;
     if (typeof recruitmentOpen === "boolean") s.recruitmentOpen = recruitmentOpen;
     if (emailNotifications && typeof emailNotifications === "object") s.emailNotifications = { ...s.emailNotifications, ...emailNotifications };
     if (manualPayment && typeof manualPayment === "object") s.manualPayment = { ...s.manualPayment, ...manualPayment };
     if (typeof serviceYear === 'number') s.serviceYear = serviceYear;
     if (typeof serviceBatch === 'number') s.serviceBatch = serviceBatch;
     if (typeof servicePrefix === 'string') s.servicePrefix = servicePrefix;
-    if (typeof batchPadding === 'number') s.batchPadding = batchPadding;
-    if (typeof positionPadding === 'number') s.positionPadding = positionPadding;
+    if (typeof numberPadding === 'number') s.numberPadding = numberPadding;
     await s.save();
     await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "update_settings", details: JSON.stringify(req.body) });
     res.json(s);

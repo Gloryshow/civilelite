@@ -28,8 +28,7 @@ const settingSchema = new mongoose.Schema(
     serviceYear: { type: Number, default: new Date().getFullYear() },
     serviceBatch: { type: Number, default: 1 },
     servicePrefix: { type: String, default: "CES" },
-    batchPadding: { type: Number, default: 2 },
-    positionPadding: { type: Number, default: 3 },
+    numberPadding: { type: Number, default: 2 },
   },
   { timestamps: true }
 );

@@ -3110,16 +3110,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     <input type="number" min="1" value={settings?.serviceBatch || 1} onChange={e => setSettings(s => ({ ...s, serviceBatch: Number(e.target.value) }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
                     <label style={{ color: t.muted, fontSize: 13 }}>Prefix (e.g., CES)</label>
                     <input value={settings?.servicePrefix || 'CES'} onChange={e => setSettings(s => ({ ...s, servicePrefix: e.target.value }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ color: t.muted, fontSize: 13 }}>Batch Padding</label>
-                        <input type="number" min="1" value={settings?.batchPadding ?? 2} onChange={e => setSettings(s => ({ ...s, batchPadding: Number(e.target.value) }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, width: '100%' }} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ color: t.muted, fontSize: 13 }}>Position Padding</label>
-                        <input type="number" min="1" value={settings?.positionPadding ?? 3} onChange={e => setSettings(s => ({ ...s, positionPadding: Number(e.target.value) }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, width: '100%' }} />
-                      </div>
-                    </div>
+                    <label style={{ color: t.muted, fontSize: 13 }}>Number Padding (digits for batch & position)</label>
+                    <input type="number" min="1" value={settings?.numberPadding ?? 2} onChange={e => setSettings(s => ({ ...s, numberPadding: Number(e.target.value) }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }} />
                     <div>
                       <label style={{ color: t.muted, fontSize: 13, display: 'block' }}>Applications Open</label>
                       <select value={settings?.recruitmentOpen ? 'open' : 'closed'} onChange={e => setSettings(s => ({ ...s, recruitmentOpen: e.target.value === 'open' }))} style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}` }}>
@@ -3127,7 +3119,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <option value="closed">Closed</option>
                       </select>
                     </div>
-                    <GoldBtn onClick={() => saveSettings({ serviceYear: Number(settings?.serviceYear || new Date().getFullYear()), serviceBatch: Number(settings?.serviceBatch || 1), servicePrefix: settings?.servicePrefix || 'CES', batchPadding: Number(settings?.batchPadding || 2), positionPadding: Number(settings?.positionPadding || 3), recruitmentOpen: !!settings?.recruitmentOpen })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
+                    <GoldBtn onClick={() => saveSettings({ serviceYear: Number(settings?.serviceYear || new Date().getFullYear()), serviceBatch: Number(settings?.serviceBatch || 1), servicePrefix: settings?.servicePrefix || 'CES', numberPadding: Number(settings?.numberPadding || 2), recruitmentOpen: !!settings?.recruitmentOpen })} style={{ padding: "8px 14px", marginTop: 8 }}>Save</GoldBtn>
                   </div>
                 </div>
 
