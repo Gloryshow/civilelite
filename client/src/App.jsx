@@ -2730,9 +2730,14 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </thead>
                   <tbody>
                     {filtered.map((a, idx) => (
-                      <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}` }}
+                      <tr key={a.id} style={{ borderBottom: `1px solid ${t.border}`, cursor: 'pointer' }}
                         onMouseEnter={e => e.currentTarget.style.background = isLight ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        onClick={e => {
+                          // don't trigger when clicking controls inside the actions cell
+                          if (e.target.closest('button, select, a')) return;
+                          setSelectedApplicantId(a.id);
+                        }}
                       >
                         <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.serial || (APPLICANT_SERIAL_START + idx)}</td>
                         <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.applicantId}</td>
@@ -2782,17 +2787,19 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               </div>
 
                 {selectedApplicant && (
-                  <div style={{ ...S2.card, marginTop: 24 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-                      <div>
-                        <div style={{ fontWeight: 800, color: t.text, fontSize: 18 }}>{selectedApplicant.fullName || selectedApplicant.name}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Applicant ID: {selectedApplicant.applicantId}</div>
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(2,6,23,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2200 }} onClick={() => setSelectedApplicantId(null)}>
+                    <div onClick={e => e.stopPropagation()} style={{ width: 'calc(100% - 80px)', maxWidth: 1100, maxHeight: '90vh', overflow: 'auto', ...S2.card }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+                        <div>
+                          <div style={{ fontWeight: 800, color: t.text, fontSize: 18 }}>{selectedApplicant.fullName || selectedApplicant.name}</div>
+                          <div style={{ color: t.muted, fontSize: 13 }}>Applicant ID: {selectedApplicant.applicantId}</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: 'center' }}>
+                          <button onClick={() => setSelectedApplicantId(null)} style={{ background: 'transparent', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Close</button>
+                          <GoldBtn outline onClick={printAssessment} style={{ padding: "10px 16px" }}>Print Result Sheet</GoldBtn>
+                          <GoldBtn onClick={saveAssessment} style={{ padding: "10px 16px" }}>Save Assessment</GoldBtn>
+                        </div>
                       </div>
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <GoldBtn outline onClick={printAssessment} style={{ padding: "10px 16px" }}>Print Result Sheet</GoldBtn>
-                        <GoldBtn onClick={saveAssessment} style={{ padding: "10px 16px" }}>Save Assessment</GoldBtn>
-                      </div>
-                    </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14, marginBottom: 14 }}>
                       <Select
