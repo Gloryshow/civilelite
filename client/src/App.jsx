@@ -2053,6 +2053,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     oralTestScore: "",
     paramilitaryRank: "",
     paramilitaryPost: "",
+    serviceNumber: "",
+    department: "",
     documentsPresented: "",
     remarks: "",
     eliteAdminOfficerName: "",
@@ -2093,6 +2095,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       oralTestScore: selectedApplicant.oralTestScore || "",
       paramilitaryRank: selectedApplicant.paramilitaryRank || "",
       paramilitaryPost: selectedApplicant.paramilitaryPost || "",
+      serviceNumber: selectedApplicant.serviceNumber || "",
+      department: selectedApplicant.department || "",
       documentsPresented: selectedApplicant.documentsPresented || "",
       remarks: selectedApplicant.remarks || "",
       eliteAdminOfficerName: selectedApplicant.eliteAdminOfficerName || "",
@@ -2806,6 +2810,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div style={{ marginTop: 14 }}>
                       <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Accepted applicant posting details</div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
+                        <Input light={isLight} label="Service Number" value={assessmentDraft.serviceNumber || ""} readOnly placeholder="Auto-generated on approval" />
+                        <Input light={isLight} label="Department" value={assessmentDraft.department || ""} onChange={e => setAssessmentDraft(d => ({ ...d, department: e.target.value }))} placeholder="e.g. General / Medical / Intelligence" />
                         <Input light={isLight} label="Assigned Rank" value={assessmentDraft.paramilitaryRank} onChange={e => setAssessmentDraft(d => ({ ...d, paramilitaryRank: e.target.value }))} placeholder="e.g. Recruit / Lance Corporal" />
                         <Input light={isLight} label="Assigned Post" value={assessmentDraft.paramilitaryPost} onChange={e => setAssessmentDraft(d => ({ ...d, paramilitaryPost: e.target.value }))} placeholder="e.g. Operations / Training Unit" />
                       </div>
