@@ -2190,7 +2190,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [applicants, setApplicants] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [legacyClaims, setLegacyClaims] = useState([]);
-  const [claimStatusFilter, setClaimStatusFilter] = useState("pending");
+  const [claimStatusFilter, setClaimStatusFilter] = useState("");
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
   const [settings, setSettings] = useState(createDefaultSettings());
@@ -3090,10 +3090,10 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       fontSize: 13,
                     }}
                   >
+                    <option value="">All</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
-                    <option value="">All</option>
                   </select>
                   <GoldBtn onClick={() => loadLegacyClaims(claimStatusFilter)} style={{ fontSize: 13, padding: "10px 16px" }}>Refresh</GoldBtn>
                 </div>
