@@ -1037,7 +1037,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         </div>
 
         <h2 style={{ color: t.text, fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
-          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : isLegacyClaim ? "Submit Legacy Officer Claim" : "Create Applicant Account"}
+          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : isLegacyClaim ? "Submit Existing Officer Claim" : "Create Applicant Account"}
         </h2>
 
         {!isLogin && (
@@ -1085,7 +1085,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
                 fontWeight: 700,
               }}
             >
-              Legacy Claim
+              Existing Claim
             </button>
           </div>
         )}
@@ -1094,7 +1094,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Date of Birth" type="date" value={form.dob} onChange={set("dob")} />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Legacy Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Existing Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Last Unit / Posting" value={form.lastUnit} onChange={set("lastUnit")} placeholder="e.g. Operations Unit" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Original Approval Year" type="number" value={form.approvalYear} onChange={set("approvalYear")} placeholder="e.g. 2017" />}
         <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
@@ -1151,7 +1151,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && (
           <div style={{ textAlign: "center", color: t.muted, fontSize: 12, marginTop: 10 }}>
-            Applicant accounts can sign in immediately. Admin and legacy claim accounts require approval.
+            Applicant accounts can sign in immediately. Admin and existing claim accounts require approval.
           </div>
         )}
 
@@ -2601,7 +2601,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const menuItems = [
     { id: "overview", icon: <BarChart />, label: "Overview" },
     { id: "applicants", icon: <UsersIcon />, label: "Applicants" },
-    { id: "legacy-claims", icon: <ShieldIcon />, label: "Legacy Claims" },
+    { id: "legacy-claims", icon: <ShieldIcon />, label: "Existing Claims" },
     { id: "administrators", icon: <ShieldIcon />, label: "Administrators" },
     { id: "announcements", icon: <BellIcon />, label: "Announcements" },
     { id: "analytics", icon: <TrendingUp />, label: "Analytics" },
@@ -3004,12 +3004,12 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
             </div>
           )}
 
-          {/* ─ LEGACY CLAIMS ─ */}
+          {/* ─ EXISTING CLAIMS ─ */}
           {tab === "legacy-claims" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
                 <div>
-                  <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Legacy Officer Claims</h2>
+                  <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Existing Officer Claims</h2>
                   <div style={{ color: t.muted, fontSize: 14 }}>Review claims submitted by officers approved through physical forms.</div>
                 </div>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -3038,7 +3038,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1020, tableLayout: "fixed" }}>
                   <thead>
                     <tr>
-                      {["Name", "Email", "Phone", "Legacy Service No.", "Unit", "Year", "Status", "Actions"].map((h) => (
+                      {["Name", "Email", "Phone", "Existing Service No.", "Unit", "Year", "Status", "Actions"].map((h) => (
                         <th key={h} style={{ textAlign: h === "Actions" ? "center" : "left", padding: "10px 10px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}`, whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
