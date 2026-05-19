@@ -288,6 +288,46 @@ const Input = ({ label, value, onChange, type = "text", placeholder, required, l
   </div>
 );
 
+const PasswordInput = ({ label, value, onChange, placeholder, required, light = false }) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && <label style={{ display: "block", color: light ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
+      <div style={{ position: "relative" }}>
+        <input
+          value={value}
+          onChange={onChange}
+          type={visible ? "text" : "password"}
+          placeholder={placeholder}
+          required={required}
+          style={{ width: "100%", background: light ? "#ffffff" : "rgba(255,255,255,0.05)", border: `1px solid ${light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "11px 42px 11px 14px", color: light ? "#0f172a" : "#fff", fontSize: 14, outline: "none", boxSizing: "border-box" }}
+          onFocus={e => e.target.style.borderColor = "#c9952a"}
+          onBlur={e => e.target.style.borderColor = light ? "#cbd5e1" : "rgba(255,255,255,0.1)"}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(v => !v)}
+          aria-label={visible ? "Hide password" : "Show password"}
+          style={{
+            position: "absolute",
+            right: 10,
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: "transparent",
+            border: "none",
+            color: light ? "#475569" : "#cbd5e1",
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          <Eye />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Select = ({ label, value, onChange, options, required, light = false }) => (
   <div style={{ marginBottom: 16 }}>
     {label && <label style={{ display: "block", color: light ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>{label}{required && <span style={{ color: "#c9952a" }}> *</span>}</label>}
@@ -1162,8 +1202,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Existing Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Last Unit / Posting" value={form.lastUnit} onChange={set("lastUnit")} placeholder="e.g. Operations Unit" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Original Approval Year" type="number" value={form.approvalYear} onChange={set("approvalYear")} placeholder="e.g. 2017" />}
-        <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
-        {!isLogin && <Input light={isLight} label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
+        <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
+        {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
 
         {isLogin && (
           <div style={{ textAlign: "center", marginBottom: 12 }}>
@@ -1176,8 +1216,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
                 <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} type="password" placeholder="New password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} type="password" placeholder="Confirm new password" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <PasswordInput light={isLight} value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} placeholder="New password" />
+                <PasswordInput light={isLight} value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} placeholder="Confirm new password" />
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                   <button onClick={async () => {
                     setForgotMsg("");
@@ -3101,7 +3141,17 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               </div>
 
               <div style={{ ...S2.card, overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1020, tableLayout: "fixed" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1180, tableLayout: "fixed" }}>
+                  <colgroup>
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "12%" }} />
+                    <col style={{ width: "16%" }} />
+                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "8%" }} />
+                    <col style={{ width: "8%" }} />
+                    <col style={{ width: "10%" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       {["Name", "Email", "Phone", "Existing Service No.", "Unit", "Year", "Status", "Actions"].map((h) => (
