@@ -12,7 +12,10 @@ const router = express.Router();
 // Get all applicants
 router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const applicants = await Applicant.find()
+    const claimUserIds = await LegacyClaim.distinct("userId");
+    const applicants = await Applicant.find(
+      claimUserIds.length ? { userId: { $nin: claimUserIds } } : {}
+    )
       .populate("userId", "email name applicantId serviceStatus")
       .sort({ createdAt: -1 });
 
