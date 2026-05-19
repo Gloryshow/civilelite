@@ -35,7 +35,7 @@ const legacyClaimSchema = new mongoose.Schema(
     },
     legacyServiceNumber: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     lastUnit: {

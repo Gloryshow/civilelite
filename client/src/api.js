@@ -103,6 +103,8 @@ export const adminAPI = {
   getLegacyClaims: (status = "") => apiCall(`/admin/legacy-claims${status ? `?status=${encodeURIComponent(status)}` : ""}`),
   approveLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/approve`, "POST", { note }),
   rejectLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/reject`, "POST", { note }),
+  updateLegacyClaimServiceNumber: (id, legacyServiceNumber = "") =>
+    apiCall(`/admin/legacy-claims/${id}/service-number`, "POST", { legacyServiceNumber }),
 };
 
 export const tokenManager = {

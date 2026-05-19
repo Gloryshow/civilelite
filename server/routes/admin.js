@@ -223,6 +223,30 @@ router.post("/legacy-claims/:id/reject", authMiddleware, adminMiddleware, async 
   }
 });
 
+// Update legacy claim service number
+router.post("/legacy-claims/:id/service-number", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { legacyServiceNumber = "" } = req.body || {};
+    const claim = await LegacyClaim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+
+    claim.legacyServiceNumber = String(legacyServiceNumber || "").trim();
+    await claim.save();
+
+    await AuditLog.create({
+      actorId: req.user.id,
+      actorName: req.user.name,
+      action: "update_legacy_service_number",
+      details: `${claim.email} -> ${claim.legacyServiceNumber || ""}`,
+    });
+
+    res.json({ message: "Legacy service number updated", claim });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Update applicant status
 router.patch(
   "/applicants/:id/status",

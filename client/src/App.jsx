@@ -969,8 +969,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
-    if (isLegacyClaim && (!form.phone || !form.legacyServiceNumber)) {
-      setError("Phone and legacy service number are required for legacy claim.");
+    if (isLegacyClaim && !form.phone) {
+      setError("Phone number is required for legacy claim.");
       return;
     }
     setLocalLoading(true);
@@ -1094,7 +1094,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Date of Birth" type="date" value={form.dob} onChange={set("dob")} />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Legacy Service Number" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" required />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Legacy Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Last Unit / Posting" value={form.lastUnit} onChange={set("lastUnit")} placeholder="e.g. Operations Unit" />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Original Approval Year" type="number" value={form.approvalYear} onChange={set("approvalYear")} placeholder="e.g. 2017" />}
         <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
@@ -2550,6 +2550,18 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
+  const updateLegacyServiceNumber = async (id, currentValue = "") => {
+    const next = prompt("Set legacy service number:", currentValue || "");
+    if (next === null) return;
+    try {
+      await adminAPI.updateLegacyClaimServiceNumber(id, next);
+      await loadLegacyClaims(claimStatusFilter);
+      showToast("Legacy service number updated.");
+    } catch (err) {
+      showToast("Failed to update service number: " + err.message, "error");
+    }
+  };
+
 
 
   const filtered = applicants.filter(a =>
@@ -3037,12 +3049,27 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <td style={{ padding: "12px 10px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.fullName}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.phone || "-"}</td>
-                        <td style={{ padding: "12px 10px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{c.legacyServiceNumber || "-"}</td>
+                        <td style={{ padding: "12px 10px", color: c.legacyServiceNumber ? "#c9952a" : t.muted, fontSize: 13, fontWeight: 700 }}>{c.legacyServiceNumber || "Not provided"}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.lastUnit || "-"}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.approvalYear || "-"}</td>
                         <td style={{ padding: "12px 10px" }}><StatusBadge s={c.status} /></td>
                         <td style={{ padding: "12px 10px" }}>
-                          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
+                            <button
+                              onClick={() => updateLegacyServiceNumber(c.id, c.legacyServiceNumber)}
+                              style={{
+                                background: "rgba(201,149,42,0.12)",
+                                border: "1px solid rgba(201,149,42,0.35)",
+                                color: "#c9952a",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                                fontSize: 11,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Set No.
+                            </button>
                             <button
                               onClick={() => approveLegacyClaim(c.id)}
                               disabled={c.status !== "pending"}

@@ -202,10 +202,10 @@ router.post("/legacy-claim", async (req, res) => {
       approvalYear = null,
     } = req.body || {};
 
-    if (!name || !email || !password || !phone || !legacyServiceNumber) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({
         error:
-          "Name, email, password, phone, and legacy service number are required",
+          "Name, email, password, and phone are required",
       });
     }
 
@@ -255,7 +255,7 @@ router.post("/legacy-claim", async (req, res) => {
       email: user.email,
       phone: String(phone).trim(),
       dob: String(dob || "").trim(),
-      legacyServiceNumber: String(legacyServiceNumber).trim(),
+      legacyServiceNumber: String(legacyServiceNumber || "").trim(),
       lastUnit: String(lastUnit || "").trim(),
       approvalYear: approvalYear ? Number(approvalYear) : null,
       status: "pending",
