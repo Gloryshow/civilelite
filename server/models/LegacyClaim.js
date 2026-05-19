@@ -28,6 +28,11 @@ const legacyClaimSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    state: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     dob: {
       type: String,
       default: "",
