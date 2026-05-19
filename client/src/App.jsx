@@ -3649,7 +3649,7 @@ export default function App() {
     }
   };
 
-  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
   if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
