@@ -1,4 +1,4 @@
-const CACHE_NAME = "ces-portal-v1";
+const CACHE_NAME = "ces-portal-v2";
 const CORE_ASSETS = [
   "/",
   "/index.html",
@@ -38,6 +38,19 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put("/index.html", copy));
+          return response;
+        })
+        .catch(() => caches.match("/index.html"))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((cached) =>
