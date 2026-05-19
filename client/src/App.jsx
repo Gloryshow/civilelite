@@ -1964,28 +1964,17 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       </div>
                     </div>
                   )}
-                  {[
-                    appData.bloodGroup,
-                    appData.genotype,
-                    appData.urinaryTest,
-                    appData.generalAptitudeScore,
-                    appData.vocationalAptitudeScore,
-                    appData.oralTestScore,
-                    appData.documentsPresented,
-                    appData.remarks,
-                    appData.eliteAdminOfficerName,
-                    appData.directorateName,
-                  ].some(Boolean) && (
+                  {appData.submitted && (
                     <div style={{ ...S2.card, marginBottom: 20 }}>
                       <div style={{ fontWeight: 700, color: isLight ? "#9a6b1a" : "#e8d8a0", marginBottom: 14 }}>Admin Assessment</div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
                         {[
-                          ["Blood Group", appData.bloodGroup || "N/A"],
-                          ["Genotype", appData.genotype || "N/A"],
-                          ["Urinary Test", appData.urinaryTest || "N/A"],
-                          ["General Aptitude", appData.generalAptitudeScore || "N/A"],
-                          ["Vocational Aptitude", appData.vocationalAptitudeScore || "N/A"],
-                          ["Oral Test", appData.oralTestScore || "N/A"],
+                          ["Blood Group", appData.bloodGroup || "Pending assessment"],
+                          ["Genotype", appData.genotype || "Pending assessment"],
+                          ["Urinary Test", appData.urinaryTest || "Pending assessment"],
+                          ["General Aptitude", appData.generalAptitudeScore || "Pending assessment"],
+                          ["Vocational Aptitude", appData.vocationalAptitudeScore || "Pending assessment"],
+                          ["Oral Test", appData.oralTestScore || "Pending assessment"],
                         ].map(([label, value]) => (
                           <div key={label} style={{ border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 12px", background: isLight ? "#fff" : "rgba(255,255,255,0.03)" }}>
                             <div style={{ color: t.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
@@ -1994,10 +1983,10 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                         ))}
                       </div>
                       <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
-                        <div><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
-                        <div><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
-                        <div><strong>Elite Admin Officer:</strong> {appData.eliteAdminOfficerName || "N/A"} | {appData.eliteAdminOfficerPortfolio || "N/A"} | {appData.eliteAdminOfficerSignatureDate || "N/A"}</div>
-                        <div><strong>Directorate of Recruitment:</strong> {appData.directorateName || "N/A"} | {appData.directoratePortfolio || "N/A"} | {appData.directorateSignatureDate || "N/A"}</div>
+                        <div><strong>Documents Presented:</strong> {appData.documentsPresented || "Pending assessment"}</div>
+                        <div><strong>Remarks:</strong> {appData.remarks || "Pending assessment"}</div>
+                        <div><strong>Elite Admin Officer:</strong> {appData.eliteAdminOfficerName || "Pending admin update"} | {appData.eliteAdminOfficerPortfolio || "Pending admin update"} | {appData.eliteAdminOfficerSignatureDate || "Pending admin update"}</div>
+                        <div><strong>Directorate of Recruitment:</strong> {appData.directorateName || "Pending admin update"} | {appData.directoratePortfolio || "Pending admin update"} | {appData.directorateSignatureDate || "Pending admin update"}</div>
                       </div>
                     </div>
                   )}
@@ -2029,13 +2018,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     <div><strong>Phone:</strong> {appData.phone}</div>
                     <div><strong>State:</strong> {appData.state}</div>
                     <div><strong>LGA:</strong> {appData.lga}</div>
-                    <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
-                    <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
-                    <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
-                    <div><strong>Religion:</strong> {appData.religion || "N/A"}</div>
-                    <div><strong>Marital Status:</strong> {appData.maritalStatus || "N/A"}</div>
-                    <div><strong>Nationality:</strong> {appData.nationality || "N/A"}</div>
-                    <div><strong>Date of Birth:</strong> {appData.dob || "N/A"}</div>
+                    <div><strong>Blood Group:</strong> {appData.bloodGroup || "Pending assessment"}</div>
+                    <div><strong>Genotype:</strong> {appData.genotype || "Pending assessment"}</div>
+                    <div><strong>Urinary Test:</strong> {appData.urinaryTest || "Pending assessment"}</div>
+                    <div><strong>Religion:</strong> {appData.religion || "Not provided"}</div>
+                    <div><strong>Marital Status:</strong> {appData.maritalStatus || "Not provided"}</div>
+                    <div><strong>Nationality:</strong> {appData.nationality || "Not provided"}</div>
+                    <div><strong>Date of Birth:</strong> {appData.dob || "Not provided"}</div>
                   </div>
 
                   {appData.passportPhotoDataUrl && (
@@ -2104,30 +2093,30 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       <div><strong>Full Name:</strong> {appData.fullName}</div>
                       <div><strong>Status:</strong> {appData.status}</div>
                       <div><strong>Service Status:</strong> {appData.serviceStatus}</div>
-                      <div><strong>Assigned Rank:</strong> {appData.paramilitaryRank || "N/A"}</div>
-                      <div><strong>Assigned Post:</strong> {appData.paramilitaryPost || "N/A"}</div>
-                      <div><strong>Blood Group:</strong> {appData.bloodGroup || "N/A"}</div>
-                      <div><strong>Genotype:</strong> {appData.genotype || "N/A"}</div>
-                      <div><strong>Urinary Test:</strong> {appData.urinaryTest || "N/A"}</div>
-                      <div><strong>General Aptitude Score:</strong> {appData.generalAptitudeScore || "N/A"}</div>
-                      <div><strong>Vocational Aptitude Score:</strong> {appData.vocationalAptitudeScore || "N/A"}</div>
-                      <div><strong>Oral Test Score:</strong> {appData.oralTestScore || "N/A"}</div>
+                      <div><strong>Assigned Rank:</strong> {appData.paramilitaryRank || "Pending posting"}</div>
+                      <div><strong>Assigned Post:</strong> {appData.paramilitaryPost || "Pending posting"}</div>
+                      <div><strong>Blood Group:</strong> {appData.bloodGroup || "Pending assessment"}</div>
+                      <div><strong>Genotype:</strong> {appData.genotype || "Pending assessment"}</div>
+                      <div><strong>Urinary Test:</strong> {appData.urinaryTest || "Pending assessment"}</div>
+                      <div><strong>General Aptitude Score:</strong> {appData.generalAptitudeScore || "Pending assessment"}</div>
+                      <div><strong>Vocational Aptitude Score:</strong> {appData.vocationalAptitudeScore || "Pending assessment"}</div>
+                      <div><strong>Oral Test Score:</strong> {appData.oralTestScore || "Pending assessment"}</div>
                     </div>
 
-                    <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "N/A"}</div>
-                    <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "N/A"}</div>
+                    <div style={{ marginBottom: 14 }}><strong>Documents Presented:</strong> {appData.documentsPresented || "Pending assessment"}</div>
+                    <div style={{ marginBottom: 14 }}><strong>Remarks:</strong> {appData.remarks || "Pending assessment"}</div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
                       <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
-                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.eliteAdminOfficerName || "N/A"}</div>
-                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.eliteAdminOfficerPortfolio || "N/A"}</div>
+                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.eliteAdminOfficerName || "Pending admin update"}</div>
+                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.eliteAdminOfficerPortfolio || "Pending admin update"}</div>
                         <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.eliteAdminOfficerSignatureDate || "________________"}</div>
                       </div>
                       <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
-                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.directorateName || "N/A"}</div>
-                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.directoratePortfolio || "N/A"}</div>
+                        <div style={{ marginBottom: 8 }}><strong>Name:</strong> {appData.directorateName || "Pending admin update"}</div>
+                        <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {appData.directoratePortfolio || "Pending admin update"}</div>
                         <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {appData.directorateSignatureDate || "________________"}</div>
                       </div>
                     </div>
@@ -3097,27 +3086,27 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                         <div><strong>Applicant ID:</strong> {selectedApplicant.applicantId}</div>
                         <div><strong>Full Name:</strong> {selectedApplicant.fullName || selectedApplicant.name}</div>
-                        <div><strong>Blood Group:</strong> {selectedApplicant.bloodGroup || "N/A"}</div>
-                        <div><strong>Genotype:</strong> {selectedApplicant.genotype || "N/A"}</div>
-                        <div><strong>Urinary Test:</strong> {selectedApplicant.urinaryTest || "N/A"}</div>
-                        <div><strong>General Aptitude Test Score:</strong> {selectedApplicant.generalAptitudeScore || "N/A"}</div>
-                        <div><strong>Vocational Aptitude Test Score:</strong> {selectedApplicant.vocationalAptitudeScore || "N/A"}</div>
-                        <div><strong>Oral Test Score:</strong> {selectedApplicant.oralTestScore || "N/A"}</div>
-                        <div><strong>Documents Presented:</strong> {selectedApplicant.documentsPresented || "N/A"}</div>
-                        <div><strong>Remarks:</strong> {selectedApplicant.remarks || "N/A"}</div>
+                        <div><strong>Blood Group:</strong> {selectedApplicant.bloodGroup || "Pending assessment"}</div>
+                        <div><strong>Genotype:</strong> {selectedApplicant.genotype || "Pending assessment"}</div>
+                        <div><strong>Urinary Test:</strong> {selectedApplicant.urinaryTest || "Pending assessment"}</div>
+                        <div><strong>General Aptitude Test Score:</strong> {selectedApplicant.generalAptitudeScore || "Pending assessment"}</div>
+                        <div><strong>Vocational Aptitude Test Score:</strong> {selectedApplicant.vocationalAptitudeScore || "Pending assessment"}</div>
+                        <div><strong>Oral Test Score:</strong> {selectedApplicant.oralTestScore || "Pending assessment"}</div>
+                        <div><strong>Documents Presented:</strong> {selectedApplicant.documentsPresented || "Pending assessment"}</div>
+                        <div><strong>Remarks:</strong> {selectedApplicant.remarks || "Pending assessment"}</div>
                       </div>
 
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 18 }}>
                         <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
                           <div style={{ fontWeight: 700, marginBottom: 8 }}>Elite Admin Officer</div>
-                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.eliteAdminOfficerName || "N/A"}</div>
-                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.eliteAdminOfficerPortfolio || "N/A"}</div>
+                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.eliteAdminOfficerName || "Pending admin update"}</div>
+                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.eliteAdminOfficerPortfolio || "Pending admin update"}</div>
                           <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {selectedApplicant.eliteAdminOfficerSignatureDate || "________________"}</div>
                         </div>
                         <div style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 14 }}>
                           <div style={{ fontWeight: 700, marginBottom: 8 }}>Directorate of Recruitment</div>
-                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.directorateName || "N/A"}</div>
-                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.directoratePortfolio || "N/A"}</div>
+                          <div style={{ marginBottom: 8 }}><strong>Name:</strong> {selectedApplicant.directorateName || "Pending admin update"}</div>
+                          <div style={{ marginBottom: 18 }}><strong>Port-folio:</strong> {selectedApplicant.directoratePortfolio || "Pending admin update"}</div>
                           <div style={{ borderTop: "1px solid #111827", paddingTop: 8, fontSize: 13 }}>Signature &amp; Date: {selectedApplicant.directorateSignatureDate || "________________"}</div>
                         </div>
                       </div>
