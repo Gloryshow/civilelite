@@ -2450,6 +2450,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   useEffect(() => {
     refreshOverviewData();
     loadAdmins();
+    loadLegacyClaims(claimStatusFilter);
 
     const intervalId = window.setInterval(() => {
       refreshOverviewData(true);
