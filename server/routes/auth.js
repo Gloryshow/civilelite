@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import Applicant from "../models/Applicant.js";
 import User from "../models/User.js";
+import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { sendMail } from "../utils/mailer.js";
 
@@ -184,6 +185,89 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Legacy officer claim submission (self-service, admin-approved)
+router.post("/legacy-claim", async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      phone,
+      dob = "",
+      legacyServiceNumber,
+      lastUnit = "",
+      approvalYear = null,
+    } = req.body || {};
+
+    if (!name || !email || !password || !phone || !legacyServiceNumber) {
+      return res.status(400).json({
+        error:
+          "Name, email, password, phone, and legacy service number are required",
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const existing = await User.findOne({ email: normalizedEmail });
+    if (existing) {
+      return res.status(400).json({ error: "An account already exists for this email" });
+    }
+
+    const applicantId = `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`;
+    const user = await User.create({
+      email: normalizedEmail,
+      password,
+      name: String(name).trim(),
+      role: "applicant",
+      applicantId,
+      serviceStatus: "active",
+      registrationStatus: "pending",
+    });
+
+    const existingApplicant = await Applicant.findOne({ userId: user._id });
+    if (!existingApplicant) {
+      const { getNextSequence } = await import("../utils/sequence.js");
+      const serial = await getNextSequence("applicant");
+      await Applicant.create({
+        userId: user._id,
+        applicantId: user.applicantId,
+        fullName: user.name,
+        email: user.email,
+        phone: String(phone).trim(),
+        dob: String(dob || "").trim(),
+        status: "under_review",
+        submitted: true,
+        submittedAt: new Date(),
+        serial,
+      });
+    }
+
+    await LegacyClaim.create({
+      userId: user._id,
+      applicantId: user.applicantId,
+      fullName: String(name).trim(),
+      email: user.email,
+      phone: String(phone).trim(),
+      dob: String(dob || "").trim(),
+      legacyServiceNumber: String(legacyServiceNumber).trim(),
+      lastUnit: String(lastUnit || "").trim(),
+      approvalYear: approvalYear ? Number(approvalYear) : null,
+      status: "pending",
+    });
+
+    return res.status(201).json({
+      message: "Claim submitted. Await admin approval before login.",
+      applicantId: user.applicantId,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Unable to submit legacy claim" });
   }
 });
 

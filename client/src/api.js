@@ -45,6 +45,8 @@ const apiCall = async (endpoint, method = "GET", body = null, opts = {}) => {
 export const authAPI = {
   register: (email, password, name, role = "applicant") =>
     apiCall("/auth/register", "POST", { email, password, name, role }),
+  submitLegacyClaim: (payload) =>
+    apiCall("/auth/legacy-claim", "POST", payload),
   login: (email, password) =>
     apiCall("/auth/login", "POST", { email, password }),
   me: () => apiCall("/auth/me"),
@@ -98,6 +100,9 @@ export const adminAPI = {
   getRegistrations: () => apiCall("/admin/registrations"),
   approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
   rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),
+  getLegacyClaims: (status = "") => apiCall(`/admin/legacy-claims${status ? `?status=${encodeURIComponent(status)}` : ""}`),
+  approveLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/approve`, "POST", { note }),
+  rejectLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/reject`, "POST", { note }),
 };
 
 export const tokenManager = {

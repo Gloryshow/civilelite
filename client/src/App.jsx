@@ -927,7 +927,17 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
-  const [form, setForm] = useState({ email: "", password: "", name: "", confirm: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    name: "",
+    confirm: "",
+    phone: "",
+    dob: "",
+    legacyServiceNumber: "",
+    lastUnit: "",
+    approvalYear: "",
+  });
   const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
@@ -940,6 +950,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
   const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
+  const isLegacyClaim = !isLogin && registrationRole === "legacy";
 
   useEffect(() => {
     if (mode === "register-admin") {
@@ -958,12 +969,32 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
+    if (isLegacyClaim && (!form.phone || !form.legacyServiceNumber)) {
+      setError("Phone and legacy service number are required for legacy claim.");
+      return;
+    }
     setLocalLoading(true);
     try {
       if (isLogin) {
         const result = await authAPI.login(form.email, form.password);
         onAuth(result);
       } else {
+        if (isLegacyClaim) {
+          const result = await authAPI.submitLegacyClaim({
+            name: form.name,
+            email: form.email,
+            password: form.password,
+            phone: form.phone,
+            dob: form.dob,
+            legacyServiceNumber: form.legacyServiceNumber,
+            lastUnit: form.lastUnit,
+            approvalYear: form.approvalYear,
+          });
+          setError(result.message || "Claim submitted. Await admin approval before login.");
+          setLocalLoading(false);
+          return;
+        }
+
         const roleToRegister = mode === "register-admin" ? "admin" : registrationRole;
         const result = await authAPI.register(form.email, form.password, form.name, roleToRegister);
         if (result.token && result.user) {
@@ -1006,11 +1037,11 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         </div>
 
         <h2 style={{ color: t.text, fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
-          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : "Create Applicant Account"}
+          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : isLegacyClaim ? "Submit Legacy Officer Claim" : "Create Applicant Account"}
         </h2>
 
         {!isLogin && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8, marginBottom: 18 }}>
             <button
               type="button"
               onClick={() => setRegistrationRole("applicant")}
@@ -1041,11 +1072,31 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
             >
               Register as Admin
             </button>
+            <button
+              type="button"
+              onClick={() => setRegistrationRole("legacy")}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: `1px solid ${registrationRole === "legacy" ? "#c9952a" : isLight ? "rgba(15,23,42,0.14)" : "rgba(255,255,255,0.08)"}`,
+                background: registrationRole === "legacy" ? "rgba(201,149,42,0.12)" : "transparent",
+                color: t.text,
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              Legacy Claim
+            </button>
           </div>
         )}
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Date of Birth" type="date" value={form.dob} onChange={set("dob")} />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Legacy Service Number" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" required />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Last Unit / Posting" value={form.lastUnit} onChange={set("lastUnit")} placeholder="e.g. Operations Unit" />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Original Approval Year" type="number" value={form.approvalYear} onChange={set("approvalYear")} placeholder="e.g. 2017" />}
         <Input light={isLight} label="Password" type="password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <Input light={isLight} label="Confirm Password" type="password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
 
@@ -1088,7 +1139,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         {error && <div style={{ color: "#f87171", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "#f8717122", borderRadius: 8 }}>{error}</div>}
 
         <GoldBtn onClick={submit} disabled={localLoading} style={{ width: "100%", justifyContent: "center", marginBottom: 20, opacity: localLoading ? 0.7 : 1 }}>
-          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : isAdminRegister ? "Create Admin Account" : "Create Applicant Account"}
+          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : isAdminRegister ? "Create Admin Account" : isLegacyClaim ? "Submit Claim" : "Create Applicant Account"}
         </GoldBtn>
 
         <div style={{ textAlign: "center", color: t.muted, fontSize: 14 }}>
@@ -1100,7 +1151,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && (
           <div style={{ textAlign: "center", color: t.muted, fontSize: 12, marginTop: 10 }}>
-            Applicant accounts can sign in immediately. Admin accounts require approval.
+            Applicant accounts can sign in immediately. Admin and legacy claim accounts require approval.
           </div>
         )}
 
@@ -2073,6 +2124,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
   const [applicants, setApplicants] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [legacyClaims, setLegacyClaims] = useState([]);
+  const [claimStatusFilter, setClaimStatusFilter] = useState("pending");
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
   const [settings, setSettings] = useState(createDefaultSettings());
@@ -2135,6 +2188,16 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     } catch (err) {
       setAdmins([]);
       showToast("Failed to load admins: " + err.message, "error");
+    }
+  };
+
+  const loadLegacyClaims = async (status = claimStatusFilter) => {
+    try {
+      const data = await adminAPI.getLegacyClaims(status);
+      setLegacyClaims(data || []);
+    } catch (err) {
+      setLegacyClaims([]);
+      showToast("Failed to load legacy claims: " + err.message, "error");
     }
   };
 
@@ -2463,6 +2526,30 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
     }
   };
 
+  const approveLegacyClaim = async (id) => {
+    const note = prompt("Approval note (optional):", "");
+    if (note === null) return;
+    try {
+      await adminAPI.approveLegacyClaim(id, note);
+      await loadLegacyClaims(claimStatusFilter);
+      showToast("Legacy claim approved.");
+    } catch (err) {
+      showToast("Failed to approve claim: " + err.message, "error");
+    }
+  };
+
+  const rejectLegacyClaim = async (id) => {
+    const note = prompt("Reason for rejection (optional):", "");
+    if (note === null) return;
+    try {
+      await adminAPI.rejectLegacyClaim(id, note);
+      await loadLegacyClaims(claimStatusFilter);
+      showToast("Legacy claim rejected.");
+    } catch (err) {
+      showToast("Failed to reject claim: " + err.message, "error");
+    }
+  };
+
 
 
   const filtered = applicants.filter(a =>
@@ -2502,6 +2589,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const menuItems = [
     { id: "overview", icon: <BarChart />, label: "Overview" },
     { id: "applicants", icon: <UsersIcon />, label: "Applicants" },
+    { id: "legacy-claims", icon: <ShieldIcon />, label: "Legacy Claims" },
     { id: "administrators", icon: <ShieldIcon />, label: "Administrators" },
     { id: "announcements", icon: <BellIcon />, label: "Announcements" },
     { id: "analytics", icon: <TrendingUp />, label: "Analytics" },
@@ -2857,6 +2945,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       </div>
                     </div>
                   </div>
+                </div>
                 )}
 
                 <div className="admin-print-sheet" style={{ display: "none" }}>
@@ -2900,6 +2989,104 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
                   )}
                 </div>
+            </div>
+          )}
+
+          {/* ─ LEGACY CLAIMS ─ */}
+          {tab === "legacy-claims" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Legacy Officer Claims</h2>
+                  <div style={{ color: t.muted, fontSize: 14 }}>Review claims submitted by officers approved through physical forms.</div>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <select
+                    value={claimStatusFilter}
+                    onChange={(e) => setClaimStatusFilter(e.target.value)}
+                    style={{
+                      background: isLight ? "#ffffff" : "#0d1b2a",
+                      border: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.1)"}`,
+                      borderRadius: 8,
+                      padding: "9px 12px",
+                      color: t.text,
+                      fontSize: 13,
+                    }}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="">All</option>
+                  </select>
+                  <GoldBtn onClick={() => loadLegacyClaims(claimStatusFilter)} style={{ fontSize: 13, padding: "10px 16px" }}>Refresh</GoldBtn>
+                </div>
+              </div>
+
+              <div style={{ ...S2.card, overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1020, tableLayout: "fixed" }}>
+                  <thead>
+                    <tr>
+                      {["Name", "Email", "Phone", "Legacy Service No.", "Unit", "Year", "Status", "Actions"].map((h) => (
+                        <th key={h} style={{ textAlign: h === "Actions" ? "center" : "left", padding: "10px 10px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}`, whiteSpace: "nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {legacyClaims.map((c) => (
+                      <tr key={c.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                        <td style={{ padding: "12px 10px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.fullName}</td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.phone || "-"}</td>
+                        <td style={{ padding: "12px 10px", color: "#c9952a", fontSize: 13, fontWeight: 700 }}>{c.legacyServiceNumber || "-"}</td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.lastUnit || "-"}</td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.approvalYear || "-"}</td>
+                        <td style={{ padding: "12px 10px" }}><StatusBadge s={c.status} /></td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                            <button
+                              onClick={() => approveLegacyClaim(c.id)}
+                              disabled={c.status !== "pending"}
+                              style={{
+                                background: "rgba(76,175,80,0.15)",
+                                border: "1px solid rgba(76,175,80,0.3)",
+                                color: "#81c784",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                cursor: c.status === "pending" ? "pointer" : "not-allowed",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                opacity: c.status === "pending" ? 1 : 0.6,
+                              }}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => rejectLegacyClaim(c.id)}
+                              disabled={c.status !== "pending"}
+                              style={{
+                                background: "rgba(244,67,54,0.1)",
+                                border: "1px solid rgba(244,67,54,0.25)",
+                                color: "#e57373",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                cursor: c.status === "pending" ? "pointer" : "not-allowed",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                opacity: c.status === "pending" ? 1 : 0.6,
+                              }}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {legacyClaims.length === 0 && (
+                  <div style={{ textAlign: "center", padding: 40, color: "#556" }}>No legacy claims found for this filter.</div>
+                )}
+              </div>
             </div>
           )}
 

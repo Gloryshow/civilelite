@@ -4,6 +4,7 @@ import Applicant from "../models/Applicant.js";
 import Announcement from "../models/Announcement.js";
 import Setting from "../models/Setting.js";
 import AuditLog from "../models/AuditLog.js";
+import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -91,6 +92,131 @@ router.post("/registrations/:id/reject", authMiddleware, adminMiddleware, async 
     const user = await User.findByIdAndUpdate(req.params.id, { registrationStatus: "rejected" }, { new: true });
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json({ message: "User rejected", user });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// List legacy claim requests
+router.get("/legacy-claims", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const requestedStatus = String(req.query.status || "").trim().toLowerCase();
+    const filter = ["pending", "approved", "rejected"].includes(requestedStatus)
+      ? { status: requestedStatus }
+      : {};
+
+    const claims = await LegacyClaim.find(filter)
+      .populate("reviewedBy", "name email")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(
+      claims.map((c) => ({
+        id: c._id,
+        userId: c.userId,
+        applicantId: c.applicantId,
+        fullName: c.fullName,
+        email: c.email,
+        phone: c.phone,
+        dob: c.dob,
+        legacyServiceNumber: c.legacyServiceNumber,
+        lastUnit: c.lastUnit,
+        approvalYear: c.approvalYear,
+        status: c.status,
+        adminNote: c.adminNote || "",
+        reviewedBy: c.reviewedBy
+          ? { id: c.reviewedBy._id, name: c.reviewedBy.name, email: c.reviewedBy.email }
+          : null,
+        reviewedAt: c.reviewedAt,
+        createdAt: c.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Approve legacy claim
+router.post("/legacy-claims/:id/approve", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { note = "" } = req.body || {};
+    const claim = await LegacyClaim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+    if (claim.status === "approved") return res.json({ message: "Claim already approved", claim });
+
+    const user = await User.findById(claim.userId);
+    if (!user) return res.status(404).json({ error: "Claim user not found" });
+
+    user.registrationStatus = "approved";
+    await user.save();
+
+    await Applicant.updateOne(
+      { userId: user._id },
+      {
+        $set: {
+          status: "approved",
+          fullName: claim.fullName,
+          phone: claim.phone,
+          dob: claim.dob || "",
+          serviceStatus: "active",
+        },
+      }
+    );
+
+    claim.status = "approved";
+    claim.adminNote = String(note || "").trim();
+    claim.reviewedBy = req.user.id;
+    claim.reviewedAt = new Date();
+    await claim.save();
+
+    await AuditLog.create({
+      actorId: req.user.id,
+      actorName: req.user.name,
+      action: "approve_legacy_claim",
+      details: `${claim.email} (${claim.legacyServiceNumber})`,
+    });
+
+    res.json({ message: "Legacy claim approved", claim });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Reject legacy claim
+router.post("/legacy-claims/:id/reject", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { note = "" } = req.body || {};
+    const claim = await LegacyClaim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+    if (claim.status === "rejected") return res.json({ message: "Claim already rejected", claim });
+
+    await User.updateOne(
+      { _id: claim.userId },
+      { $set: { registrationStatus: "rejected" } }
+    );
+
+    await Applicant.updateOne(
+      { userId: claim.userId },
+      { $set: { status: "rejected" } }
+    );
+
+    claim.status = "rejected";
+    claim.adminNote = String(note || "").trim();
+    claim.reviewedBy = req.user.id;
+    claim.reviewedAt = new Date();
+    await claim.save();
+
+    await AuditLog.create({
+      actorId: req.user.id,
+      actorName: req.user.name,
+      action: "reject_legacy_claim",
+      details: `${claim.email} (${claim.legacyServiceNumber})`,
+    });
+
+    res.json({ message: "Legacy claim rejected", claim });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
