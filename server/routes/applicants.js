@@ -98,7 +98,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
         kinPhone: "",
         medInfo: "",
         whyJoin: "",
-        status: "pending",
+        status: "under_review",
         serviceStatus: req.user.serviceStatus,
         submitted: false,
       };

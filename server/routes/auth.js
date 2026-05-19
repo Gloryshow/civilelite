@@ -77,7 +77,7 @@ router.post("/register", async (req, res) => {
           applicantId: user.applicantId,
           fullName: user.name,
           email: user.email,
-          status: "pending",
+          status: "under_review",
           serviceStatus: user.serviceStatus,
           submitted: false,
           serial,

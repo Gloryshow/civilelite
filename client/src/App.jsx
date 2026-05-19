@@ -2880,7 +2880,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                           <td style={{ padding: "11px 10px", textAlign: "left", color: t.muted, fontSize: 13, whiteSpace: "nowrap" }}>{a.date}</td>
                           <td style={{ padding: "11px 10px", textAlign: "left", whiteSpace: "nowrap" }}><StatusBadge s={a.status} /></td>
                           <td style={{ padding: "11px 10px", textAlign: "center", whiteSpace: "nowrap" }}>
-                            <button onClick={() => updateStatus(a.id, "under_review")} style={{
+                            <button onClick={() => { setTab("applicants"); setSelectedApplicantId(a.id); }} style={{
                               background: "none", border: "1px solid rgba(201,168,76,0.3)", color: "#c9952a",
                               borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12,
                             }}>Review</button>
