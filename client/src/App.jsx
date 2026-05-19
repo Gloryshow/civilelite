@@ -446,6 +446,71 @@ const FloatingHelpButton = () => {
   );
 };
 
+const InstallPromptWidget = ({ visible, onInstall, onDismiss, enabled }) => {
+  const [isMobileToggle, setIsMobileToggle] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 420 : false));
+
+  useEffect(() => {
+    const onResize = () => setIsMobileToggle(window.innerWidth <= 420);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  if (!enabled) return null;
+
+  const buttonStyle = {
+    position: 'fixed',
+    right: isMobileToggle ? 12 : 24,
+    bottom: isMobileToggle ? 206 : 124,
+    zIndex: 1100,
+    border: '1px solid rgba(201,149,42,0.7)',
+    background: '#111827',
+    color: '#fbbf24',
+    borderRadius: '50%',
+    width: isMobileToggle ? 38 : 44,
+    height: isMobileToggle ? 38 : 44,
+    fontWeight: 900,
+    cursor: 'pointer',
+    boxShadow: '0 10px 24px rgba(0,0,0,0.22)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: isMobileToggle ? 18 : 20,
+  };
+
+  const toastStyle = {
+    position: 'fixed',
+    right: isMobileToggle ? 12 : 24,
+    bottom: isMobileToggle ? 258 : 180,
+    zIndex: 1100,
+    background: '#0f172a',
+    color: '#f8fafc',
+    border: '1px solid rgba(201,149,42,0.6)',
+    borderRadius: 12,
+    padding: '10px 14px',
+    fontSize: 13,
+    width: isMobileToggle ? 220 : 260,
+    boxShadow: '0 12px 30px rgba(0,0,0,0.28)',
+  };
+
+  return (
+    <>
+      {visible && (
+        <div style={toastStyle}>
+          <div style={{ fontWeight: 800, marginBottom: 4 }}>Install the app</div>
+          <div style={{ color: 'rgba(248,250,252,0.8)', fontSize: 12, marginBottom: 8 }}>Add Civil Elite Service to your home screen for quick access.</div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button onClick={onDismiss} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }}>Later</button>
+            <button onClick={onInstall} style={{ background: '#c9952a', border: 'none', color: '#111827', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer', fontSize: 12 }}>Install</button>
+          </div>
+        </div>
+      )}
+      <button onClick={onInstall} aria-label="Install app" style={buttonStyle}>
+        ⬇
+      </button>
+    </>
+  );
+};
+
 const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
@@ -3385,11 +3450,56 @@ export default function App() {
   const [theme, setTheme] = useState("light");
   const [userRegistry, setUserRegistry] = useState(() => loadUserRegistry());
   const [loading, setLoading] = useState(false);
+  const [installPromptEvent, setInstallPromptEvent] = useState(null);
+  const [installAvailable, setInstallAvailable] = useState(false);
+  const [installToastVisible, setInstallToastVisible] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
   const verifyApplicantId = initialVerifyApplicantId;
 
   useEffect(() => {
     saveUserRegistry(userRegistry);
   }, [userRegistry]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedInstalled = window.localStorage.getItem("ces_pwa_installed") === "1";
+    const displayModeStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+    setIsInstalled(storedInstalled || displayModeStandalone);
+
+    const onBeforeInstall = (e) => {
+      e.preventDefault();
+      setInstallPromptEvent(e);
+      setInstallAvailable(true);
+    };
+
+    const onAppInstalled = () => {
+      window.localStorage.setItem("ces_pwa_installed", "1");
+      setIsInstalled(true);
+      setInstallAvailable(false);
+      setInstallToastVisible(false);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onAppInstalled);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!installAvailable || isInstalled) return;
+    const now = Date.now();
+    const lastShown = Number(window.localStorage.getItem("ces_install_prompt_last") || 0);
+    const intervalMs = 6 * 60 * 60 * 1000;
+    if (now - lastShown < intervalMs) return;
+
+    setInstallToastVisible(true);
+    window.localStorage.setItem("ces_install_prompt_last", String(now));
+    const timer = window.setTimeout(() => setInstallToastVisible(false), 9000);
+    return () => window.clearTimeout(timer);
+  }, [installAvailable, isInstalled]);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -3523,15 +3633,30 @@ export default function App() {
   };
 
   const toggleTheme = () => setTheme(current => (current === "light" ? "dark" : "light"));
+  const runInstallPrompt = async () => {
+    if (!installPromptEvent) return;
+    try {
+      installPromptEvent.prompt();
+      const choice = await installPromptEvent.userChoice;
+      if (choice?.outcome === "accepted") {
+        window.localStorage.setItem("ces_pwa_installed", "1");
+        setIsInstalled(true);
+        setInstallAvailable(false);
+        setInstallToastVisible(false);
+      }
+    } catch {
+      // Ignore prompt errors
+    }
+  };
 
-  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
-  if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
-  if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
-  if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  if (page === "home") return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+  if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+  if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+  if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "dashboard" && user) {
     return user.role === "admin"
-      ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>
-      : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+      ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
+      : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   }
-  return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /></>;
+  return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
 }
