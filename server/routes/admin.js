@@ -6,6 +6,7 @@ import Setting from "../models/Setting.js";
 import AuditLog from "../models/AuditLog.js";
 import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
+import { sendPushToRole, sendPushToUserIds } from "../utils/push.js";
 
 const router = express.Router();
 
@@ -176,6 +177,13 @@ router.post("/legacy-claims/:id/approve", authMiddleware, adminMiddleware, async
     claim.reviewedAt = new Date();
     await claim.save();
 
+    await sendPushToUserIds([claim.userId], {
+      title: "Existing Claim Approved",
+      body: "Your existing officer claim has been approved. You can now log in.",
+      url: "/",
+      tag: "existing-claim-approved",
+    });
+
     await AuditLog.create({
       actorId: req.user.id,
       actorName: req.user.name,
@@ -213,6 +221,13 @@ router.post("/legacy-claims/:id/reject", authMiddleware, adminMiddleware, async 
     claim.reviewedBy = req.user.id;
     claim.reviewedAt = new Date();
     await claim.save();
+
+    await sendPushToUserIds([claim.userId], {
+      title: "Existing Claim Rejected",
+      body: "Your existing officer claim was rejected. Contact support for guidance.",
+      url: "/",
+      tag: "existing-claim-rejected",
+    });
 
     await AuditLog.create({
       actorId: req.user.id,
@@ -290,6 +305,16 @@ router.patch(
 
       applicant.status = status;
       await applicant.save();
+
+      if (["under_review", "approved", "rejected"].includes(status)) {
+        const statusLabel = status.replace(/_/g, " ");
+        await sendPushToUserIds([applicant.userId], {
+          title: "Application Status Updated",
+          body: `Your application status is now ${statusLabel}.`,
+          url: "/",
+          tag: "application-status-updated",
+        });
+      }
 
       res.json(applicant);
     } catch (error) {
@@ -646,6 +671,17 @@ router.post("/announcements", authMiddleware, adminMiddleware, async (req, res) 
       body: body.trim(),
       createdBy: req.user.id,
     });
+
+    await sendPushToRole(
+      "applicant",
+      {
+        title: announcement.title,
+        body: announcement.body,
+        url: "/",
+        tag: "announcement",
+      },
+      { registrationStatus: "approved" }
+    );
 
     res.status(201).json({
       id: announcement._id,

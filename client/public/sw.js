@@ -65,3 +65,44 @@ self.addEventListener("fetch", (event) => {
     )
   );
 });
+
+self.addEventListener("push", (event) => {
+  let payload = {
+    title: "Civil Elite Update",
+    body: "You have a new notification.",
+    url: "/",
+    tag: "ces-update",
+  };
+
+  try {
+    payload = { ...payload, ...(event.data ? event.data.json() : {}) };
+  } catch {
+    // Ignore malformed payloads and fall back to defaults.
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/pwa-192.png",
+      badge: "/favicon-32x32.png",
+      tag: payload.tag,
+      data: { url: payload.url || "/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification?.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const existing = windows.find((w) => w.url.includes(self.location.origin));
+      if (existing) {
+        existing.focus();
+        return existing.navigate(targetUrl);
+      }
+      return clients.openWindow(targetUrl);
+    })
+  );
+});

@@ -50,6 +50,11 @@ export const authAPI = {
   login: (email, password) =>
     apiCall("/auth/login", "POST", { email, password }),
   me: () => apiCall("/auth/me"),
+  getPushPublicKey: () => apiCall("/auth/push/public-key"),
+  subscribePush: (subscription) =>
+    apiCall("/auth/push/subscribe", "POST", { subscription }),
+  unsubscribePush: (endpoint) =>
+    apiCall("/auth/push/unsubscribe", "POST", { endpoint }),
   forgotPassword: (email, applicantId, phone, newPassword) =>
     apiCall("/auth/forgot", "POST", { email, applicantId, phone, newPassword }),
 };

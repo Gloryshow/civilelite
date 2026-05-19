@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { sendMail } from "../utils/mailer.js";
+import { getPushPublicKey, isPushEnabled, sendPushToRole } from "../utils/push.js";
 
 const router = express.Router();
 
@@ -16,6 +17,86 @@ const generateToken = (userId, role) => {
 };
 
 const normalizeDigits = (value) => String(value || "").replace(/\D/g, "");
+
+const normalizeSubscription = (subscription = {}) => {
+  const endpoint = String(subscription.endpoint || "").trim();
+  const p256dh = String(subscription?.keys?.p256dh || "").trim();
+  const auth = String(subscription?.keys?.auth || "").trim();
+
+  if (!endpoint || !p256dh || !auth) return null;
+
+  return {
+    endpoint,
+    expirationTime: subscription.expirationTime ? new Date(subscription.expirationTime) : null,
+    keys: { p256dh, auth },
+  };
+};
+
+router.get("/push/public-key", (req, res) => {
+  if (!isPushEnabled()) {
+    return res.status(503).json({ error: "Push notifications are not configured" });
+  }
+  return res.json({ publicKey: getPushPublicKey() });
+});
+
+router.post("/push/subscribe", authMiddleware, async (req, res) => {
+  try {
+    if (!isPushEnabled()) {
+      return res.status(503).json({ error: "Push notifications are not configured" });
+    }
+
+    const parsed = normalizeSubscription(req.body?.subscription || req.body);
+    if (!parsed) {
+      return res.status(400).json({ error: "Invalid push subscription" });
+    }
+
+    await User.updateMany(
+      { _id: { $ne: req.user.id }, "pushSubscriptions.endpoint": parsed.endpoint },
+      { $pull: { pushSubscriptions: { endpoint: parsed.endpoint } } }
+    );
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const existing = (user.pushSubscriptions || []).find((s) => s.endpoint === parsed.endpoint);
+    if (existing) {
+      existing.keys = parsed.keys;
+      existing.expirationTime = parsed.expirationTime;
+      existing.lastSeenAt = new Date();
+      existing.userAgent = String(req.headers["user-agent"] || "").slice(0, 200);
+    } else {
+      user.pushSubscriptions.push({
+        ...parsed,
+        userAgent: String(req.headers["user-agent"] || "").slice(0, 200),
+        createdAt: new Date(),
+        lastSeenAt: new Date(),
+      });
+    }
+
+    await user.save();
+    return res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(503).json({ error: "Unable to save push subscription" });
+  }
+});
+
+router.post("/push/unsubscribe", authMiddleware, async (req, res) => {
+  try {
+    const endpoint = String(req.body?.endpoint || "").trim();
+    if (!endpoint) return res.status(400).json({ error: "Subscription endpoint is required" });
+
+    await User.updateOne(
+      { _id: req.user.id },
+      { $pull: { pushSubscriptions: { endpoint } } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(503).json({ error: "Unable to remove push subscription" });
+  }
+});
 
 // Register
 router.post("/register", async (req, res) => {
@@ -263,6 +344,17 @@ router.post("/legacy-claim", async (req, res) => {
       approvalYear: approvalYear ? Number(approvalYear) : null,
       status: "pending",
     });
+
+    await sendPushToRole(
+      "admin",
+      {
+        title: "New Existing Officer Claim",
+        body: `${user.name} submitted an existing officer claim for review.`,
+        url: "/",
+        tag: "existing-claim-submitted",
+      },
+      { registrationStatus: "approved" }
+    );
 
     return res.status(201).json({
       message: "Claim submitted. Await admin approval before login.",

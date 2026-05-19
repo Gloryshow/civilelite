@@ -203,6 +203,15 @@ const parseQrPayload = (raw) => {
   return null;
 };
 
+const base64UrlToUint8Array = (base64String) => {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const normalized = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = window.atob(normalized);
+  const output = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
+  return output;
+};
+
 // ── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 20, cls = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cls}>
@@ -3513,6 +3522,7 @@ export default function App() {
   const [installAvailable, setInstallAvailable] = useState(false);
   const [installToastVisible, setInstallToastVisible] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const pushSubscriptionAttemptedRef = useRef(false);
   const verifyApplicantId = initialVerifyApplicantId;
 
   useEffect(() => {
@@ -3612,6 +3622,50 @@ export default function App() {
 
     restoreSession();
   }, [page]);
+
+  useEffect(() => {
+    const enablePushNotifications = async () => {
+      if (typeof window === "undefined") return;
+      if (pushSubscriptionAttemptedRef.current) return;
+      if (page !== "dashboard" || !user?.id) return;
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
+      pushSubscriptionAttemptedRef.current = true;
+
+      try {
+        let permission = Notification.permission;
+        if (permission === "default") {
+          permission = await Notification.requestPermission();
+        }
+        if (permission !== "granted") return;
+
+        const { publicKey } = await authAPI.getPushPublicKey();
+        if (!publicKey) return;
+
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: base64UrlToUint8Array(publicKey),
+          });
+        }
+
+        await authAPI.subscribePush(subscription.toJSON());
+      } catch (error) {
+        console.warn("Push subscription skipped:", error?.message || error);
+      }
+    };
+
+    enablePushNotifications();
+  }, [page, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      pushSubscriptionAttemptedRef.current = false;
+    }
+  }, [user?.id]);
 
   const handleAuth = async (authResult) => {
     setLoading(true);

@@ -43,6 +43,19 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    pushSubscriptions: [
+      {
+        endpoint: { type: String, required: true },
+        expirationTime: { type: Date, default: null },
+        keys: {
+          p256dh: { type: String, default: "" },
+          auth: { type: String, default: "" },
+        },
+        userAgent: { type: String, default: "" },
+        createdAt: { type: Date, default: Date.now },
+        lastSeenAt: { type: Date, default: Date.now },
+      },
+    ],
     createdAt: {   
       type: Date,
       default: Date.now,

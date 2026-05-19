@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Announcement from "../models/Announcement.js";
 import Setting from "../models/Setting.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { sendPushToRole } from "../utils/push.js";
 
 const router = express.Router();
 
@@ -225,6 +226,17 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.submittedAt = new Date();
 
     await applicant.save();
+
+    await sendPushToRole(
+      "admin",
+      {
+        title: "New Application Submitted",
+        body: `${applicant.fullName || "An applicant"} submitted an application.`,
+        url: "/",
+        tag: "application-submitted",
+      },
+      { registrationStatus: "approved" }
+    );
 
     res.json({
       message: "Application submitted successfully",
