@@ -735,6 +735,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
     ["Process", "process"],
     ["Requirements", "requirements"],
     ["FAQ", "faq"],
+     ["Press Releases", "press"],
   ];
 
   const stats = [
