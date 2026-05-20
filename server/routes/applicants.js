@@ -266,6 +266,24 @@ router.get("/announcements", authMiddleware, async (req, res) => {
   }
 });
 
+// Public announcements (for landing page / public site)
+router.get("/public/announcements", async (req, res) => {
+  try {
+    const items = await Announcement.find().sort({ createdAt: -1 });
+    res.json(
+      items.map((a) => ({
+        id: a._id,
+        title: a.title,
+        body: a.body,
+        createdAt: a.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Public manual payment settings
 router.get("/settings", async (req, res) => {
   try {

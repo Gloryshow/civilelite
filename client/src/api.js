@@ -70,6 +70,7 @@ export const publicAPI = {
   getVerification: (applicantId) =>
     apiCall(`/applicants/verify/${encodeURIComponent(applicantId)}`),
   getSettings: () => apiCall("/applicants/settings"),
+  getAnnouncements: () => apiCall("/applicants/public/announcements"),
 };
 
 export const adminAPI = {

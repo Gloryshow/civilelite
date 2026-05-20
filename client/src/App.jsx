@@ -688,6 +688,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   const [isNarrow, setIsNarrow] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 1024 : false));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [announcementsPublic, setAnnouncementsPublic] = useState([]);
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 20);
@@ -711,6 +712,19 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
   useEffect(() => {
     const interval = setInterval(() => setCurrentSlide(s => (s + 1) % 3), 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  const loadPublicAnnouncements = async () => {
+    try {
+      const data = await publicAPI.getAnnouncements();
+      setAnnouncementsPublic(data || []);
+    } catch (err) {
+      setAnnouncementsPublic([]);
+    }
+  };
+
+  useEffect(() => {
+    loadPublicAnnouncements();
   }, []);
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -890,6 +904,32 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
           {[0, 1, 2].map(i => (
             <button key={i} onClick={() => setCurrentSlide(i)} style={{ width: i === currentSlide ? 24 : 8, height: 8, borderRadius: 4, background: i === currentSlide ? "#c9952a" : "rgba(255,255,255,.35)", cursor: "pointer", border: "none", transition: "all .3s" }} />
           ))}
+        </div>
+      </section>
+
+      {/* PRESS / PRESS RELEASES SECTION */}
+      <section id="press" style={{ background: isLight ? "#fff" : "#07110b", padding: isMobile ? "42px 24px" : "56px 40px" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 22px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2.2, color: "#c9952a", marginBottom: 8 }}>Press</div>
+            <h2 style={{ fontSize: "clamp(20px, 2.6vw, 28px)", color: isLight ? "#0f172a" : "#e8d8a0", textTransform: "uppercase", lineHeight: 1.2, marginBottom: 10, fontWeight: 900 }}>Press Releases</h2>
+            <p style={{ fontSize: 14, color: isLight ? "#53606a" : "#b7c2d0", lineHeight: 1.6 }}>Official announcements and notices from Civil Elite Service.</p>
+          </div>
+
+          <div style={{ display: "grid", gap: 14 }}>
+            {announcementsPublic.length === 0 && (
+              <div style={{ color: isLight ? "#64748b" : "#8f9fb0", fontSize: 13, textAlign: "center" }}>No press releases available.</div>
+            )}
+            {announcementsPublic.map((a) => (
+              <div key={a.id} style={{ background: isLight ? "#fff" : "rgba(255,255,255,0.03)", padding: 18, borderRadius: 8, border: isLight ? "1px solid rgba(15,23,42,0.04)" : "1px solid rgba(255,255,255,0.03)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ fontWeight: 800, color: isLight ? "#0f172a" : "#e8d8a0" }}>{a.title}</div>
+                  <div style={{ color: isLight ? "#65748b" : "#9aa7b8", fontSize: 12 }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}</div>
+                </div>
+                <div style={{ color: isLight ? "#475569" : "#c7d2da", fontSize: 14 }}>{a.body}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
