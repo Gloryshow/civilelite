@@ -95,6 +95,7 @@ export const adminAPI = {
   getAdmins: () => apiCall(`/admin/admins`),
   updateAdmin: (id, payload) => apiCall(`/admin/admins/${id}`, "PATCH", payload),
   deleteAdmin: (id) => apiCall(`/admin/admins/${id}`, "DELETE"),
+  createAdmin: (email, name, password) => apiCall(`/admin/admins`, "POST", { email, name, password }),
   createAnnouncement: (title, body) =>
     apiCall("/admin/announcements", "POST", { title, body }),
   updateAnnouncement: (id, title, body) =>

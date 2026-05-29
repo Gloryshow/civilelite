@@ -2248,6 +2248,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
   const [applicants, setApplicants] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [newAdmin, setNewAdmin] = useState({ email: "", name: "", password: "", confirm: "" });
   const [legacyClaims, setLegacyClaims] = useState([]);
   const [claimStatusFilter, setClaimStatusFilter] = useState("");
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
@@ -3263,6 +3264,37 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
                 <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24 }}>Administrators</h2>
                 <div style={{ color: t.muted }}>Manage admin accounts</div>
+              </div>
+
+              <div style={{ ...S2.card, maxWidth: 760, marginBottom: 18 }}>
+                <div style={{ color: "#c9952a", fontWeight: 700, marginBottom: 12 }}>Create New Administrator</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 10, marginBottom: 10 }}>
+                  <Input light={isLight} label="Full name" value={newAdmin.name} onChange={e => setNewAdmin(d => ({ ...d, name: e.target.value }))} placeholder="Jane Doe" />
+                  <Input light={isLight} label="Email" value={newAdmin.email} onChange={e => setNewAdmin(d => ({ ...d, email: e.target.value }))} placeholder="admin@example.com" />
+                  <PasswordInput light={isLight} label="Password" value={newAdmin.password} onChange={e => setNewAdmin(d => ({ ...d, password: e.target.value }))} placeholder="••••••••" />
+                  <PasswordInput light={isLight} label="Confirm password" value={newAdmin.confirm} onChange={e => setNewAdmin(d => ({ ...d, confirm: e.target.value }))} placeholder="••••••••" />
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <GoldBtn onClick={async () => {
+                    const email = (newAdmin.email || "").trim();
+                    const name = (newAdmin.name || "").trim();
+                    const password = newAdmin.password || "";
+                    const confirm = newAdmin.confirm || "";
+                    if (!email || !name || !password) { showToast("Please fill name, email and password", "error"); return; }
+                    if (password !== confirm) { showToast("Passwords do not match", "error"); return; }
+                    try {
+                      const created = await adminAPI.createAdmin(email, name, password);
+                      // refresh admin list
+                      await loadAdmins();
+                      setNewAdmin({ email: "", name: "", password: "", confirm: "" });
+                      showToast("Administrator created successfully");
+                    } catch (err) {
+                      showToast("Failed to create admin: " + err.message, "error");
+                    }
+                  }}>
+                    <Plus /> Create Admin
+                  </GoldBtn>
+                </div>
               </div>
 
               <div style={{ ...S2.card, overflowX: "auto", padding: 18 }}>
