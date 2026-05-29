@@ -1094,7 +1094,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     lastUnit: "",
     approvalYear: "",
   });
-  const [registrationRole, setRegistrationRole] = useState(mode === "register-admin" ? "admin" : "applicant");
+  const [registrationRole, setRegistrationRole] = useState("applicant");
   const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
@@ -1105,14 +1105,9 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const [forgotConfirm, setForgotConfirm] = useState("");
   const [forgotMsg, setForgotMsg] = useState("");
   const isLogin = mode === "login";
-  const isAdminRegister = mode === "register-admin" || (!isLogin && registrationRole === "admin");
   const isLegacyClaim = !isLogin && registrationRole === "legacy";
 
   useEffect(() => {
-    if (mode === "register-admin") {
-      setRegistrationRole("admin");
-      return;
-    }
     if (mode === "register") {
       setRegistrationRole("applicant");
     }
@@ -1152,7 +1147,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
           return;
         }
 
-        const roleToRegister = mode === "register-admin" ? "admin" : registrationRole;
+        const roleToRegister = registrationRole;
         const result = await authAPI.register(form.email, form.password, form.name, roleToRegister);
         if (result.token && result.user) {
           tokenManager.setToken(result.token);
@@ -1160,8 +1155,11 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
           return;
         }
 
-        // Admin registrations stay pending for approval.
-        setError(result.message || "Admin registration submitted. Await approval from an existing admin.");
+        if (roleToRegister === "legacy") {
+          setError(result.message || "Claim submitted. Await admin approval before login.");
+        } else {
+          setError(result.message || "Applicant registration submitted. Await approval from an existing admin.");
+        }
         setLocalLoading(false);
         return;
       }
@@ -1194,11 +1192,11 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         </div>
 
         <h2 style={{ color: t.text, fontWeight: 800, fontSize: 22, marginBottom: 24, textAlign: "center" }}>
-          {isLogin ? "Sign In to Portal" : isAdminRegister ? "Register as Admin" : isLegacyClaim ? "Submit Existing Officer Claim" : "Create Applicant Account"}
+          {isLogin ? "Sign In to Portal" : isLegacyClaim ? "Submit Existing Officer Claim" : "Create Applicant Account"}
         </h2>
 
         {!isLogin && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8, marginBottom: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 8, marginBottom: 18 }}>
             <button
               type="button"
               onClick={() => setRegistrationRole("applicant")}
@@ -1213,21 +1211,6 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
               }}
             >
               Register as Applicant
-            </button>
-            <button
-              type="button"
-              onClick={() => setRegistrationRole("admin")}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: `1px solid ${registrationRole === "admin" ? "#c9952a" : isLight ? "rgba(15,23,42,0.14)" : "rgba(255,255,255,0.08)"}`,
-                background: registrationRole === "admin" ? "rgba(201,149,42,0.12)" : "transparent",
-                color: t.text,
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-            >
-              Register as Admin
             </button>
             <button
               type="button"
@@ -1297,7 +1280,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         {error && <div style={{ color: "#f87171", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "#f8717122", borderRadius: 8 }}>{error}</div>}
 
         <GoldBtn onClick={submit} disabled={localLoading} style={{ width: "100%", justifyContent: "center", marginBottom: 20, opacity: localLoading ? 0.7 : 1 }}>
-          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : isAdminRegister ? "Create Admin Account" : isLegacyClaim ? "Submit Claim" : "Create Applicant Account"}
+          {localLoading ? "Authenticating…" : isLogin ? "Sign In" : isLegacyClaim ? "Submit Claim" : "Create Applicant Account"}
         </GoldBtn>
 
         <div style={{ textAlign: "center", color: t.muted, fontSize: 14 }}>
@@ -1309,7 +1292,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && (
           <div style={{ textAlign: "center", color: t.muted, fontSize: 12, marginTop: 10 }}>
-            Applicant accounts can sign in immediately. Admin and existing claim accounts require approval.
+            Applicant accounts can sign in immediately. Existing claim accounts require approval. Admin accounts are created manually by an existing admin.
           </div>
         )}
 
