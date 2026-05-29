@@ -1290,12 +1290,6 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
           }}>{isLogin ? "Register" : "Sign In"}</button>
         </div>
 
-        {!isLogin && (
-          <div style={{ textAlign: "center", color: t.muted, fontSize: 12, marginTop: 10 }}>
-            Applicant accounts can sign in immediately. Existing claim accounts require approval. Admin accounts are created manually by an existing admin.
-          </div>
-        )}
-
         <button onClick={() => onNavigate("home")} style={{
           display: "block", margin: "16px auto 0", background: "none", border: "none",
           color: t.muted, cursor: "pointer", fontSize: 13,
