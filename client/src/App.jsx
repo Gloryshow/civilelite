@@ -1309,7 +1309,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
   const softText = isLight ? "#475569" : "#8899aa";
   const faintText = isLight ? "#64748b" : "#556";
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useState(user?.legacyApproved ? "apply" : "overview");
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
@@ -3648,6 +3648,7 @@ export default function App() {
         setUser({
           ...nextUser,
           id: userData.id,
+          legacyApproved: userData.legacyApproved || false,
         });
         setPage("dashboard");
       } catch (e) {
@@ -3721,6 +3722,7 @@ export default function App() {
           ...userData,
           name: userData.name,
           role: "admin",
+          legacyApproved: userData.legacyApproved || false,
         });
         setPage("dashboard");
         return;
@@ -3744,6 +3746,7 @@ export default function App() {
       setUser({
         ...nextUser,
         id: userData.id,
+        legacyApproved: userData.legacyApproved || false,
       });
       setPage("dashboard");
     } catch (error) {

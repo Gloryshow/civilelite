@@ -155,8 +155,8 @@ router.post("/legacy-claims/:id/approve", authMiddleware, adminMiddleware, async
     if (!user) return res.status(404).json({ error: "Claim user not found" });
 
     user.registrationStatus = "approved";
-    // Ensure legacy claim users are assigned the applicant role so they go to the aspirant dashboard
-    user.role = "applicant";
+    // Mark this user as an approved legacy officer so client can route them
+    user.legacyApproved = true;
     await user.save();
 
     await Applicant.updateOne(

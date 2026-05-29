@@ -227,6 +227,13 @@ router.post("/submit", authMiddleware, async (req, res) => {
 
     await applicant.save();
 
+    // If this user had a legacyApproved flag (existing officer), clear it once they submit their updated profile
+    try {
+      await User.findByIdAndUpdate(req.user.id, { legacyApproved: false });
+    } catch (err) {
+      console.error('Failed to clear legacyApproved flag:', err);
+    }
+
     await sendPushToRole(
       "admin",
       {

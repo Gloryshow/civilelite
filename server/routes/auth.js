@@ -403,6 +403,7 @@ router.post("/login", async (req, res) => {
         role: user.role,
         applicantId: user.applicantId,
         serviceStatus: user.serviceStatus,
+        legacyApproved: user.legacyApproved || false,
       },
     });
   } catch (error) {
@@ -423,6 +424,7 @@ router.get("/me", authMiddleware, async (req, res) => {
         applicantId: req.user.applicantId,
         serviceStatus: req.user.serviceStatus,
         registrationStatus: req.user.registrationStatus,
+        legacyApproved: req.user.legacyApproved || false,
       },
     });
   } catch (error) {

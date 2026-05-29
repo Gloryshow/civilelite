@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    legacyApproved: {
+      type: Boolean,
+      default: false,
+    },
     pushSubscriptions: [
       {
         endpoint: { type: String, required: true },
