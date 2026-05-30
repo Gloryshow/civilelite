@@ -1088,11 +1088,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     name: "",
     confirm: "",
     phone: "",
-    state: "",
-    dob: "",
     legacyServiceNumber: "",
-    lastUnit: "",
-    approvalYear: "",
   });
   const [registrationRole, setRegistrationRole] = useState("applicant");
   const [localLoading, setLocalLoading] = useState(false);
@@ -1136,11 +1132,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
             email: form.email,
             password: form.password,
             phone: form.phone,
-            state: form.state,
-            dob: form.dob,
             legacyServiceNumber: form.legacyServiceNumber,
-            lastUnit: form.lastUnit,
-            approvalYear: form.approvalYear,
           });
           if (result.token && result.user) {
             tokenManager.setToken(result.token);
@@ -1238,11 +1230,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
-        {!isLogin && isLegacyClaim && <Select light={isLight} label="State" value={form.state} onChange={set("state")} required options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map((state) => ({ value: state, label: state }))]} />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Date of Birth" type="date" value={form.dob} onChange={set("dob")} />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Existing Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Last Unit / Posting" value={form.lastUnit} onChange={set("lastUnit")} placeholder="e.g. Operations Unit" />}
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Original Approval Year" type="number" value={form.approvalYear} onChange={set("approvalYear")} placeholder="e.g. 2017" />}
+        {!isLogin && isLegacyClaim && <Input light={isLight} label="Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
 
