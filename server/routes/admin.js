@@ -275,6 +275,7 @@ router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, 
     const claim = await LegacyClaim.findById(req.params.id);
     if (!claim) return res.status(404).json({ error: "Claim not found" });
 
+    // Validate and apply updates
     const allowed = [
       "fullName",
       "email",
@@ -287,16 +288,49 @@ router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, 
       "adminNote",
     ];
 
+    const updates = {};
     allowed.forEach((field) => {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
-        claim[field] = req.body[field];
+        updates[field] = req.body[field];
       }
     });
 
+    // Basic validation
+    if (updates.email) {
+      const e = String(updates.email).trim().toLowerCase();
+      const emailOk = /^\S+@\S+\.\S+$/.test(e);
+      if (!emailOk) return res.status(400).json({ error: "Invalid email address" });
+
+      // Prevent duplicate email across users
+      if (claim.userId) {
+        const existing = await User.findOne({ email: e, _id: { $ne: claim.userId } });
+        if (existing) return res.status(400).json({ error: "Email already in use by another account" });
+      }
+      updates.email = e;
+    }
+
+    if (updates.phone) {
+      const p = String(updates.phone).replace(/[\s-()+]/g, "");
+      if (p.length < 7) return res.status(400).json({ error: "Phone number too short" });
+      updates.phone = updates.phone;
+    }
+
+    // Apply to claim
+    Object.keys(updates).forEach(k => claim[k] = updates[k]);
     await claim.save();
 
-    // Also update the Applicant record for this user if present
+    // Update User record if present and name/email changed
+    let updatedUser = null;
     if (claim.userId) {
+      const userUpdates = {};
+      if (typeof updates.fullName === 'string' && updates.fullName.trim()) userUpdates.name = updates.fullName.trim();
+      if (typeof updates.email === 'string' && updates.email.trim()) userUpdates.email = updates.email.trim().toLowerCase();
+
+      if (Object.keys(userUpdates).length > 0) {
+        updatedUser = await User.findByIdAndUpdate(claim.userId, userUpdates, { new: true }).select('-password');
+      }
+
+      // Also sync Applicant profile
       await Applicant.updateOne(
         { userId: claim.userId },
         {
@@ -314,7 +348,7 @@ router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, 
 
     await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "update_legacy_claim", details: `${claim.email} (${claim._id})` });
 
-    res.json({ message: "Legacy claim updated", claim });
+    res.json({ message: "Legacy claim updated", claim, user: updatedUser });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });

@@ -3566,6 +3566,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 14 }}>
                     <Input light={isLight} label="Full name" value={selectedLegacyClaim.fullName} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, fullName: e.target.value } : c))} />
+                    <Input light={isLight} label="Name (account)" value={selectedLegacyClaim.name || selectedLegacyClaim.fullName} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, name: e.target.value, fullName: e.target.value } : c))} />
                     <Input light={isLight} label="Email" value={selectedLegacyClaim.email} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, email: e.target.value } : c))} />
                     <Input light={isLight} label="Phone" value={selectedLegacyClaim.phone} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, phone: e.target.value } : c))} />
                     <Input light={isLight} label="Service No." value={selectedLegacyClaim.legacyServiceNumber} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, legacyServiceNumber: e.target.value } : c))} />
