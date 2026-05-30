@@ -4136,11 +4136,23 @@ export default function App() {
           setUserRegistry((prev) => [...prev, nextUser]);
         }
 
-        setUser({
+        // enrich user with registration and applicant status (if available)
+        let enriched = {
           ...nextUser,
           id: userData.id,
           legacyApproved: userData.legacyApproved || false,
-        });
+          registrationStatus: userData.registrationStatus || "approved",
+        };
+        try {
+          const profile = await applicantAPI.getProfile();
+          if (profile && profile.status === "rejected") {
+            enriched.rejected = true;
+            enriched.applicantStatus = profile.status;
+          }
+        } catch (err) {
+          // ignore profile errors
+        }
+        setUser(enriched);
         setPage("dashboard");
       } catch (e) {
         tokenManager.clearToken();
@@ -4234,11 +4246,23 @@ export default function App() {
         setUserRegistry(prev => [...prev, nextUser]);
       }
 
-      setUser({
+      // enrich user with registration and applicant status (if available)
+      let enriched = {
         ...nextUser,
         id: userData.id,
         legacyApproved: userData.legacyApproved || false,
-      });
+        registrationStatus: userData.registrationStatus || "approved",
+      };
+      try {
+        const profile = await applicantAPI.getProfile();
+        if (profile && profile.status === "rejected") {
+          enriched.rejected = true;
+          enriched.applicantStatus = profile.status;
+        }
+      } catch (err) {
+        // ignore
+      }
+      setUser(enriched);
       setPage("dashboard");
     } catch (error) {
       console.error("Auth error:", error);
@@ -4277,11 +4301,28 @@ export default function App() {
   if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "dashboard" && user && tokenManager.isLoggedIn()) {
-    return user.role === "admin"
-      ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
-      : user.legacyApproved
-        ? <><LegacyUpdateForm user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
-        : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+    if (user.role === "admin") {
+      return <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+    }
+
+    // If the account or applicant profile was rejected, block access with a strong message
+    if (user.registrationStatus === 'rejected' || user.rejected) {
+      return <>
+        <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: isLight ? '#fff6f6' : '#2a0a0a', padding: 24 }}>
+          <div style={{ textAlign: 'center', maxWidth: 820 }}>
+            <h1 style={{ fontSize: 48, marginBottom: 12, color: isLight ? '#b91c1c' : '#ff7b7b', fontWeight: 900 }}>ACCESS DENIED</h1>
+            <p style={{ fontSize: 18, color: isLight ? '#7f1d1d' : '#ffb4b4', marginBottom: 20 }}>Your account has been rejected and you no longer have access to the dashboard. If you believe this is a mistake, please contact support.</p>
+            <button onClick={handleLogout} style={{ padding: '12px 18px', borderRadius: 8, background: isLight ? '#b91c1c' : '#ff7b7b', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700 }}>Sign Out</button>
+          </div>
+        </div>
+      </>;
+    }
+
+    if (user.legacyApproved) {
+      return <><LegacyUpdateForm user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+    }
+
+    return <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   }
   return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
 }
