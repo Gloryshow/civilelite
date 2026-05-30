@@ -226,7 +226,7 @@ router.post("/legacy-claims/:id/reject", authMiddleware, adminMiddleware, async 
 
     await User.updateOne(
       { _id: claim.userId },
-      { $set: { registrationStatus: "rejected" } }
+      { $set: { registrationStatus: "rejected", legacyApproved: false } }
     );
 
     await Applicant.updateOne(

@@ -1142,7 +1142,12 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
             lastUnit: form.lastUnit,
             approvalYear: form.approvalYear,
           });
-          setError(result.message || "Claim submitted. Await admin approval before login.");
+          if (result.token && result.user) {
+            tokenManager.setToken(result.token);
+            await onAuth(result);
+            return;
+          }
+          setError(result.message || "Claim submitted. You can now complete the legacy update form.");
           setLocalLoading(false);
           return;
         }

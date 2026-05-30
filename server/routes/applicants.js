@@ -269,17 +269,19 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.parentPhone2 = parentPhone2;
     applicant.parentEmail = parentEmail;
     applicant.parentSignature = parentSignature;
-    applicant.status = isLegacyUpdate ? "approved" : "under_review";
+    applicant.status = isLegacyUpdate ? "under_review" : "under_review";
     applicant.submitted = true;
     applicant.submittedAt = new Date();
 
     await applicant.save();
 
-    // If this user had a legacyApproved flag (existing officer), clear it once they submit their updated profile
-    try {
-      await User.findByIdAndUpdate(req.user.id, { legacyApproved: false });
-    } catch (err) {
-      console.error('Failed to clear legacyApproved flag:', err);
+    // Keep legacy access active so the officer can revisit the update form until admin review is complete.
+    if (isLegacyUpdate) {
+      try {
+        await User.findByIdAndUpdate(req.user.id, { legacyApproved: true, registrationStatus: "under_review" });
+      } catch (err) {
+        console.error('Failed to keep legacy access active:', err);
+      }
     }
 
     await sendPushToRole(

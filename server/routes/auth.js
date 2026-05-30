@@ -309,7 +309,8 @@ router.post("/legacy-claim", async (req, res) => {
       role: "applicant",
       applicantId,
       serviceStatus: "active",
-      registrationStatus: "pending",
+      registrationStatus: "under_review",
+      legacyApproved: true,
     });
 
     const existingApplicant = await Applicant.findOne({ userId: user._id });
@@ -356,9 +357,22 @@ router.post("/legacy-claim", async (req, res) => {
       { registrationStatus: "approved" }
     );
 
+    const token = generateToken(user._id, user.role);
+
     return res.status(201).json({
-      message: "Claim submitted. Await admin approval before login.",
+      message: "Claim submitted. You can now complete the legacy update form.",
       applicantId: user.applicantId,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        applicantId: user.applicantId,
+        serviceStatus: user.serviceStatus,
+        registrationStatus: user.registrationStatus,
+        legacyApproved: true,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -382,8 +396,8 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Prevent login if registration is pending or rejected
-    if (user.registrationStatus !== "approved") {
+    // Allow legacy claimers to log in while they are in the update/approval flow.
+    if (user.registrationStatus !== "approved" && !user.legacyApproved) {
       return res.status(403).json({ error: "Account not approved by admin" });
     }
 
