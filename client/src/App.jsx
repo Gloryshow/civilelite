@@ -2242,6 +2242,9 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     parentEmail: "",
     parentSignature: "",
     passportPhotoDataUrl: "",
+    birthCertificateDataUrl: "",
+    schoolCertificateDataUrl: "",
+    attestationLetterDataUrl: "",
   });
 
   const LegacyField = useCallback(({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
@@ -2300,6 +2303,9 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: applicant.parentEmail || current.parentEmail,
             parentSignature: applicant.parentSignature || current.parentSignature,
             passportPhotoDataUrl: applicant.passportPhotoDataUrl || current.passportPhotoDataUrl,
+            birthCertificateDataUrl: applicant.birthCertificateDataUrl || current.birthCertificateDataUrl,
+            schoolCertificateDataUrl: applicant.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
+            attestationLetterDataUrl: applicant.attestationLetterDataUrl || current.attestationLetterDataUrl,
           }));
           return;
         }
@@ -2335,6 +2341,9 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: profile.parentEmail || current.parentEmail,
             parentSignature: profile.parentSignature || current.parentSignature,
             passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
+            birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
+            schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
+            attestationLetterDataUrl: profile.attestationLetterDataUrl || current.attestationLetterDataUrl,
           }));
         }
       } catch (error) {
@@ -2359,6 +2368,24 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
       showToast("Passport uploaded.");
     };
     reader.onerror = () => showToast("Unable to read passport image.", "error");
+    reader.readAsDataURL(file);
+  };
+
+  const onDocumentChange = (field, label) => (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const allowed = file.type.startsWith("image/") || file.type === "application/pdf";
+    if (!allowed) {
+      showToast(`${label} must be an image or PDF file.`, "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      setForm((current) => ({ ...current, [field]: dataUrl }));
+      showToast(`${label} uploaded.`);
+    };
+    reader.onerror = () => showToast(`Unable to read ${label.toLowerCase()}.`, "error");
     reader.readAsDataURL(file);
   };
 
@@ -2412,6 +2439,9 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         parentEmail: form.parentEmail,
         parentSignature: form.parentSignature,
         passportPhotoDataUrl: form.passportPhotoDataUrl,
+        birthCertificateDataUrl: form.birthCertificateDataUrl,
+        schoolCertificateDataUrl: form.schoolCertificateDataUrl,
+        attestationLetterDataUrl: form.attestationLetterDataUrl,
         dob: "",
         qualification: "",
         religion: "",
@@ -2469,7 +2499,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
           </div>
 
           <div style={{ padding: 20 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.15fr) minmax(280px, 0.85fr)", gap: 20, alignItems: "start" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, alignItems: "start" }}>
               <div>
                 <div style={sectionTitle}>PERSONAL INFORMATION</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
@@ -2527,10 +2557,28 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
 
                 <div style={{ border: `1px solid ${isLight ? "#e0d3bc" : "rgba(255,255,255,0.08)"}`, borderRadius: 16, padding: 18, background: isLight ? "#fffefb" : "rgba(255,255,255,0.03)" }}>
                   <div style={{ fontWeight: 900, marginBottom: 10 }}>Document Requirement</div>
-                  <div style={{ color: t.muted, fontSize: 14, lineHeight: 1.8 }}>
-                    <div>A copy of Birth Certificate</div>
-                    <div>A copy of School Leaving Certificate (minimum of O level) or awaiting</div>
-                    <div>Attestation Letter (From a lawyer, Mosque or Church.)</div>
+                  <div style={{ color: t.muted, fontSize: 14, lineHeight: 1.8, display: "grid", gap: 12 }}>
+                    <div>
+                      <div style={{ marginBottom: 6 }}>A copy of Birth Certificate</div>
+                      <input type="file" accept="image/*,application/pdf" onChange={onDocumentChange("birthCertificateDataUrl", "Birth certificate")} />
+                      <div style={{ fontSize: 12, marginTop: 4, color: form.birthCertificateDataUrl ? "#16a34a" : t.muted }}>
+                        {form.birthCertificateDataUrl ? "Uploaded" : "Not uploaded"}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ marginBottom: 6 }}>A copy of School Leaving Certificate (minimum of O level) or awaiting</div>
+                      <input type="file" accept="image/*,application/pdf" onChange={onDocumentChange("schoolCertificateDataUrl", "School leaving certificate")} />
+                      <div style={{ fontSize: 12, marginTop: 4, color: form.schoolCertificateDataUrl ? "#16a34a" : t.muted }}>
+                        {form.schoolCertificateDataUrl ? "Uploaded" : "Not uploaded"}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ marginBottom: 6 }}>Attestation Letter (From a lawyer, Mosque or Church.)</div>
+                      <input type="file" accept="image/*,application/pdf" onChange={onDocumentChange("attestationLetterDataUrl", "Attestation letter")} />
+                      <div style={{ fontSize: 12, marginTop: 4, color: form.attestationLetterDataUrl ? "#16a34a" : t.muted }}>
+                        {form.attestationLetterDataUrl ? "Uploaded" : "Not uploaded"}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

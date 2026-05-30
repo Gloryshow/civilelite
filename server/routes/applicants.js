@@ -93,6 +93,9 @@ router.get("/profile", authMiddleware, async (req, res) => {
         declarationName: "",
         declarationDate: "",
         passportPhotoDataUrl: "",
+        birthCertificateDataUrl: "",
+        schoolCertificateDataUrl: "",
+        attestationLetterDataUrl: "",
         guardianName: "",
         guardianSignatureDate: "",
         witnessName: "",
@@ -163,6 +166,9 @@ router.post("/submit", authMiddleware, async (req, res) => {
       declarationName,
       declarationDate,
       passportPhotoDataUrl,
+      birthCertificateDataUrl,
+      schoolCertificateDataUrl,
+      attestationLetterDataUrl,
       guardianName,
       guardianSignatureDate,
       witnessName,
@@ -249,6 +255,9 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.declarationName = declarationName;
     applicant.declarationDate = declarationDate;
     applicant.passportPhotoDataUrl = passportPhotoDataUrl;
+    applicant.birthCertificateDataUrl = birthCertificateDataUrl;
+    applicant.schoolCertificateDataUrl = schoolCertificateDataUrl;
+    applicant.attestationLetterDataUrl = attestationLetterDataUrl;
     applicant.guardianName = guardianName;
     applicant.guardianSignatureDate = guardianSignatureDate;
     applicant.witnessName = witnessName;
