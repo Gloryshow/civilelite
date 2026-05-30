@@ -2239,18 +2239,18 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     passportPhotoDataUrl: "",
   });
 
-  const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false }) => (
+  const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
     <div style={{ marginBottom: 14 }}>
       <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
       {options ? (
-        <select value={value} onChange={onChange} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? t.text : t.muted, fontSize: 14, outline: "none", boxSizing: "border-box" }}>
+        <select value={value} onChange={onChange} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? t.text : t.muted, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'pointer' }}>
           <option value="">Select {label.toLowerCase()}</option>
           {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       ) : multiline ? (
-        <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
+        <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", cursor: readOnly ? 'not-allowed' : 'text' }} />
       ) : (
-        <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+        <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'text' }} />
       )}
     </div>
   );
@@ -2591,6 +2591,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [legacyClaims, setLegacyClaims] = useState([]);
   const [selectedLegacyClaimId, setSelectedLegacyClaimId] = useState(null);
   const [selectedLegacyClaim, setSelectedLegacyClaim] = useState(null);
+  const [modalReadOnly, setModalReadOnly] = useState(true);
   const [claimStatusFilter, setClaimStatusFilter] = useState("");
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
@@ -3549,7 +3550,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </thead>
                   <tbody>
                     {legacyClaims.map((c) => (
-                      <tr key={c.id} style={{ borderBottom: `1px solid ${t.border}`, cursor: 'pointer' }} onClick={(e) => { if (e.target.closest('button, select, a')) return; setSelectedLegacyClaimId(c.id); }}>
+                      <tr key={c.id} style={{ borderBottom: `1px solid ${t.border}`, cursor: 'pointer' }} onClick={(e) => { if (e.target.closest('button, select, a')) return; setSelectedLegacyClaimId(c.id); setModalReadOnly(true); }}>
                         <td style={{ padding: "12px 10px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.fullName}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.phone || "-"}</td>
@@ -3635,11 +3636,20 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </div>
 
                   <div style={{ padding: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                      <div style={{ fontWeight: 800 }}>{selectedLegacyClaim.claim?.fullName || selectedLegacyClaim.user?.name || 'Claim'}</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setModalReadOnly(r => !r)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', background: modalReadOnly ? 'transparent' : '#c9952a', color: modalReadOnly ? '#111' : '#000', cursor: 'pointer' }}>{modalReadOnly ? 'Edit' : 'View'}</button>
+                        <button onClick={() => setSelectedLegacyClaimId(null)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', cursor: 'pointer' }}>Close</button>
+                      </div>
+                    </div>
+
                     <LegacyUpdateForm
                       user={selectedLegacyClaim.user || {}}
                       initialData={selectedLegacyClaim}
                       theme={isLight ? 'light' : 'dark'}
                       adminView={true}
+                      readOnly={modalReadOnly}
                       onAdminSave={async (form) => {
                         try {
                           const payload = {
@@ -3659,10 +3669,19 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                           setSelectedLegacyClaimId(null);
                           setSelectedLegacyClaim(null);
                         } catch (err) {
-                          throw err;
+                          showToast('Failed to update claim: ' + err.message, 'error');
                         }
                       }}
                     />
+
+                    <div style={{ display: 'flex', gap: 12, marginTop: 12, justifyContent: 'flex-end' }}>
+                      {selectedLegacyClaim.claim?.status === 'pending' && (
+                        <>
+                          <button onClick={() => approveLegacyClaim(selectedLegacyClaim.claim._id)} style={{ background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)', color: '#81c784', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', fontWeight: 700 }}>Approve</button>
+                          <button onClick={() => rejectLegacyClaim(selectedLegacyClaim.claim._id)} style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid rgba(244,67,54,0.25)', color: '#e57373', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', fontWeight: 700 }}>Reject</button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
