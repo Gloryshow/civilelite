@@ -2204,7 +2204,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
 };
 
 // ── LEGACY UPDATE FORM ───────────────────────────────────────────────────────
-const LegacyUpdateForm = ({ user, onLogout, theme = "light" }) => {
+const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null, adminView = false, onAdminSave = null }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
   const [toast, setToast] = useState(null);
@@ -2263,6 +2263,42 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light" }) => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
+        if (initialData) {
+          // Populate from provided initial data (claim, applicant, user)
+          const { claim = {}, applicant = {}, user: claimUser = {} } = initialData || {};
+          setForm((current) => ({
+            ...current,
+            fullName: claim.fullName || claimUser.name || current.fullName,
+            contactAddress: applicant.contactAddress || applicant.address || current.contactAddress,
+            serviceStatus: claimUser.serviceStatus || current.serviceStatus,
+            age: applicant.age || current.age,
+            placeOfBirth: applicant.placeOfBirth || current.placeOfBirth,
+            gender: applicant.gender || current.gender,
+            height: applicant.height || current.height,
+            bloodGroup: applicant.bloodGroup || current.bloodGroup,
+            genotype: applicant.genotype || current.genotype,
+            schoolOccupation: applicant.schoolOccupation || applicant.profession || current.schoolOccupation,
+            state: claim.state || applicant.state || current.state,
+            homeTown: applicant.homeTown || current.homeTown,
+            lga: applicant.lga || current.lga,
+            phone: claim.phone || applicant.phone || current.phone,
+            phone2: applicant.phone2 || current.phone2,
+            email: claim.email || claimUser.email || current.email,
+            email2: applicant.email2 || current.email2,
+            serviceNumber: claim.legacyServiceNumber || claimUser.applicantId || current.serviceNumber,
+            department: applicant.department || current.department,
+            parentName: applicant.parentName || current.parentName,
+            parentContactAddress: applicant.parentContactAddress || current.parentContactAddress,
+            parentOccupation: applicant.parentOccupation || current.parentOccupation,
+            parentPhone1: applicant.parentPhone1 || current.parentPhone1,
+            parentPhone2: applicant.parentPhone2 || current.parentPhone2,
+            parentEmail: applicant.parentEmail || current.parentEmail,
+            parentSignature: applicant.parentSignature || current.parentSignature,
+            passportPhotoDataUrl: applicant.passportPhotoDataUrl || current.passportPhotoDataUrl,
+          }));
+          return;
+        }
+
         const profile = await applicantAPI.getProfile();
         if (profile) {
           setForm((current) => ({
@@ -2324,6 +2360,18 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light" }) => {
   const submitUpdate = async () => {
     if (!form.fullName || !form.contactAddress || !form.serviceStatus || !form.age || !form.gender || !form.state || !form.lga || !form.phone || !form.email || !form.serviceNumber || !form.department || !form.parentName || !form.parentContactAddress || !form.parentPhone1) {
       showToast("Please complete the required update fields.", "error");
+      return;
+    }
+    if (adminView && typeof onAdminSave === 'function') {
+      setSaving(true);
+      try {
+        await onAdminSave(form);
+        showToast("Update saved (admin).");
+      } catch (err) {
+        showToast("Admin save failed: " + err.message, "error");
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -3586,58 +3634,35 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 14 }}>
-                    <Input light={isLight} label="Full name" value={selectedLegacyClaim.claim?.fullName || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, fullName: e.target.value } }))} />
-                    <Input light={isLight} label="Name (account)" value={selectedLegacyClaim.user?.name || selectedLegacyClaim.claim?.fullName || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, fullName: e.target.value }, user: { ...s.user, name: e.target.value } }))} />
-                    <Input light={isLight} label="Email" value={selectedLegacyClaim.claim?.email || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, email: e.target.value } }))} />
-                    <Input light={isLight} label="Phone" value={selectedLegacyClaim.claim?.phone || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, phone: e.target.value } }))} />
-                    <Input light={isLight} label="Service No." value={selectedLegacyClaim.claim?.legacyServiceNumber || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, legacyServiceNumber: e.target.value } }))} />
-                    <Input light={isLight} label="Last Unit" value={selectedLegacyClaim.claim?.lastUnit || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, lastUnit: e.target.value } }))} />
-                    <Input light={isLight} label="Approval Year" value={selectedLegacyClaim.claim?.approvalYear || ''} onChange={e => setSelectedLegacyClaim(s => ({ ...s, claim: { ...s.claim, approvalYear: e.target.value } }))} />
-                  </div>
-
-                  {selectedLegacyClaim.applicant && (
-                    <div style={{ marginTop: 8, borderTop: `1px solid ${t.border}`, paddingTop: 12 }}>
-                      <div style={{ fontWeight: 800, marginBottom: 8 }}>Submitted applicant profile</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 12 }}>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Applicant ID</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.applicantId || 'N/A'}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Submitted At</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.submittedAt ? new Date(selectedLegacyClaim.applicant.submittedAt).toLocaleString() : 'N/A'}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Status</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.status || 'N/A'}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Service Status</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.serviceStatus || 'N/A'}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Paramilitary Rank</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.paramilitaryRank || 'N/A'}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>Paramilitary Post</div>
-                        <div style={{ fontWeight: 700 }}>{selectedLegacyClaim.applicant.paramilitaryPost || 'N/A'}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: 14, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <GoldBtn onClick={async () => {
-                      try {
-                        const payload = {
-                          fullName: selectedLegacyClaim.claim.fullName,
-                          email: selectedLegacyClaim.claim.email,
-                          phone: selectedLegacyClaim.claim.phone,
-                          legacyServiceNumber: selectedLegacyClaim.claim.legacyServiceNumber,
-                          lastUnit: selectedLegacyClaim.claim.lastUnit,
-                          approvalYear: selectedLegacyClaim.claim.approvalYear,
-                          adminNote: selectedLegacyClaim.claim.adminNote || '',
-                        };
-                        await adminAPI.updateLegacyClaim(selectedLegacyClaim.claim._id, payload);
-                        await loadLegacyClaims(claimStatusFilter);
-                        showToast('Claim updated.');
-                        setSelectedLegacyClaimId(null);
-                        setSelectedLegacyClaim(null);
-                      } catch (err) {
-                        showToast('Failed to update claim: ' + err.message, 'error');
-                      }
-                    }}>Save changes</GoldBtn>
-                    <GoldBtn outline onClick={() => setSelectedLegacyClaimId(null)}>Cancel</GoldBtn>
+                  <div style={{ padding: 10 }}>
+                    <LegacyUpdateForm
+                      user={selectedLegacyClaim.user || {}}
+                      initialData={selectedLegacyClaim}
+                      theme={isLight ? 'light' : 'dark'}
+                      adminView={true}
+                      onAdminSave={async (form) => {
+                        try {
+                          const payload = {
+                            fullName: form.fullName,
+                            email: form.email,
+                            phone: form.phone,
+                            state: form.state,
+                            dob: form.dob || '',
+                            legacyServiceNumber: form.serviceNumber || '',
+                            lastUnit: form.lastUnit || '',
+                            approvalYear: form.approvalYear || null,
+                            adminNote: form.adminNote || '',
+                          };
+                          await adminAPI.updateLegacyClaim(selectedLegacyClaim.claim._id, payload);
+                          await loadLegacyClaims(claimStatusFilter);
+                          showToast('Claim updated.');
+                          setSelectedLegacyClaimId(null);
+                          setSelectedLegacyClaim(null);
+                        } catch (err) {
+                          throw err;
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>
