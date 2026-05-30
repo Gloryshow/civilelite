@@ -2541,6 +2541,8 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const [admins, setAdmins] = useState([]);
   const [newAdmin, setNewAdmin] = useState({ email: "", name: "", password: "", confirm: "" });
   const [legacyClaims, setLegacyClaims] = useState([]);
+  const [selectedLegacyClaimId, setSelectedLegacyClaimId] = useState(null);
+  const selectedLegacyClaim = legacyClaims.find(c => c.id === selectedLegacyClaimId) || null;
   const [claimStatusFilter, setClaimStatusFilter] = useState("");
   const [stats, setStats] = useState({ total: 0, pending: 0, review: 0, approved: 0, rejected: 0 });
   const [announcements, setAnnouncements] = useState([]);
@@ -3477,7 +3479,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                   </thead>
                   <tbody>
                     {legacyClaims.map((c) => (
-                      <tr key={c.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                      <tr key={c.id} style={{ borderBottom: `1px solid ${t.border}`, cursor: 'pointer' }} onClick={(e) => { if (e.target.closest('button, select, a')) return; setSelectedLegacyClaimId(c.id); }}>
                         <td style={{ padding: "12px 10px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.fullName}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.phone || "-"}</td>
@@ -3548,6 +3550,53 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               </div>
             </div>
           )}
+
+            {selectedLegacyClaim && (
+              <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(2,6,23,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2200 }} onClick={() => setSelectedLegacyClaimId(null)}>
+                <div onClick={e => e.stopPropagation()} style={{ width: 'calc(100% - 80px)', maxWidth: 1100, maxHeight: '90vh', overflow: 'auto', ...S2.card }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontWeight: 800, color: t.text, fontSize: 18 }}>{selectedLegacyClaim.fullName}</div>
+                      <div style={{ color: t.muted, fontSize: 13 }}>Claim ID: {selectedLegacyClaim.id}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setSelectedLegacyClaimId(null)} style={{ background: 'transparent', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Close</button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 14 }}>
+                    <Input light={isLight} label="Full name" value={selectedLegacyClaim.fullName} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, fullName: e.target.value } : c))} />
+                    <Input light={isLight} label="Email" value={selectedLegacyClaim.email} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, email: e.target.value } : c))} />
+                    <Input light={isLight} label="Phone" value={selectedLegacyClaim.phone} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, phone: e.target.value } : c))} />
+                    <Input light={isLight} label="Service No." value={selectedLegacyClaim.legacyServiceNumber} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, legacyServiceNumber: e.target.value } : c))} />
+                    <Input light={isLight} label="Last Unit" value={selectedLegacyClaim.lastUnit} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, lastUnit: e.target.value } : c))} />
+                    <Input light={isLight} label="Approval Year" value={selectedLegacyClaim.approvalYear || ''} onChange={e => setLegacyClaims(cur => cur.map(c => c.id === selectedLegacyClaim.id ? { ...c, approvalYear: e.target.value } : c))} />
+                  </div>
+
+                  <div style={{ marginTop: 14, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <GoldBtn onClick={async () => {
+                      try {
+                        const payload = {
+                          fullName: selectedLegacyClaim.fullName,
+                          email: selectedLegacyClaim.email,
+                          phone: selectedLegacyClaim.phone,
+                          legacyServiceNumber: selectedLegacyClaim.legacyServiceNumber,
+                          lastUnit: selectedLegacyClaim.lastUnit,
+                          approvalYear: selectedLegacyClaim.approvalYear,
+                        };
+                        await adminAPI.updateLegacyClaim(selectedLegacyClaim.id, payload);
+                        await loadLegacyClaims(claimStatusFilter);
+                        showToast('Claim updated.');
+                        setSelectedLegacyClaimId(null);
+                      } catch (err) {
+                        showToast('Failed to update claim: ' + err.message, 'error');
+                      }
+                    }}>Save changes</GoldBtn>
+                    <GoldBtn outline onClick={() => setSelectedLegacyClaimId(null)}>Cancel</GoldBtn>
+                  </div>
+                </div>
+              </div>
+            )}
 
           {/* ─ ADMINISTRATORS ─ */}
           {tab === "administrators" && (

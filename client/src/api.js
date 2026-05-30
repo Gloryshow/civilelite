@@ -112,6 +112,7 @@ export const adminAPI = {
   rejectLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/reject`, "POST", { note }),
   updateLegacyClaimServiceNumber: (id, legacyServiceNumber = "") =>
     apiCall(`/admin/legacy-claims/${id}/service-number`, "POST", { legacyServiceNumber }),
+  updateLegacyClaim: (id, payload) => apiCall(`/admin/legacy-claims/${id}`, "PATCH", payload),
 };
 
 export const tokenManager = {
