@@ -4042,32 +4042,9 @@ export default function App() {
       setPage("dashboard");
     } catch (error) {
       console.error("Auth error:", error);
-      // Fallback to demo mode for now
-      const demoResult = {
-        email: authResult?.user?.email || "",
-        name: authResult?.user?.name || (authResult?.user?.email || "user").split("@")[0],
-        role: authResult?.user?.email === "admin@ces.gov.ng" ? "admin" : "applicant",
-      };
-      const email = demoResult.email.toLowerCase().trim();
-      if (demoResult.role === "admin") {
-        setUser(demoResult);
-        setPage("dashboard");
-        return;
-      }
-      const existing = userRegistry.find(item => item.email === email);
-      let nextUser = existing;
-      if (!nextUser) {
-        nextUser = {
-          email,
-          name: demoResult.name,
-          role: "applicant",
-          applicantId: `CES-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000) + 100000}`,
-          serviceStatus: "active",
-        };
-        setUserRegistry(prev => [...prev, nextUser]);
-      }
-      setUser(nextUser);
-      setPage("dashboard");
+      tokenManager.clearToken();
+      setUser(null);
+      setPage("login");
     } finally {
       setLoading(false);
     }
@@ -4099,7 +4076,7 @@ export default function App() {
   if (page === "verify") return <><VerificationPage applicantId={verifyApplicantId} onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "login") return <><AuthPage key="auth-login" mode="login" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   if (page === "register") return <><AuthPage key="auth-register" mode="register" onAuth={handleAuth} onNavigate={setPage} theme={theme} loading={loading} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
-  if (page === "dashboard" && user) {
+  if (page === "dashboard" && user && tokenManager.isLoggedIn()) {
     return user.role === "admin"
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
       : user.legacyApproved
