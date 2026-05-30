@@ -1391,12 +1391,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
           paramilitaryPost: profile.paramilitaryPost || "",
           paramilitaryYears: profile.paramilitaryYears || "",
           leavingReasons: profile.leavingReasons || "",
-          declarationName: profile.declarationName || "",
+          declarationName: profile.declarationName || profile.fullName || d.declarationName,
           declarationDate: profile.declarationDate || "",
           passportPhotoDataUrl: profile.passportPhotoDataUrl || "",
           guardianName: profile.guardianName || "",
-          guardianSignatureDate: profile.guardianSignatureDate || "",
-          witnessName: profile.witnessName || "",
+          guardianSignatureDate: profile.guardianSignatureDate || profile.guardianName || d.guardianSignatureDate,
+          witnessName: profile.witnessName || profile.kinName || profile.fullName || d.witnessName,
           witnessSignatureDate: profile.witnessSignatureDate || "",
           state: profile.state || "",
           lga: profile.lga || "",
@@ -1895,7 +1895,14 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       I {appData.declarationName || "____________"} hereby declare that the information contained herein is true and correct to the best of my knowledge.
                     </div>
                   </div>
-                  <Input light={isLight} label="Applicant Signature" value={appData.declarationName} onChange={e => setAppData(d => ({ ...d, declarationName: e.target.value }))} placeholder="Type your full name as signature" required />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                      <Input light={isLight} label="Applicant Signature" value={appData.declarationName} onChange={e => setAppData(d => ({ ...d, declarationName: e.target.value }))} placeholder="Type your full name as signature" required />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <button onClick={() => setAppData(d => ({ ...d, declarationName: d.fullName || d.declarationName }))} style={{ height: 40, padding: '6px 10px', borderRadius: 8, border: '1px solid #c9952a', background: 'transparent', color: isLight ? '#c9952a' : '#ffd7a8', cursor: 'pointer', fontWeight: 700 }}>Use full name</button>
+                    </div>
+                  </div>
                   <Input light={isLight} label="Date" type="date" value={appData.declarationDate} onChange={e => setAppData(d => ({ ...d, declarationDate: e.target.value }))} required />
 
                   <div style={{ marginTop: 20, marginBottom: 12, color: "#c9952a", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>
@@ -1905,8 +1912,14 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                     I, Mr./Mrs./Chief {appData.guardianName || "__________"} parent/guardian of {appData.fullName || "__________"} who is applying for recruitment into the corps hereby certify that, I fully understand that my child/ward will attend the recruitment exercise, with an attestation of good conduct as a well behaved person that can serve and portray a good ambassador of the organization anywhere.
                   </div>
                   <Input light={isLight} label="Parent/Guardian Name" value={appData.guardianName} onChange={e => setAppData(d => ({ ...d, guardianName: e.target.value }))} placeholder="Mr./Mrs./Chief ..." />
-                  <Input light={isLight} label="Parent/Guardian Sign & Date" value={appData.guardianSignatureDate} onChange={e => setAppData(d => ({ ...d, guardianSignatureDate: e.target.value }))} placeholder="Signature and date" />
-                  <Input light={isLight} label="Witness Sign/Date (Name or Signature)" value={appData.witnessName} onChange={e => setAppData(d => ({ ...d, witnessName: e.target.value }))} placeholder="Witness signature/name" />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <Input light={isLight} label="Parent/Guardian Sign & Date" value={appData.guardianSignatureDate} onChange={e => setAppData(d => ({ ...d, guardianSignatureDate: e.target.value }))} placeholder="Signature and date" />
+                    <button onClick={() => setAppData(d => ({ ...d, guardianSignatureDate: d.guardianName || d.kinName || d.fullName }))} style={{ height: 40, padding: '6px 10px', borderRadius: 8, border: '1px solid #c9952a', background: 'transparent', color: isLight ? '#c9952a' : '#ffd7a8', cursor: 'pointer', fontWeight: 700 }}>Use name</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <Input light={isLight} label="Witness Sign/Date (Name or Signature)" value={appData.witnessName} onChange={e => setAppData(d => ({ ...d, witnessName: e.target.value }))} placeholder="Witness signature/name" />
+                    <button onClick={() => setAppData(d => ({ ...d, witnessName: d.kinName || d.witnessName || d.fullName }))} style={{ height: 40, padding: '6px 10px', borderRadius: 8, border: '1px solid #c9952a', background: 'transparent', color: isLight ? '#c9952a' : '#ffd7a8', cursor: 'pointer', fontWeight: 700 }}>Use name</button>
+                  </div>
                   <Input light={isLight} label="Witness Date" value={appData.witnessSignatureDate} onChange={e => setAppData(d => ({ ...d, witnessSignatureDate: e.target.value }))} placeholder="Date" />
                 </div>
               </div>
@@ -2293,7 +2306,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentPhone1: applicant.parentPhone1 || current.parentPhone1,
             parentPhone2: applicant.parentPhone2 || current.parentPhone2,
             parentEmail: applicant.parentEmail || current.parentEmail,
-            parentSignature: applicant.parentSignature || current.parentSignature,
+            parentSignature: applicant.parentSignature || applicant.parentName || current.parentSignature,
             passportPhotoDataUrl: applicant.passportPhotoDataUrl || current.passportPhotoDataUrl,
             birthCertificateDataUrl: applicant.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: applicant.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
@@ -2331,7 +2344,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentPhone1: profile.parentPhone1 || current.parentPhone1,
             parentPhone2: profile.parentPhone2 || current.parentPhone2,
             parentEmail: profile.parentEmail || current.parentEmail,
-            parentSignature: profile.parentSignature || current.parentSignature,
+            parentSignature: profile.parentSignature || profile.parentName || current.parentSignature,
             passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
             birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
@@ -2524,7 +2537,12 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
                   <LegacyField label="Phone No 1" value={form.parentPhone1} onChange={(event) => setForm((current) => ({ ...current, parentPhone1: event.target.value }))} required />
                   <LegacyField label="Phone No 2" value={form.parentPhone2} onChange={(event) => setForm((current) => ({ ...current, parentPhone2: event.target.value }))} />
                   <LegacyField label="Email address" type="email" value={form.parentEmail} onChange={(event) => setForm((current) => ({ ...current, parentEmail: event.target.value }))} />
-                  <LegacyField label="Parent/Guardian Signature" value={form.parentSignature} onChange={(event) => setForm((current) => ({ ...current, parentSignature: event.target.value }))} />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <LegacyField label="Parent/Guardian Signature" value={form.parentSignature} onChange={(event) => setForm((current) => ({ ...current, parentSignature: event.target.value }))} />
+                    </div>
+                    <button onClick={() => setForm(current => ({ ...current, parentSignature: current.parentName || current.fullName || current.parentSignature }))} style={{ height: 40, padding: '6px 10px', borderRadius: 8, border: '1px solid #c9952a', background: 'transparent', color: isLight ? '#c9952a' : '#ffd7a8', cursor: 'pointer', fontWeight: 700 }}>Use name</button>
+                  </div>
                 </div>
               </div>
 
