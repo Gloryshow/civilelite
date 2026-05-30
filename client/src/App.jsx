@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
@@ -2244,7 +2244,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     passportPhotoDataUrl: "",
   });
 
-  const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
+  const LegacyField = useCallback(({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
     <div style={{ marginBottom: 14 }}>
       <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
       {options ? (
@@ -2258,7 +2258,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'text' }} />
       )}
     </div>
-  );
+  ), [isLight, t]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
