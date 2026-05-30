@@ -2486,7 +2486,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
           <div>
             <div style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, background: "rgba(201,149,42,0.12)", color: "#c9952a", fontSize: 12, fontWeight: 800, letterSpacing: 1 }}>EXISTING OFFICER UPDATE</div>
             <h1 style={{ margin: "10px 0 4px", fontSize: 30, fontWeight: 900 }}>UPDATE FORM (I'M STILL ALIVE)</h1>
-            <div style={{ color: t.muted }}>Approved legacy claims land here to refresh their record before the next stage.</div>
+            
           </div>
           <GoldBtn outline onClick={onLogout} style={{ alignSelf: "center" }}>Sign Out</GoldBtn>
         </div>
