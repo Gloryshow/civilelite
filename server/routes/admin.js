@@ -269,6 +269,58 @@ router.post("/legacy-claims/:id/service-number", authMiddleware, adminMiddleware
   }
 });
 
+// Update legacy claim fields
+router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const claim = await LegacyClaim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+
+    const allowed = [
+      "fullName",
+      "email",
+      "phone",
+      "state",
+      "dob",
+      "legacyServiceNumber",
+      "lastUnit",
+      "approvalYear",
+      "adminNote",
+    ];
+
+    allowed.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        claim[field] = req.body[field];
+      }
+    });
+
+    await claim.save();
+
+    // Also update the Applicant record for this user if present
+    if (claim.userId) {
+      await Applicant.updateOne(
+        { userId: claim.userId },
+        {
+          $set: {
+            fullName: claim.fullName,
+            phone: claim.phone,
+            state: claim.state || "",
+            dob: claim.dob || "",
+            legacyServiceNumber: claim.legacyServiceNumber || "",
+            lastUnit: claim.lastUnit || "",
+          },
+        }
+      );
+    }
+
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "update_legacy_claim", details: `${claim.email} (${claim._id})` });
+
+    res.json({ message: "Legacy claim updated", claim });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Update applicant status
 router.patch(
   "/applicants/:id/status",
