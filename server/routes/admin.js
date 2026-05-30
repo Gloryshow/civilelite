@@ -371,6 +371,22 @@ router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, 
   }
 });
 
+// Delete legacy claim
+router.delete("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const claim = await LegacyClaim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+
+    await LegacyClaim.deleteOne({ _id: req.params.id });
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "delete_legacy_claim", details: `${claim.email} (${claim._id})` });
+
+    res.json({ message: "Legacy claim deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Update applicant status
 router.patch(
   "/applicants/:id/status",

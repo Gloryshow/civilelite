@@ -3614,11 +3614,20 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <td style={{ padding: "12px 10px" }}>
                           <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
                             <button
-                              onClick={() => updateLegacyServiceNumber(c.id, c.legacyServiceNumber)}
+                              onClick={async () => {
+                                if (!confirm('Delete this legacy claim? This action cannot be undone.')) return;
+                                try {
+                                  await adminAPI.deleteLegacyClaim(c.id);
+                                  await loadLegacyClaims(claimStatusFilter);
+                                  showToast('Legacy claim deleted.');
+                                } catch (err) {
+                                  showToast('Failed to delete claim: ' + err.message, 'error');
+                                }
+                              }}
                               style={{
-                                background: "rgba(201,149,42,0.12)",
-                                border: "1px solid rgba(201,149,42,0.35)",
-                                color: "#c9952a",
+                                background: "rgba(244,67,54,0.08)",
+                                border: "1px solid rgba(244,67,54,0.25)",
+                                color: "#e57373",
                                 borderRadius: 6,
                                 padding: "4px 10px",
                                 cursor: "pointer",
@@ -3626,38 +3635,38 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                                 fontWeight: 700,
                               }}
                             >
-                              Set No.
+                              Delete
                             </button>
                             <button
                               onClick={() => approveLegacyClaim(c.id)}
-                              disabled={c.status !== "pending"}
+                              disabled={c.status === "approved"}
                               style={{
                                 background: "rgba(76,175,80,0.15)",
                                 border: "1px solid rgba(76,175,80,0.3)",
                                 color: "#81c784",
                                 borderRadius: 6,
                                 padding: "4px 10px",
-                                cursor: c.status === "pending" ? "pointer" : "not-allowed",
+                                cursor: c.status === "approved" ? "not-allowed" : "pointer",
                                 fontSize: 11,
                                 fontWeight: 700,
-                                opacity: c.status === "pending" ? 1 : 0.6,
+                                opacity: c.status === "approved" ? 0.6 : 1,
                               }}
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => rejectLegacyClaim(c.id)}
-                              disabled={c.status !== "pending"}
+                              disabled={c.status === "rejected"}
                               style={{
                                 background: "rgba(244,67,54,0.1)",
                                 border: "1px solid rgba(244,67,54,0.25)",
                                 color: "#e57373",
                                 borderRadius: 6,
                                 padding: "4px 10px",
-                                cursor: c.status === "pending" ? "pointer" : "not-allowed",
+                                cursor: c.status === "rejected" ? "not-allowed" : "pointer",
                                 fontSize: 11,
                                 fontWeight: 700,
-                                opacity: c.status === "pending" ? 1 : 0.6,
+                                opacity: c.status === "rejected" ? 0.6 : 1,
                               }}
                             >
                               Reject
