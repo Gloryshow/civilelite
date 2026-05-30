@@ -22,6 +22,7 @@ export const authMiddleware = async (req, res, next) => {
       role: user.role,
       applicantId: user.applicantId,
       serviceStatus: user.serviceStatus,
+      legacyApproved: user.legacyApproved || false,
       registrationStatus: user.registrationStatus,
     };
 
