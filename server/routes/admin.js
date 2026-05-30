@@ -371,16 +371,22 @@ router.patch("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, 
   }
 });
 
-// Delete legacy claim
+// Soft-delete legacy claim (preserve userId exclusion from applicants list)
 router.delete("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const claim = await LegacyClaim.findById(req.params.id);
     if (!claim) return res.status(404).json({ error: "Claim not found" });
 
-    await LegacyClaim.deleteOne({ _id: req.params.id });
-    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "delete_legacy_claim", details: `${claim.email} (${claim._id})` });
+    // Mark as deleted instead of removing so applicants list continues to exclude this user
+    claim.status = "deleted";
+    claim.adminNote = String(claim.adminNote || "") + "\n[deleted by admin]";
+    claim.reviewedBy = req.user.id;
+    claim.reviewedAt = new Date();
+    await claim.save();
 
-    res.json({ message: "Legacy claim deleted" });
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "soft_delete_legacy_claim", details: `${claim.email} (${claim._id})` });
+
+    res.json({ message: "Legacy claim soft-deleted", claim });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
