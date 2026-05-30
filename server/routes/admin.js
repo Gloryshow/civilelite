@@ -143,6 +143,22 @@ router.get("/legacy-claims", authMiddleware, adminMiddleware, async (req, res) =
   }
 });
 
+// Get single legacy claim with linked applicant and user
+router.get("/legacy-claims/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const claim = await LegacyClaim.findById(req.params.id).populate("reviewedBy", "name email").lean();
+    if (!claim) return res.status(404).json({ error: "Claim not found" });
+
+    const applicant = await Applicant.findOne({ userId: claim.userId }).lean();
+    const user = await User.findById(claim.userId).select("name email applicantId serviceStatus registrationStatus legacyApproved").lean();
+
+    res.json({ claim, applicant, user });
+  } catch (error) {
+    console.error(error);
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
 // Approve legacy claim
 router.post("/legacy-claims/:id/approve", authMiddleware, adminMiddleware, async (req, res) => {
   try {

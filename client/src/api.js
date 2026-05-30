@@ -108,6 +108,7 @@ export const adminAPI = {
   approveRegistration: (id) => apiCall(`/admin/registrations/${id}/approve`, "POST"),
   rejectRegistration: (id) => apiCall(`/admin/registrations/${id}/reject`, "POST"),
   getLegacyClaims: (status = "") => apiCall(`/admin/legacy-claims${status ? `?status=${encodeURIComponent(status)}` : ""}`),
+  getLegacyClaim: (id) => apiCall(`/admin/legacy-claims/${id}`),
   approveLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/approve`, "POST", { note }),
   rejectLegacyClaim: (id, note = "") => apiCall(`/admin/legacy-claims/${id}/reject`, "POST", { note }),
   updateLegacyClaimServiceNumber: (id, legacyServiceNumber = "") =>
