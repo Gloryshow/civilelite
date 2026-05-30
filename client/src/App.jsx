@@ -1325,6 +1325,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   });
   const [printSlipType, setPrintSlipType] = useState("application");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const hasConvictionDetails = appData.convictedBefore === "yes";
+  const hasParamilitaryDetails = appData.paramilitaryMember === "yes";
   const qrPayload = appData.id ? buildQrPayload({ applicantId: appData.id }) : "";
 
   const showToast = (msg, type = "success") => {
@@ -1449,13 +1451,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
         educationQualification: appData.educationQualification,
         disability: appData.disability,
         convictedBefore: appData.convictedBefore,
-        convictionReasons: appData.convictionReasons,
+        convictionReasons: hasConvictionDetails ? appData.convictionReasons : "",
         paramilitaryMember: appData.paramilitaryMember,
-        paramilitaryName: appData.paramilitaryName,
-        paramilitaryRank: appData.paramilitaryRank,
-        paramilitaryPost: appData.paramilitaryPost,
-        paramilitaryYears: appData.paramilitaryYears,
-        leavingReasons: appData.leavingReasons,
+        paramilitaryName: hasParamilitaryDetails ? appData.paramilitaryName : "",
+        paramilitaryRank: hasParamilitaryDetails ? appData.paramilitaryRank : "",
+        paramilitaryPost: hasParamilitaryDetails ? appData.paramilitaryPost : "",
+        paramilitaryYears: hasParamilitaryDetails ? appData.paramilitaryYears : "",
+        leavingReasons: hasParamilitaryDetails ? appData.leavingReasons : "",
         declarationName: appData.declarationName,
         declarationDate: appData.declarationDate,
         passportPhotoDataUrl: appData.passportPhotoDataUrl,
@@ -1861,16 +1863,18 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                   <Textarea light={isLight} label="Profession Address" value={appData.professionAddress} onChange={e => setAppData(d => ({ ...d, professionAddress: e.target.value }))} rows={2} />
                   <Input light={isLight} label="Education Qualification if any" value={appData.educationQualification} onChange={e => setAppData(d => ({ ...d, educationQualification: e.target.value }))} />
                   <Textarea light={isLight} label="Disability" value={appData.disability} onChange={e => setAppData(d => ({ ...d, disability: e.target.value }))} rows={2} placeholder="State none if not applicable" />
-                  <Select light={isLight} label="Have you been convicted by any court of law before?" value={appData.convictedBefore} onChange={e => setAppData(d => ({ ...d, convictedBefore: e.target.value }))}
+                  <Select light={isLight} label="Have you been convicted by any court of law before?" value={appData.convictedBefore} onChange={e => setAppData(d => ({ ...d, convictedBefore: e.target.value, convictionReasons: e.target.value === "yes" ? d.convictionReasons : "" }))}
                     options={[{ value: "", label: "Select answer" }, { value: "no", label: "No" }, { value: "yes", label: "Yes" }]} />
-                  <Textarea light={isLight} label="If yes, state the reasons" value={appData.convictionReasons} onChange={e => setAppData(d => ({ ...d, convictionReasons: e.target.value }))} rows={3} />
-                  <Select light={isLight} label="Have you been a member of any voluntary, paramilitary organisation?" value={appData.paramilitaryMember} onChange={e => setAppData(d => ({ ...d, paramilitaryMember: e.target.value }))}
+                  {hasConvictionDetails && <Textarea light={isLight} label="If yes, state the reasons" value={appData.convictionReasons} onChange={e => setAppData(d => ({ ...d, convictionReasons: e.target.value }))} rows={3} />}
+                  <Select light={isLight} label="Have you been a member of any voluntary, paramilitary organisation?" value={appData.paramilitaryMember} onChange={e => setAppData(d => ({ ...d, paramilitaryMember: e.target.value, paramilitaryName: e.target.value === "yes" ? d.paramilitaryName : "", paramilitaryRank: e.target.value === "yes" ? d.paramilitaryRank : "", paramilitaryPost: e.target.value === "yes" ? d.paramilitaryPost : "", paramilitaryYears: e.target.value === "yes" ? d.paramilitaryYears : "", leavingReasons: e.target.value === "yes" ? d.leavingReasons : "" }))}
                     options={[{ value: "", label: "Select answer" }, { value: "no", label: "No" }, { value: "yes", label: "Yes" }]} />
-                  <Input light={isLight} label="If yes, name of organisation" value={appData.paramilitaryName} onChange={e => setAppData(d => ({ ...d, paramilitaryName: e.target.value }))} />
-                  <Input light={isLight} label="Rank" value={appData.paramilitaryRank} onChange={e => setAppData(d => ({ ...d, paramilitaryRank: e.target.value }))} />
-                  <Input light={isLight} label="Post" value={appData.paramilitaryPost} onChange={e => setAppData(d => ({ ...d, paramilitaryPost: e.target.value }))} />
-                  <Input light={isLight} label="Years of Service" value={appData.paramilitaryYears} onChange={e => setAppData(d => ({ ...d, paramilitaryYears: e.target.value }))} />
-                  <Textarea light={isLight} label="Reasons for leaving" value={appData.leavingReasons} onChange={e => setAppData(d => ({ ...d, leavingReasons: e.target.value }))} rows={3} />
+                  {hasParamilitaryDetails && <>
+                    <Input light={isLight} label="If yes, name of organisation" value={appData.paramilitaryName} onChange={e => setAppData(d => ({ ...d, paramilitaryName: e.target.value }))} />
+                    <Input light={isLight} label="Rank" value={appData.paramilitaryRank} onChange={e => setAppData(d => ({ ...d, paramilitaryRank: e.target.value }))} />
+                    <Input light={isLight} label="Post" value={appData.paramilitaryPost} onChange={e => setAppData(d => ({ ...d, paramilitaryPost: e.target.value }))} />
+                    <Input light={isLight} label="Years of Service" value={appData.paramilitaryYears} onChange={e => setAppData(d => ({ ...d, paramilitaryYears: e.target.value }))} />
+                    <Textarea light={isLight} label="Reasons for leaving" value={appData.leavingReasons} onChange={e => setAppData(d => ({ ...d, leavingReasons: e.target.value }))} rows={3} />
+                  </>}
                   <Select light={isLight} label="State of Origin" value={appData.state} onChange={e => setAppData(d => ({ ...d, state: e.target.value, lga: "" }))} required
                     options={[{ value: "", label: "Select state" }, ...NIGERIAN_STATES.map(s => ({ value: s, label: s }))]} />
                   <Select light={isLight} label="Local Government Area" value={appData.lga} onChange={e => setAppData(d => ({ ...d, lga: e.target.value }))} required
