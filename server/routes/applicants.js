@@ -51,6 +51,12 @@ router.get("/profile", authMiddleware, async (req, res) => {
         fullName: "",
         email: req.user.email,
         phone: "",
+        phone2: "",
+        email2: "",
+        contactAddress: "",
+        age: "",
+        schoolOccupation: "",
+        homeTown: "",
         gender: "",
         dob: "",
         religion: "",
@@ -99,6 +105,13 @@ router.get("/profile", authMiddleware, async (req, res) => {
         kinPhone: "",
         medInfo: "",
         whyJoin: "",
+        parentName: "",
+        parentContactAddress: "",
+        parentOccupation: "",
+        parentPhone1: "",
+        parentPhone2: "",
+        parentEmail: "",
+        parentSignature: "",
         status: "under_review",
         serviceStatus: req.user.serviceStatus,
         submitted: false,
@@ -117,7 +130,14 @@ router.post("/submit", authMiddleware, async (req, res) => {
   try {
     const {
       fullName,
+      email,
       phone,
+      phone2,
+      email2,
+      contactAddress,
+      age,
+      schoolOccupation,
+      homeTown,
       gender,
       dob,
       bloodGroup,
@@ -155,9 +175,22 @@ router.post("/submit", authMiddleware, async (req, res) => {
       kinPhone,
       medInfo,
       whyJoin,
+      serviceStatus,
+      parentName,
+      parentContactAddress,
+      parentOccupation,
+      parentPhone1,
+      parentPhone2,
+      parentEmail,
+      parentSignature,
     } = req.body;
 
-    if (
+    const isLegacyUpdate = Boolean(req.user.legacyApproved);
+    if (isLegacyUpdate) {
+      if (!fullName || !phone || !gender || !state || !lga || !contactAddress || !age || !serviceStatus) {
+        return res.status(400).json({ error: "Missing required legacy update fields" });
+      }
+    } else if (
       !fullName ||
       !phone ||
       !gender ||
@@ -183,7 +216,14 @@ router.post("/submit", authMiddleware, async (req, res) => {
     }
 
     applicant.fullName = fullName;
+    applicant.email = email || req.user.email;
     applicant.phone = phone;
+    applicant.phone2 = phone2;
+    applicant.email2 = email2;
+    applicant.contactAddress = contactAddress;
+    applicant.age = age;
+    applicant.schoolOccupation = schoolOccupation;
+    applicant.homeTown = homeTown;
     applicant.gender = gender;
     applicant.dob = dob;
     applicant.bloodGroup = bloodGroup;
@@ -221,7 +261,15 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.kinPhone = kinPhone;
     applicant.medInfo = medInfo;
     applicant.whyJoin = whyJoin;
-    applicant.status = "under_review";
+    applicant.serviceStatus = serviceStatus || applicant.serviceStatus || req.user.serviceStatus;
+    applicant.parentName = parentName;
+    applicant.parentContactAddress = parentContactAddress;
+    applicant.parentOccupation = parentOccupation;
+    applicant.parentPhone1 = parentPhone1;
+    applicant.parentPhone2 = parentPhone2;
+    applicant.parentEmail = parentEmail;
+    applicant.parentSignature = parentSignature;
+    applicant.status = isLegacyUpdate ? "approved" : "under_review";
     applicant.submitted = true;
     applicant.submittedAt = new Date();
 

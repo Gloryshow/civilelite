@@ -239,8 +239,8 @@ const Badge = ({ label, color = "#c9952a" }) => (
   <span style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", borderRadius: 999, border: `1px solid ${color}55`, color, fontWeight: 800, letterSpacing: 1.2, fontSize: 11, textTransform: "uppercase", background: `${color}11` }}>{label}</span>
 );
 
-const GoldBtn = ({ children, onClick, outline = false, style = {} }) => (
-  <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: "pointer", transition: "all .2s ease", ...style }}>{children}</button>
+const GoldBtn = ({ children, onClick, outline = false, disabled = false, style = {} }) => (
+  <button onClick={onClick} disabled={disabled} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: disabled ? "rgba(201,149,42,0.35)" : outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.75 : 1, transition: "all .2s ease", ...style }}>{children}</button>
 );
 
 const PaymentNotice = ({ settings, light = false }) => {
@@ -2203,6 +2203,297 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   );
 };
 
+// ── LEGACY UPDATE FORM ───────────────────────────────────────────────────────
+const LegacyUpdateForm = ({ user, onLogout, theme = "light" }) => {
+  const t = getTheme(theme);
+  const isLight = theme === "light";
+  const [toast, setToast] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    fullName: user.name || "",
+    contactAddress: "",
+    serviceStatus: user.serviceStatus || "active",
+    age: "",
+    placeOfBirth: "",
+    gender: "",
+    height: "",
+    bloodGroup: "",
+    genotype: "",
+    schoolOccupation: "",
+    state: "",
+    homeTown: "",
+    lga: "",
+    phone: "",
+    phone2: "",
+    email: user.email || "",
+    email2: "",
+    serviceNumber: user.applicantId || "",
+    department: "",
+    parentName: "",
+    parentContactAddress: "",
+    parentOccupation: "",
+    parentPhone1: "",
+    parentPhone2: "",
+    parentEmail: "",
+    parentSignature: "",
+    passportPhotoDataUrl: "",
+  });
+
+  const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false }) => (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
+      {options ? (
+        <select value={value} onChange={onChange} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? t.text : t.muted, fontSize: 14, outline: "none", boxSizing: "border-box" }}>
+          <option value="">Select {label.toLowerCase()}</option>
+          {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      ) : multiline ? (
+        <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
+      ) : (
+        <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+      )}
+    </div>
+  );
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    window.setTimeout(() => setToast(null), 3500);
+  };
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await applicantAPI.getProfile();
+        if (profile) {
+          setForm((current) => ({
+            ...current,
+            fullName: profile.fullName || current.fullName,
+            contactAddress: profile.contactAddress || profile.address || current.contactAddress,
+            serviceStatus: profile.serviceStatus || current.serviceStatus,
+            age: profile.age || current.age,
+            placeOfBirth: profile.placeOfBirth || current.placeOfBirth,
+            gender: profile.gender || current.gender,
+            height: profile.height || current.height,
+            bloodGroup: profile.bloodGroup || current.bloodGroup,
+            genotype: profile.genotype || current.genotype,
+            schoolOccupation: profile.schoolOccupation || profile.profession || current.schoolOccupation,
+            state: profile.state || current.state,
+            homeTown: profile.homeTown || current.homeTown,
+            lga: profile.lga || current.lga,
+            phone: profile.phone || current.phone,
+            phone2: profile.phone2 || current.phone2,
+            email: profile.email || current.email,
+            email2: profile.email2 || current.email2,
+            serviceNumber: profile.serviceNumber || current.serviceNumber,
+            department: profile.department || current.department,
+            parentName: profile.parentName || current.parentName,
+            parentContactAddress: profile.parentContactAddress || current.parentContactAddress,
+            parentOccupation: profile.parentOccupation || current.parentOccupation,
+            parentPhone1: profile.parentPhone1 || current.parentPhone1,
+            parentPhone2: profile.parentPhone2 || current.parentPhone2,
+            parentEmail: profile.parentEmail || current.parentEmail,
+            parentSignature: profile.parentSignature || current.parentSignature,
+            passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
+          }));
+        }
+      } catch (error) {
+        showToast("Failed to load update profile: " + error.message, "error");
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  const onPassportChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Passport must be an image file.", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      setForm((current) => ({ ...current, passportPhotoDataUrl: dataUrl }));
+      showToast("Passport uploaded.");
+    };
+    reader.onerror = () => showToast("Unable to read passport image.", "error");
+    reader.readAsDataURL(file);
+  };
+
+  const submitUpdate = async () => {
+    if (!form.fullName || !form.contactAddress || !form.serviceStatus || !form.age || !form.gender || !form.state || !form.lga || !form.phone || !form.email || !form.serviceNumber || !form.department || !form.parentName || !form.parentContactAddress || !form.parentPhone1) {
+      showToast("Please complete the required update fields.", "error");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await applicantAPI.submitApplication({
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        phone2: form.phone2,
+        email2: form.email2,
+        contactAddress: form.contactAddress,
+        address: form.contactAddress,
+        age: form.age,
+        serviceStatus: form.serviceStatus,
+        placeOfBirth: form.placeOfBirth,
+        gender: form.gender,
+        height: form.height,
+        bloodGroup: form.bloodGroup,
+        genotype: form.genotype,
+        schoolOccupation: form.schoolOccupation,
+        profession: form.schoolOccupation,
+        state: form.state,
+        homeTown: form.homeTown,
+        lga: form.lga,
+        serviceNumber: form.serviceNumber,
+        department: form.department,
+        parentName: form.parentName,
+        parentContactAddress: form.parentContactAddress,
+        parentOccupation: form.parentOccupation,
+        parentPhone1: form.parentPhone1,
+        parentPhone2: form.parentPhone2,
+        parentEmail: form.parentEmail,
+        parentSignature: form.parentSignature,
+        passportPhotoDataUrl: form.passportPhotoDataUrl,
+        dob: "",
+        qualification: "",
+        religion: "",
+        maritalStatus: "",
+        nationality: "",
+        whyJoin: "",
+      });
+      showToast("Update form submitted successfully.");
+    } catch (error) {
+      showToast("Submit failed: " + error.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const paper = {
+    background: isLight ? "#fffdf8" : "rgba(255,255,255,0.04)",
+    border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.08)"}`,
+    borderRadius: 18,
+    boxShadow: isLight ? "0 24px 60px rgba(15,23,42,0.08)" : "none",
+    overflow: "hidden",
+  };
+
+  const sectionTitle = {
+    color: isLight ? "#9a6b1a" : "#e8d8a0",
+    fontWeight: 800,
+    fontSize: 13,
+    letterSpacing: 1,
+    margin: "18px 0 12px",
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: isLight ? "linear-gradient(180deg, #f7f1e4 0%, #f0eadf 100%)" : t.page, color: t.text, padding: 24 }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
+          <div>
+            <div style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, background: "rgba(201,149,42,0.12)", color: "#c9952a", fontSize: 12, fontWeight: 800, letterSpacing: 1 }}>EXISTING OFFICER UPDATE</div>
+            <h1 style={{ margin: "10px 0 4px", fontSize: 30, fontWeight: 900 }}>UPDATE FORM (I'M STILL ALIVE)</h1>
+            <div style={{ color: t.muted }}>Approved legacy claims land here to refresh their record before the next stage.</div>
+          </div>
+          <GoldBtn outline onClick={onLogout} style={{ alignSelf: "center" }}>Sign Out</GoldBtn>
+        </div>
+
+        <div style={paper}>
+          <div style={{ padding: 20, borderBottom: `1px solid ${isLight ? "#e6dac1" : "rgba(255,255,255,0.08)"}`, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 1 }}>CIVIL ELITE SERVICE</div>
+              <div style={{ color: t.muted, fontSize: 13 }}>Existing officer update sheet</div>
+            </div>
+            <div style={{ textAlign: "right", color: t.muted, fontSize: 13 }}>
+              <div>Applicant ID: {user.applicantId || form.serviceNumber || "Pending"}</div>
+              <div>Service Status: {form.serviceStatus}</div>
+            </div>
+          </div>
+
+          <div style={{ padding: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.15fr) minmax(280px, 0.85fr)", gap: 20, alignItems: "start" }}>
+              <div>
+                <div style={sectionTitle}>PERSONAL INFORMATION</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+                  <LegacyField label="Name" value={form.fullName} onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))} required />
+                  <LegacyField label="Contact Address" value={form.contactAddress} onChange={(event) => setForm((current) => ({ ...current, contactAddress: event.target.value }))} multiline rows={2} required />
+                  <LegacyField label="Status" value={form.serviceStatus} onChange={(event) => setForm((current) => ({ ...current, serviceStatus: event.target.value }))} options={[{ value: "active", label: "Active" }, { value: "dismissed", label: "Dismissed" }, { value: "retired", label: "Retired" }]} required />
+                  <LegacyField label="Age" type="number" value={form.age} onChange={(event) => setForm((current) => ({ ...current, age: event.target.value }))} required />
+                  <LegacyField label="Place of birth" value={form.placeOfBirth} onChange={(event) => setForm((current) => ({ ...current, placeOfBirth: event.target.value }))} />
+                  <LegacyField label="Gender" value={form.gender} onChange={(event) => setForm((current) => ({ ...current, gender: event.target.value }))} options={[{ value: "male", label: "Male" }, { value: "female", label: "Female" }]} required />
+                  <LegacyField label="Height" value={form.height} onChange={(event) => setForm((current) => ({ ...current, height: event.target.value }))} />
+                  <LegacyField label="Blood group" value={form.bloodGroup} onChange={(event) => setForm((current) => ({ ...current, bloodGroup: event.target.value }))} />
+                  <LegacyField label="Genotype" value={form.genotype} onChange={(event) => setForm((current) => ({ ...current, genotype: event.target.value }))} />
+                  <LegacyField label="School/Occupation" value={form.schoolOccupation} onChange={(event) => setForm((current) => ({ ...current, schoolOccupation: event.target.value }))} />
+                  <LegacyField label="State of Origin" value={form.state} onChange={(event) => setForm((current) => ({ ...current, state: event.target.value }))} options={NIGERIAN_STATES.map((state) => ({ value: state, label: state }))} required />
+                  <LegacyField label="Home Town" value={form.homeTown} onChange={(event) => setForm((current) => ({ ...current, homeTown: event.target.value }))} />
+                  <LegacyField label="Local Govt Area" value={form.lga} onChange={(event) => setForm((current) => ({ ...current, lga: event.target.value }))} options={(LGA_OPTIONS[form.state] || []).map((lga) => ({ value: lga, label: lga }))} required />
+                  <LegacyField label="Phone No 1" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} required />
+                  <LegacyField label="Phone No 2" value={form.phone2} onChange={(event) => setForm((current) => ({ ...current, phone2: event.target.value }))} />
+                  <LegacyField label="Email address" type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
+                  <LegacyField label="Email address 2" type="email" value={form.email2} onChange={(event) => setForm((current) => ({ ...current, email2: event.target.value }))} />
+                  <LegacyField label="Service No" value={form.serviceNumber} onChange={(event) => setForm((current) => ({ ...current, serviceNumber: event.target.value }))} required />
+                  <LegacyField label="Department" value={form.department} onChange={(event) => setForm((current) => ({ ...current, department: event.target.value }))} required />
+                </div>
+
+                <div style={sectionTitle}>PARENT / GUARDIAN INFORMATION</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+                  <LegacyField label="Name of Parent" value={form.parentName} onChange={(event) => setForm((current) => ({ ...current, parentName: event.target.value }))} required />
+                  <LegacyField label="Contact address" value={form.parentContactAddress} onChange={(event) => setForm((current) => ({ ...current, parentContactAddress: event.target.value }))} multiline rows={2} required />
+                  <LegacyField label="Occupation" value={form.parentOccupation} onChange={(event) => setForm((current) => ({ ...current, parentOccupation: event.target.value }))} />
+                  <LegacyField label="Phone No 1" value={form.parentPhone1} onChange={(event) => setForm((current) => ({ ...current, parentPhone1: event.target.value }))} required />
+                  <LegacyField label="Phone No 2" value={form.parentPhone2} onChange={(event) => setForm((current) => ({ ...current, parentPhone2: event.target.value }))} />
+                  <LegacyField label="Email address" type="email" value={form.parentEmail} onChange={(event) => setForm((current) => ({ ...current, parentEmail: event.target.value }))} />
+                  <LegacyField label="Parent/Guardian Signature" value={form.parentSignature} onChange={(event) => setForm((current) => ({ ...current, parentSignature: event.target.value }))} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ border: `1px dashed ${isLight ? "#cdbb98" : "rgba(255,255,255,0.2)"}`, borderRadius: 16, padding: 18, background: isLight ? "#fff" : "rgba(255,255,255,0.03)", marginBottom: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 900, marginBottom: 4 }}>Passport</div>
+                      <div style={{ color: t.muted, fontSize: 13 }}>Upload a recent passport photograph</div>
+                    </div>
+                    <div style={{ width: 18, height: 18, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, borderRadius: 4, display: "grid", placeItems: "center", color: t.muted, fontSize: 11 }}>2</div>
+                  </div>
+                  <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
+                    <input type="file" accept="image/*" onChange={onPassportChange} />
+                    {form.passportPhotoDataUrl ? (
+                      <img src={form.passportPhotoDataUrl} alt="Passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
+                    ) : (
+                      <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>Passport</div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ border: `1px solid ${isLight ? "#e0d3bc" : "rgba(255,255,255,0.08)"}`, borderRadius: 16, padding: 18, background: isLight ? "#fffefb" : "rgba(255,255,255,0.03)" }}>
+                  <div style={{ fontWeight: 900, marginBottom: 10 }}>Document Requirement</div>
+                  <div style={{ color: t.muted, fontSize: 14, lineHeight: 1.8 }}>
+                    <div>A copy of Birth Certificate</div>
+                    <div>A copy of School Leaving Certificate (minimum of O level) or awaiting</div>
+                    <div>Attestation Letter (From a lawyer, Mosque or Church.)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 20, display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <GoldBtn onClick={submitUpdate} disabled={saving}>{saving ? "Submitting..." : "Submit Update"}</GoldBtn>
+              <GoldBtn outline onClick={() => showToast("Draft retained on this device.")}>Save Draft</GoldBtn>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────────
 const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const t = getTheme(theme);
@@ -3811,7 +4102,9 @@ export default function App() {
   if (page === "dashboard" && user) {
     return user.role === "admin"
       ? <><AdminDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
-      : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+      : user.legacyApproved
+        ? <><LegacyUpdateForm user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>
+        : <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
   }
   return <><LandingPage onNavigate={setPage} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
 }
