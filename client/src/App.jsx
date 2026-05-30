@@ -2363,7 +2363,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   };
 
   const submitUpdate = async () => {
-    if (!form.fullName || !form.contactAddress || !form.serviceStatus || !form.age || !form.gender || !form.state || !form.lga || !form.phone || !form.email || !form.serviceNumber || !form.department || !form.parentName || !form.parentContactAddress || !form.parentPhone1) {
+    if (!form.fullName || !form.contactAddress || !form.serviceStatus || !form.age || !form.gender || !form.state || !form.lga || !form.phone || !form.email || !form.department || !form.parentName || !form.parentContactAddress || !form.parentPhone1) {
       showToast("Please complete the required update fields.", "error");
       return;
     }
@@ -2490,7 +2490,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
                   <LegacyField label="Phone No 2" value={form.phone2} onChange={(event) => setForm((current) => ({ ...current, phone2: event.target.value }))} />
                   <LegacyField label="Email address" type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
                   <LegacyField label="Email address 2" type="email" value={form.email2} onChange={(event) => setForm((current) => ({ ...current, email2: event.target.value }))} />
-                  <LegacyField label="Service No" value={form.serviceNumber} onChange={(event) => setForm((current) => ({ ...current, serviceNumber: event.target.value }))} required />
+                  <LegacyField label="Service No" value={form.serviceNumber} onChange={(event) => setForm((current) => ({ ...current, serviceNumber: event.target.value }))} />
                   <LegacyField label="Department" value={form.department} onChange={(event) => setForm((current) => ({ ...current, department: event.target.value }))} required />
                 </div>
 
