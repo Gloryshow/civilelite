@@ -2888,9 +2888,30 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
   const downloadAllQRCodes = async () => {
     setQrLoading(true);
     try {
-      const approvedApplicants = applicants.filter(a => a.status === "approved");
-      if (approvedApplicants.length === 0) {
-        showToast("No approved applicants found", "error");
+      const [approvedApplicants, approvedLegacyClaims] = await Promise.all([
+        Promise.resolve(applicants.filter(a => a.status === "approved")),
+        adminAPI.getLegacyClaims("approved").catch(() => []),
+      ]);
+
+      const qrSources = [
+        ...approvedApplicants.map((item) => ({
+          applicantId: item.applicantId,
+          fullName: item.fullName,
+          label: "Applicant",
+        })),
+        ...approvedLegacyClaims.map((item) => ({
+          applicantId: item.applicantId,
+          fullName: item.fullName,
+          label: "Aspirant",
+        })),
+      ].filter((item) => item.applicantId);
+
+      const uniqueQrSources = Array.from(
+        new Map(qrSources.map((item) => [item.applicantId, item])).values()
+      );
+
+      if (uniqueQrSources.length === 0) {
+        showToast("No approved applicants or aspirants found", "error");
         setQrLoading(false);
         return;
       }
@@ -2899,12 +2920,13 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       
-      for (const applicant of approvedApplicants) {
+      for (const applicant of uniqueQrSources) {
         try {
           const verificationUrl = `${window.location.origin}/?verify=${encodeURIComponent(applicant.applicantId)}`;
           const qrDataUrl = await QRCode.toDataURL(verificationUrl);
           const base64Data = qrDataUrl.split(",")[1];
-          zip.file(`${applicant.applicantId}-qr.png`, base64Data, { base64: true });
+          const safeLabel = applicant.label.toLowerCase();
+          zip.file(`${safeLabel}-${applicant.applicantId}-qr.png`, base64Data, { base64: true });
         } catch (err) {
           console.error(`Error generating QR for ${applicant.applicantId}:`, err);
         }
@@ -3999,11 +4021,20 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         style={{ padding: 8, borderRadius: 6, border: `1px solid ${t.border}`, width: "100%" }}
                       >
                         <option value="">-- Select an approved applicant --</option>
-                        {applicants.filter(a => a.status === "approved").map(a => (
-                          <option key={a.applicantId} value={a.applicantId}>
-                            {a.fullName} ({a.applicantId})
-                          </option>
-                        ))}
+                        {[
+                          ...applicants.filter(a => a.status === "approved").map(a => ({ ...a, label: "Applicant" })),
+                          ...legacyClaims.filter(c => c.status === "approved").map(c => ({ ...c, label: "Aspirant" })),
+                        ]
+                          .filter(item => item.applicantId)
+                          .reduce((acc, item) => {
+                            if (!acc.some((existing) => existing.applicantId === item.applicantId)) acc.push(item);
+                            return acc;
+                          }, [])
+                          .map(item => (
+                            <option key={item.applicantId} value={item.applicantId}>
+                              {item.label}: {item.fullName} ({item.applicantId})
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <GoldBtn onClick={generateQRCode} disabled={qrLoading} style={{ padding: "8px 14px" }}>
