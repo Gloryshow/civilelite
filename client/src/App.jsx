@@ -20,6 +20,20 @@ const useInView = (threshold = 0.15) => {
   return [ref, inView];
 };
 
+// Theme helper used throughout the app to map theme names to palette tokens
+const getTheme = (mode = "light") => {
+  const light = mode === "light";
+  return {
+    page: light ? "#f8faf6" : "#071022",
+    text: light ? "#0f172a" : "#e6eef8",
+    muted: light ? "#64748b" : "#9aa7bb",
+    border: light ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.06)",
+    accent: "#c9952a",
+    card: light ? "#fffdf8" : "rgba(255,255,255,0.03)",
+    glow: light ? "rgba(201,149,42,0.12)" : "rgba(201,149,42,0.08)",
+  };
+};
+
 const SOCIAL_LINKS = [
   { label: "WhatsApp Group", href: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t", icon: "💬", note: "Get live updates and alerts" },
   { label: "Facebook Page", href: "https://www.facebook.com/profile.php?id=100067616334695", icon: "📘", note: "News, photos, and notices" },
