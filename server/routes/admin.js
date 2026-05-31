@@ -746,11 +746,23 @@ router.delete("/admins/:id", authMiddleware, adminMiddleware, async (req, res) =
       return res.status(400).json({ error: "Cannot delete the last admin account" });
     }
 
-    const user = await User.findByIdAndDelete(id);
+    const user = await User.findById(id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Also remove any Applicant record tied to this user
-    await Applicant.deleteOne({ userId: user._id });
+    // Remove any Applicant record tied to this user and resequence if needed
+    const applicant = await Applicant.findOne({ userId: user._id });
+    if (applicant) {
+      const deletedSerial = typeof applicant.serial === 'number' ? applicant.serial : null;
+      await Applicant.deleteOne({ _id: applicant._id });
+      if (deletedSerial !== null) {
+        await Applicant.updateMany({ serial: { $gt: deletedSerial } }, { $inc: { serial: -1 } });
+      }
+    }
+
+    // Finally remove the admin user
+    await User.deleteOne({ _id: user._id });
+
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "delete_admin_user", details: `${user.email || ''} (${user._id})` });
 
     res.json({ message: "Admin deleted" });
   } catch (error) {
@@ -872,13 +884,21 @@ router.delete("/announcements/:id", authMiddleware, adminMiddleware, async (req,
 // Delete applicant
 router.delete("/applicants/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const applicant = await Applicant.findByIdAndDelete(req.params.id);
+    const applicant = await Applicant.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: "Applicant not found" });
 
-    if (!applicant) {
-      return res.status(404).json({ error: "Applicant not found" });
+    const deletedSerial = typeof applicant.serial === 'number' ? applicant.serial : null;
+
+    await Applicant.deleteOne({ _id: applicant._id });
+
+    // If this applicant had a serial number, decrement serial for all applicants with greater serial
+    if (deletedSerial !== null) {
+      await Applicant.updateMany({ serial: { $gt: deletedSerial } }, { $inc: { serial: -1 } });
     }
 
-    res.json({ success: true, id: applicant._id, message: "Applicant deleted successfully" });
+    await AuditLog.create({ actorId: req.user.id, actorName: req.user.name, action: "delete_applicant", details: `${applicant.fullName || ''} (${applicant._id})` });
+
+    res.json({ success: true, id: applicant._id, message: "Applicant deleted and list resequenced" });
   } catch (error) {
     console.error(error);
     res.status(503).json({ error: "Database unavailable" });
