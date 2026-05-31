@@ -309,7 +309,7 @@ router.post("/legacy-claim", async (req, res) => {
       role: "applicant",
       applicantId,
       serviceStatus: "active",
-      registrationStatus: "under_review",
+      registrationStatus: "pending",
       legacyApproved: true,
     });
 
