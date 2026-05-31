@@ -34,6 +34,24 @@ const getTheme = (mode = "light") => {
   };
 };
 
+// Default public/admin settings used by the client when server settings are unavailable
+const createDefaultSettings = () => ({
+  recruitmentOpen: false,
+  emailNotifications: { enabled: false },
+  manualPayment: {
+    feeAmount: 5000,
+    currency: "NGN",
+    bankName: "",
+    accountName: "",
+    accountNumber: "",
+    bankBranch: "",
+  },
+  serviceYear: new Date().getFullYear(),
+  serviceBatch: 1,
+  servicePrefix: "CES",
+  numberPadding: 3,
+});
+
 const SOCIAL_LINKS = [
   { label: "WhatsApp Group", href: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t", icon: "💬", note: "Get live updates and alerts" },
   { label: "Facebook Page", href: "https://www.facebook.com/profile.php?id=100067616334695", icon: "📘", note: "News, photos, and notices" },
