@@ -3408,7 +3408,7 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                           setSelectedApplicantId(a.id);
                         }}
                       >
-                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.serial || (APPLICANT_SERIAL_START + idx)}</td>
+                        <td style={{ padding: "12px 14px", color: "#64748b", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{APPLICANT_SERIAL_START + idx}</td>
                         <td style={{ padding: "12px 14px", color: "#c9952a", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.applicantId}</td>
                         <td style={{ padding: "12px 14px", color: t.text, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.name}</td>
                         <td style={{ padding: "12px 14px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.email}</td>
