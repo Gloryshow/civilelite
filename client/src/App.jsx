@@ -8,129 +8,16 @@ import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.
 // ── Utility ──────────────────────────────────────────────────────────────────
 const useInView = (threshold = 0.15) => {
   const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
+  const [inView, setInView] = useState(false);
+
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold });
-    if (ref.current) obs.observe(ref.current);
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold });
+    obs.observe(ref.current);
     return () => obs.disconnect();
   }, [threshold]);
-  return [ref, visible];
-};
 
-const useCountUp = (target, visible, duration = 1200) => {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!visible) return;
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setVal(target);
-        clearInterval(timer);
-      } else {
-        setVal(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [visible, target, duration]);
-  return val;
-};
-
-const THEME = {
-  light: {
-    page: "#f0f4f8",
-    pageAlt: "#ffffff",
-    surface: "#eef2f7",
-    surfaceSoft: "rgba(26,107,60,0.08)",
-    border: "rgba(26,107,60,0.15)",
-    text: "#0f172a",
-    muted: "#475569",
-    nav: "rgba(255,255,255,0.95)",
-  },
-  dark: {
-    page: "#0a0e1a",
-    pageAlt: "#0d1b2a",
-    surface: "rgba(255,255,255,0.04)",
-    surfaceSoft: "rgba(255,255,255,0.03)",
-    border: "rgba(99,147,255,0.15)",
-    text: "#e8eef8",
-    muted: "#8899aa",
-    nav: "rgba(10,14,26,0.96)",
-  },
-};
-
-const getTheme = (mode = "light") => THEME[mode] || THEME.light;
-
-const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
-const APPLICATION_STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
-
-const buildApplicationTimeline = (status) => {
-  const stage = status || "pending";
-  const stageIndex = {
-    pending: 0,
-    under_review: 1,
-    approved: 4,
-    rejected: 2,
-  }[stage] ?? 0;
-
-  return [
-    { label: "Application Received", date: "Submitted", done: stageIndex >= 0 },
-    { label: "Document Verification", date: stageIndex >= 1 ? "Completed" : "Pending", done: stageIndex >= 1 },
-    { label: "Physical Assessment", date: stageIndex >= 2 ? "Completed" : "Pending", done: stageIndex >= 2 },
-    { label: "Medical Examination", date: stageIndex >= 3 ? "Completed" : "Pending", done: stageIndex >= 3 },
-    { label: "Final Approval & Posting", date: stageIndex >= 4 ? "Completed" : "Pending", done: stageIndex >= 4 },
-  ];
-};
-
-const getCurrentStage = (status, submitted) => {
-  if (!submitted) return "Pre-Application";
-  const stageMap = {
-    pending: "Application Received",
-    under_review: "Under Review",
-    approved: "Approved - Ready for Camp",
-    rejected: "Application Rejected",
-  };
-  return stageMap[status] || "Under Review";
-};
-
-const getStageColor = (status, submitted) => {
-  if (!submitted) return "#c9952a";
-  const colorMap = {
-    pending: "#ffc107",
-    under_review: "#2196f3",
-    approved: "#4caf50",
-    rejected: "#f44336",
-  };
-  return colorMap[status] || "#aab";
-};
-
-const createDefaultSettings = () => ({
-  recruitmentOpen: true,
-  emailNotifications: { enabled: false, address: "" },
-  manualPayment: {
-    enabled: true,
-    feeAmount: 5000,
-    currency: "NGN",
-    bankName: "Zenith",
-    accountName: "Civic Rights and peace building foundation",
-    accountNumber: "1311106690",
-    bankBranch: "",
-    receiptRequirement: "Come to camp with your payment receipt for verification.",
-    note: "Paystack and Flutterwave are not enabled yet.",
-  },
-});
-
-const formatCurrency = (amount, currency = "NGN") => {
-  try {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(Number(amount || 0));
-  } catch {
-    return `₦${Number(amount || 0).toLocaleString("en-NG")}`;
-  }
+  return [ref, inView];
 };
 
 const SOCIAL_LINKS = [
@@ -2252,6 +2139,12 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     attestationLetterDataUrl: "",
   });
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [tab, setTab] = useState("update");
+  const [announcements, setAnnouncements] = useState([]);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [qrLoading, setQrLoading] = useState(false);
+
   const LegacyField = useCallback(({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
     <div style={{ marginBottom: 14 }}>
       <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
@@ -2358,6 +2251,80 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
 
     loadProfile();
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadLegacyAnnouncements = async () => {
+      try {
+        const data = await publicAPI.getAnnouncements();
+        if (!active) return;
+        setAnnouncements(data || []);
+      } catch {
+        if (!active) return;
+        setAnnouncements([]);
+      }
+    };
+
+    loadLegacyAnnouncements();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const qrIdentifier = user.applicantId || form.serviceNumber || user.email || "legacy-officer";
+  const qrPayload = buildQrPayload({ applicantId: qrIdentifier });
+
+  useEffect(() => {
+    let active = true;
+    if (!qrPayload) {
+      setQrDataUrl("");
+      return undefined;
+    }
+
+    setQrLoading(true);
+    QRCode.toDataURL(qrPayload)
+      .then((url) => {
+        if (active) setQrDataUrl(url);
+      })
+      .catch(() => {
+        if (active) setQrDataUrl("");
+      })
+      .finally(() => {
+        if (active) setQrLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [qrPayload]);
+
+  const menuItems = [
+    { id: "overview", icon: "🏠", label: "Overview" },
+    { id: "qr", icon: "🔳", label: "QR" },
+    { id: "announcements", icon: "📢", label: "Announcements" },
+    { id: "update", icon: "📝", label: "Update Form" },
+  ];
+
+  const copyQrLink = async () => {
+    try {
+      await navigator.clipboard.writeText(qrPayload);
+      showToast("QR link copied.");
+    } catch {
+      showToast("Unable to copy QR link.", "error");
+    }
+  };
+
+  const downloadQrImage = () => {
+    if (!qrDataUrl) {
+      showToast("QR image not ready.", "error");
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `${qrIdentifier}-qr.png`;
+    link.click();
+    showToast("QR image downloaded.");
+  };
 
   const onPassportChange = (event) => {
     const file = event.target.files?.[0];
