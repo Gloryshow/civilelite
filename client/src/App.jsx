@@ -52,6 +52,18 @@ const createDefaultSettings = () => ({
   numberPadding: 3,
 });
 
+// Service status options used in forms
+const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
+
+// Simple currency formatter used by the UI
+const formatCurrency = (amount = 0, currency = "NGN") => {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+  } catch {
+    return `${currency} ${Number(amount || 0).toFixed(2)}`;
+  }
+};
+
 const SOCIAL_LINKS = [
   { label: "WhatsApp Group", href: "https://chat.whatsapp.com/Hrr2tVkOEfQ2W5DZ4KG1YD?mode=gi_t", icon: "💬", note: "Get live updates and alerts" },
   { label: "Facebook Page", href: "https://www.facebook.com/profile.php?id=100067616334695", icon: "📘", note: "News, photos, and notices" },
