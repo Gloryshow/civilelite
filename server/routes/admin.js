@@ -663,7 +663,10 @@ router.post(
 // Get stats
 router.get("/stats", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const total = await Applicant.countDocuments();
+    const claimUserIds = await LegacyClaim.distinct("userId");
+    const total = await Applicant.countDocuments(
+      claimUserIds.length ? { userId: { $nin: claimUserIds } } : {}
+    );
     const pending = await User.countDocuments({
       role: "admin",
       registrationStatus: "pending",
