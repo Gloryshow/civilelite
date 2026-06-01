@@ -4098,6 +4098,7 @@ export default function App() {
   const [page, setPage] = useState(initialVerifyApplicantId ? "verify" : "home"); // home | login | register | dashboard | verify
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState("light");
+  const isLight = theme === "light";
   const [userRegistry, setUserRegistry] = useState(() => loadUserRegistry());
   const [loading, setLoading] = useState(false);
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
