@@ -106,9 +106,9 @@ router.post("/registrations/:id/reject", authMiddleware, adminMiddleware, async 
 router.get("/legacy-claims", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const requestedStatus = String(req.query.status || "").trim().toLowerCase();
-    const filter = ["pending", "approved", "rejected"].includes(requestedStatus)
+    const filter = ["pending", "approved", "rejected", "deleted"].includes(requestedStatus)
       ? { status: requestedStatus }
-      : {};
+      : { status: { $ne: "deleted" } };
 
     const claims = await LegacyClaim.find(filter)
       .populate("reviewedBy", "name email")
