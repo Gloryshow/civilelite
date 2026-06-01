@@ -55,6 +55,9 @@ const createDefaultSettings = () => ({
 // Service status options used in forms
 const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
 
+// Application status options used by the admin assessment UI
+const APPLICATION_STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
+
 // Simple currency formatter used by the UI
 const formatCurrency = (amount = 0, currency = "NGN") => {
   try {
