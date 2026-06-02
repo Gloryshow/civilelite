@@ -58,6 +58,24 @@ const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
 // Application status options used by the admin assessment UI
 const APPLICATION_STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
 
+const getCurrentStage = (status = "pending", submitted = false) => {
+  if (!submitted) return "Draft";
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "approved") return "Approved";
+  if (normalized === "rejected") return "Rejected";
+  if (normalized === "under_review") return "Under Review";
+  return "Pending";
+};
+
+const getStageColor = (status = "pending", submitted = false) => {
+  if (!submitted) return "#c9952a";
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "approved") return "#4caf50";
+  if (normalized === "rejected") return "#f44336";
+  if (normalized === "under_review") return "#64b5f6";
+  return "#c9952a";
+};
+
 // Simple currency formatter used by the UI
 const formatCurrency = (amount = 0, currency = "NGN") => {
   try {
@@ -1048,16 +1066,13 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const submit = async () => {
     setError("");
     if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
+    if (!form.phone) { setError("Phone number is required."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
-    if (isLegacyClaim && !form.phone) {
-      setError("Phone number is required for legacy claim.");
-      return;
-    }
     setLocalLoading(true);
     try {
       if (isLogin) {
-        const result = await authAPI.login(form.email, form.password);
+        const result = await authAPI.login(form.email, form.password, form.phone);
         onAuth(result);
       } else {
         if (isLegacyClaim) {
@@ -1079,7 +1094,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         }
 
         const roleToRegister = registrationRole;
-        const result = await authAPI.register(form.email, form.password, form.name, roleToRegister);
+        const result = await authAPI.register(form.email, form.password, form.name, roleToRegister, form.phone);
         if (result.token && result.user) {
           tokenManager.setToken(result.token);
           onAuth(result);
@@ -1163,7 +1178,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
         <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-        {!isLogin && isLegacyClaim && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
+        <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
@@ -1178,7 +1193,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
               <div style={{ display: "grid", gap: 8 }}>
                 <input value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Account email" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <input value={forgotApplicantId} onChange={e => setForgotApplicantId(e.target.value)} placeholder="Applicant ID" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
-                <input value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
+                <input required value={forgotPhone} onChange={e => setForgotPhone(e.target.value)} placeholder="Phone number" style={{ padding: "10px 12px", borderRadius: 6, border: `1px solid ${isLight ? '#e6e6e6' : 'rgba(255,255,255,0.12)'}` }} />
                 <PasswordInput light={isLight} value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} placeholder="New password" />
                 <PasswordInput light={isLight} value={forgotConfirm} onChange={e => setForgotConfirm(e.target.value)} placeholder="Confirm new password" />
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
