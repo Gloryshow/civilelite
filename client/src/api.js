@@ -43,12 +43,12 @@ const apiCall = async (endpoint, method = "GET", body = null, opts = {}) => {
 };
 
 export const authAPI = {
-  register: (email, password, name, role = "applicant") =>
-    apiCall("/auth/register", "POST", { email, password, name, role }),
+  register: (email, password, name, role = "applicant", phone = "") =>
+    apiCall("/auth/register", "POST", { email, password, name, role, phone }),
   submitLegacyClaim: (payload) =>
     apiCall("/auth/legacy-claim", "POST", payload),
-  login: (email, password) =>
-    apiCall("/auth/login", "POST", { email, password }),
+  login: (email, password, phone = "") =>
+    apiCall("/auth/login", "POST", { email, password, phone }),
   me: () => apiCall("/auth/me"),
   getPushPublicKey: () => apiCall("/auth/push/public-key"),
   subscribePush: (subscription) =>

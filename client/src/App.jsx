@@ -1259,7 +1259,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 };
 
 // ── APPLICANT DASHBOARD ───────────────────────────────────────────────────────
-const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
+const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = false }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
   const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
@@ -1268,7 +1268,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
   const softText = isLight ? "#475569" : "#8899aa";
   const faintText = isLight ? "#64748b" : "#556";
-  const [tab, setTab] = useState(user?.legacyApproved ? "apply" : "overview");
+  const initialTab = legacyMode ? "overview" : (user?.legacyApproved ? "apply" : "overview");
+  const [tab, setTab] = useState(initialTab);
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
@@ -1565,13 +1566,21 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
     loadProfile();
   }, []);
 
-  const menuItems = [
+  const fullMenu = [
     { id: "overview", icon: "🏠", label: "Overview" },
     { id: "apply", icon: "📋", label: "Application Form" },
     { id: "status", icon: "📊", label: "Track Status" },
     { id: "camp", icon: "🧰", label: "Camp Requirements" },
     { id: "announcements", icon: "📢", label: "Announcements" },
   ];
+  const legacyMenu = [
+    { id: "qr", icon: "🔳", label: "QR" },
+    { id: "announcements", icon: "📢", label: "Announcements" },
+    { id: "camp", icon: "🧰", label: "Camp Requirements" },
+    { id: "socials", icon: "🔗", label: "Join Socials" },
+  ];
+
+  const menuItems = legacyMode ? legacyMenu : fullMenu;
 
   const S2 = {
     card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
@@ -1761,6 +1770,32 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
                       <span>{social.label}</span>
                     </a>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─ QR ─ */}
+          {tab === "qr" && (
+            <div>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Your QR / Verification Link</h2>
+              <div style={{ ...S2.card, display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ minWidth: 220 }}>
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt="Applicant QR" style={{ width: 220, height: 220, objectFit: "contain", borderRadius: 12, background: "#fff" }} />
+                  ) : (
+                    <div style={{ width: 220, height: 220, borderRadius: 12, display: "grid", placeItems: "center", color: t.muted, border: `1px dashed ${t.border}` }}>No QR available</div>
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, marginBottom: 8 }}>Applicant ID</div>
+                  <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 12 }}>{appData.id || "Not assigned"}</div>
+                  <div style={{ color: t.muted, marginBottom: 12 }}>{qrPayload}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <GoldBtn onClick={shareQr}>Share / Copy</GoldBtn>
+                    <GoldBtn outline onClick={downloadQrImage}>Download QR</GoldBtn>
+                    <GoldBtn onClick={() => { setPrintSlipType("application"); requestAnimationFrame(() => window.print()); }}>Print</GoldBtn>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2152,6 +2187,25 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
             </div>
           )}
 
+          {/* ─ JOIN SOCIALS ─ */}
+          {tab === "socials" && (
+            <div>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Join our Socials</h2>
+              <div style={{ ...S2.card }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+                  {SOCIAL_LINKS.map((social) => (
+                    <a key={social.label} href={social.href} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                      <div style={{ padding: 14, borderRadius: 10, border: `1px solid ${t.border}`, background: isLight ? "#fff" : "rgba(255,255,255,0.02)", color: t.text }}>
+                        <div style={{ fontWeight: 800, marginBottom: 6 }}>{social.label}</div>
+                        <div style={{ color: t.muted, fontSize: 13 }}>{social.description || social.href}</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
             <div>
@@ -2221,6 +2275,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tab, setTab] = useState("update");
   const [announcements, setAnnouncements] = useState([]);
+  const [publicSettings, setPublicSettings] = useState(createDefaultSettings());
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
 
@@ -2344,7 +2399,19 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
       }
     };
 
+    const loadSettings = async () => {
+      try {
+        const s = await publicAPI.getSettings();
+        if (!active) return;
+        setPublicSettings({ ...createDefaultSettings(), ...(s || {}) });
+      } catch {
+        if (!active) return;
+        setPublicSettings(createDefaultSettings());
+      }
+    };
+
     loadLegacyAnnouncements();
+    loadSettings();
     return () => {
       active = false;
     };
@@ -2377,12 +2444,13 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     };
   }, [qrPayload]);
 
-  const menuItems = [
-    { id: "overview", icon: "🏠", label: "Overview" },
+  const baseMenu = [
     { id: "qr", icon: "🔳", label: "QR" },
     { id: "announcements", icon: "📢", label: "Announcements" },
-    { id: "update", icon: "📝", label: "Update Form" },
+    { id: "camp", icon: "🧰", label: "Camp Requirements" },
+    { id: "socials", icon: "🔗", label: "Join Socials" },
   ];
+  const menuItems = adminView ? [...baseMenu, { id: "update", icon: "📝", label: "Update Form" }] : baseMenu;
 
   const copyQrLink = async () => {
     try {
@@ -4407,7 +4475,7 @@ export default function App() {
     }
 
     if (user.legacyApproved) {
-      return <><LegacyUpdateForm user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+      return <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} legacyMode={true} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
     }
 
     return <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
