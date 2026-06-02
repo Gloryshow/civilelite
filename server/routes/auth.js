@@ -101,12 +101,12 @@ router.post("/push/unsubscribe", authMiddleware, async (req, res) => {
 // Register
 router.post("/register", async (req, res) => {
   try {
-  const { email, password, name, role = 'applicant' } = req.body;
+    const { email, password, name, phone, role = 'applicant' } = req.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !phone) {
       return res
         .status(400)
-        .json({ error: "Email, password, and name are required" });
+        .json({ error: "Email, password, name, and phone are required" });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
@@ -135,6 +135,7 @@ router.post("/register", async (req, res) => {
       email: email.toLowerCase(),
       password,
       name,
+      phone: String(phone).trim(),
       role: isAdmin ? 'admin' : 'applicant',
       applicantId,
       adminId: isAdmin ? adminId : undefined,
@@ -158,6 +159,7 @@ router.post("/register", async (req, res) => {
           applicantId: user.applicantId,
           fullName: user.name,
           email: user.email,
+            phone: user.phone,
           status: "under_review",
           serviceStatus: user.serviceStatus,
           submitted: false,
@@ -199,6 +201,7 @@ router.post("/register", async (req, res) => {
             name: user.name,
             role: user.role,
             applicantId: user.applicantId,
+            phone: user.phone,
             serviceStatus: user.serviceStatus,
             registrationStatus: user.registrationStatus,
           },
@@ -226,6 +229,7 @@ router.post("/register", async (req, res) => {
             name: user.name,
             role: user.role,
             applicantId: user.applicantId,
+            phone: user.phone,
             serviceStatus: user.serviceStatus,
             registrationStatus: user.registrationStatus,
           },
@@ -243,6 +247,7 @@ router.post("/register", async (req, res) => {
             name: user.name,
             role: user.role,
             applicantId: user.applicantId,
+            phone: user.phone,
             serviceStatus: user.serviceStatus,
             registrationStatus: user.registrationStatus,
           },
@@ -383,17 +388,46 @@ router.post("/legacy-claim", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, phone } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email and password are required" });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedPhone = normalizeDigits(phone);
+
+    if (!password || (!normalizedEmail && !normalizedPhone)) {
+      return res.status(400).json({ error: "Provide password and either email or phone" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    let user = null;
+    let applicant = null;
+
+    if (normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
+      if (!user) return res.status(401).json({ error: "Invalid credentials" });
+      applicant = await Applicant.findOne({ userId: user._id }).lean();
+
+      // if phone was provided, verify it matches stored phone
+      if (normalizedPhone) {
+        const storedPhone = normalizeDigits(user.phone || applicant?.phone || "");
+        if (!storedPhone || storedPhone !== normalizedPhone) {
+          return res.status(401).json({ error: "Invalid credentials" });
+        }
+      }
+    } else {
+      // login by phone only: try to locate user by phone or via applicant record
+      user = await User.findOne({ phone: { $regex: normalizedPhone } });
+      if (!user) {
+        applicant = await Applicant.findOne({ phone: { $regex: normalizedPhone } }).lean();
+        if (applicant) user = await User.findById(applicant.userId);
+      };
+
+      if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+      if (!applicant) applicant = await Applicant.findOne({ userId: user._id }).lean();
+
+      const storedPhone = normalizeDigits(user.phone || applicant?.phone || "");
+      if (!storedPhone || storedPhone !== normalizedPhone) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
     }
 
     // Allow legacy claimers to log in while they are in the update/approval flow.
@@ -416,6 +450,7 @@ router.post("/login", async (req, res) => {
         name: user.name,
         role: user.role,
         applicantId: user.applicantId,
+        phone: user.phone || applicant?.phone || "",
         serviceStatus: user.serviceStatus,
         legacyApproved: user.legacyApproved || false,
       },
@@ -436,6 +471,7 @@ router.get("/me", authMiddleware, async (req, res) => {
         name: req.user.name,
         role: req.user.role,
         applicantId: req.user.applicantId,
+        phone: req.user.phone || "",
         serviceStatus: req.user.serviceStatus,
         registrationStatus: req.user.registrationStatus,
         legacyApproved: req.user.legacyApproved || false,
@@ -480,7 +516,7 @@ router.post("/forgot", async (req, res) => {
     const normalizedPhone = normalizeDigits(phone);
     if (normalizedPhone) {
       const applicant = await Applicant.findOne({ userId: user._id }).lean();
-      const storedPhone = normalizeDigits(applicant?.phone || "");
+      const storedPhone = normalizeDigits(user.phone || applicant?.phone || "");
       phoneMatched = storedPhone && (storedPhone.includes(normalizedPhone) || normalizedPhone.includes(storedPhone));
     }
 

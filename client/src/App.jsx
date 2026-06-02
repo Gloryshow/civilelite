@@ -1065,8 +1065,14 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
   const submit = async () => {
     setError("");
-    if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
-    if (!form.phone) { setError("Phone number is required."); return; }
+    if (!form.password) { setError("Password is required."); return; }
+    if (isLogin) {
+      if (!form.email && !form.phone) { setError("Enter email or phone to sign in."); return; }
+    } else {
+      // registration / legacy claim still require phone
+      if (!form.email) { setError("Please fill all required fields."); return; }
+      if (!form.phone) { setError("Phone number is required."); return; }
+    }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
     setLocalLoading(true);
