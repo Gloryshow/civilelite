@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Announcement from "../models/Announcement.js";
 import Setting from "../models/Setting.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { restrictPendingLegacy } from "../middleware/legacyAccess.js";
 import { sendPushToRole } from "../utils/push.js";
 
 const router = express.Router();
@@ -315,7 +316,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
 });
 
 // List announcements for applicants
-router.get("/announcements", authMiddleware, async (req, res) => {
+router.get("/announcements", authMiddleware, restrictPendingLegacy, async (req, res) => {
   try {
     const items = await Announcement.find().sort({ createdAt: -1 });
     res.json(

@@ -1268,7 +1268,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
   const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
   const softText = isLight ? "#475569" : "#8899aa";
   const faintText = isLight ? "#64748b" : "#556";
-  const initialTab = legacyMode ? "overview" : (user?.legacyApproved ? "apply" : "overview");
+  const isPendingLegacy = Boolean(user && String(user.registrationStatus || "").toLowerCase() === "pending" && !user.legacyApproved);
+  const initialTab = isPendingLegacy ? "apply" : legacyMode ? "overview" : "overview";
   const [tab, setTab] = useState(initialTab);
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
@@ -1574,13 +1575,15 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     { id: "announcements", icon: "📢", label: "Announcements" },
   ];
   const legacyMenu = [
+    { id: "overview", icon: "🏠", label: "Overview" },
     { id: "qr", icon: "🔳", label: "QR" },
     { id: "announcements", icon: "📢", label: "Announcements" },
     { id: "camp", icon: "🧰", label: "Camp Requirements" },
     { id: "socials", icon: "🔗", label: "Join Socials" },
+    { id: "update", icon: "📝", label: "Officer Form" },
   ];
 
-  const menuItems = legacyMode ? legacyMenu : fullMenu;
+  const menuItems = isPendingLegacy ? [{ id: "apply", icon: "📋", label: "Application Form" }] : (legacyMode ? legacyMenu : fullMenu);
 
   const S2 = {
     card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
