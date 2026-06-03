@@ -1576,11 +1576,11 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
   ];
   const legacyMenu = [
     { id: "overview", icon: "🏠", label: "Overview" },
+    { id: "update", icon: "📝", label: "Officer Form" },
     { id: "qr", icon: "🔳", label: "QR" },
     { id: "announcements", icon: "📢", label: "Announcements" },
     { id: "camp", icon: "🧰", label: "Camp Requirements" },
     { id: "socials", icon: "🔗", label: "Join Socials" },
-    { id: "update", icon: "📝", label: "Officer Form" },
   ];
 
   const menuItems = isPendingLegacy ? legacyMenu : (legacyMode ? legacyMenu : fullMenu);
