@@ -64,6 +64,14 @@ const userSchema = new mongoose.Schema(
         lastSeenAt: { type: Date, default: Date.now },
       },
     ],
+    fcmTokens: [
+      {
+        token: { type: String, required: true },
+        userAgent: { type: String, default: "" },
+        createdAt: { type: Date, default: Date.now },
+        lastSeenAt: { type: Date, default: Date.now },
+      },
+    ],
     createdAt: {   
       type: Date,
       default: Date.now,

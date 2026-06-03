@@ -155,15 +155,6 @@ const parseQrPayload = (raw) => {
   return null;
 };
 
-const base64UrlToUint8Array = (base64String) => {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const normalized = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = window.atob(normalized);
-  const output = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
-  return output;
-};
-
 // ── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 20, cls = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cls}>
@@ -4380,7 +4371,7 @@ export default function App() {
       if (typeof window === "undefined") return;
       if (pushSubscriptionAttemptedRef.current) return;
       if (page !== "dashboard" || !user?.id) return;
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+      if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
 
       pushSubscriptionAttemptedRef.current = true;
 
@@ -4391,22 +4382,43 @@ export default function App() {
         }
         if (permission !== "granted") return;
 
-        const { publicKey } = await authAPI.getPushPublicKey();
-        if (!publicKey) return;
-
-        const registration = await navigator.serviceWorker.ready;
-        let subscription = await registration.pushManager.getSubscription();
-
-        if (!subscription) {
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: base64UrlToUint8Array(publicKey),
-          });
+        const fcmConfig = await authAPI.getFcmConfig();
+        if (!fcmConfig?.apiKey || !fcmConfig?.messagingSenderId || !fcmConfig?.appId || !fcmConfig?.projectId || !fcmConfig?.vapidKey) {
+          return;
         }
 
-        await authAPI.subscribePush(subscription.toJSON());
+        const [{ getApps, initializeApp }, { getMessaging, getToken, isSupported }] = await Promise.all([
+          import("firebase/app"),
+          import("firebase/messaging"),
+        ]);
+
+        const supported = await isSupported().catch(() => false);
+        if (!supported) return;
+
+        const existing = getApps();
+        const firebaseApp = existing.length
+          ? existing[0]
+          : initializeApp({
+              apiKey: fcmConfig.apiKey,
+              authDomain: fcmConfig.authDomain,
+              projectId: fcmConfig.projectId,
+              storageBucket: fcmConfig.storageBucket,
+              messagingSenderId: fcmConfig.messagingSenderId,
+              appId: fcmConfig.appId,
+              measurementId: fcmConfig.measurementId,
+            });
+
+        const registration = await navigator.serviceWorker.ready;
+        const messaging = getMessaging(firebaseApp);
+        const token = await getToken(messaging, {
+          vapidKey: fcmConfig.vapidKey,
+          serviceWorkerRegistration: registration,
+        });
+
+        if (!token) return;
+        await authAPI.registerFcmToken(token);
       } catch (error) {
-        console.warn("Push subscription skipped:", error?.message || error);
+        console.warn("FCM token registration skipped:", error?.message || error);
       }
     };
 

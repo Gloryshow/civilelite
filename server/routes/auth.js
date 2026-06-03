@@ -6,7 +6,7 @@ import User from "../models/User.js";
 import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { sendMail } from "../utils/mailer.js";
-import { getPushPublicKey, isPushEnabled, sendPushToRole } from "../utils/push.js";
+import { getFcmPublicConfig, getPushPublicKey, isFcmEnabled, isPushEnabled, sendPushToRole } from "../utils/push.js";
 
 const router = express.Router();
 
@@ -31,6 +31,75 @@ const normalizeSubscription = (subscription = {}) => {
     keys: { p256dh, auth },
   };
 };
+
+const normalizeFcmToken = (token) => {
+  const parsed = String(token || "").trim();
+  if (!parsed || parsed.length < 20) return "";
+  return parsed;
+};
+
+router.get("/fcm/config", (req, res) => {
+  const config = getFcmPublicConfig();
+  if (!config) {
+    return res.status(503).json({ error: "Firebase Cloud Messaging is not configured" });
+  }
+  return res.json(config);
+});
+
+router.post("/fcm/register", authMiddleware, async (req, res) => {
+  try {
+    if (!isFcmEnabled()) {
+      return res.status(503).json({ error: "Firebase Cloud Messaging is not configured" });
+    }
+
+    const token = normalizeFcmToken(req.body?.token);
+    if (!token) return res.status(400).json({ error: "Invalid FCM token" });
+
+    await User.updateMany(
+      { _id: { $ne: req.user.id }, "fcmTokens.token": token },
+      { $pull: { fcmTokens: { token } } }
+    );
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const existing = (user.fcmTokens || []).find((item) => item.token === token);
+    if (existing) {
+      existing.lastSeenAt = new Date();
+      existing.userAgent = String(req.headers["user-agent"] || "").slice(0, 200);
+    } else {
+      user.fcmTokens.push({
+        token,
+        userAgent: String(req.headers["user-agent"] || "").slice(0, 200),
+        createdAt: new Date(),
+        lastSeenAt: new Date(),
+      });
+    }
+
+    await user.save();
+    return res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(503).json({ error: "Unable to save FCM token" });
+  }
+});
+
+router.post("/fcm/unregister", authMiddleware, async (req, res) => {
+  try {
+    const token = normalizeFcmToken(req.body?.token);
+    if (!token) return res.status(400).json({ error: "Invalid FCM token" });
+
+    await User.updateOne(
+      { _id: req.user.id },
+      { $pull: { fcmTokens: { token } } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(503).json({ error: "Unable to remove FCM token" });
+  }
+});
 
 router.get("/push/public-key", (req, res) => {
   if (!isPushEnabled()) {

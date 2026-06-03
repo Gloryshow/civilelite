@@ -50,6 +50,9 @@ export const authAPI = {
   login: (email, password, phone = "") =>
     apiCall("/auth/login", "POST", { email, password, phone }),
   me: () => apiCall("/auth/me"),
+  getFcmConfig: () => apiCall("/auth/fcm/config"),
+  registerFcmToken: (token) => apiCall("/auth/fcm/register", "POST", { token }),
+  unregisterFcmToken: (token) => apiCall("/auth/fcm/unregister", "POST", { token }),
   getPushPublicKey: () => apiCall("/auth/push/public-key"),
   subscribePush: (subscription) =>
     apiCall("/auth/push/subscribe", "POST", { subscription }),

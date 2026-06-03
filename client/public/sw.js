@@ -12,6 +12,85 @@ const CORE_ASSETS = [
   "/manifest.webmanifest"
 ];
 
+const DEFAULT_NOTIFICATION = {
+  title: "Civil Elite Update",
+  body: "You have a new notification.",
+  url: "/",
+  tag: "ces-update",
+};
+
+const showPortalNotification = (payload = {}) => {
+  const data = {
+    ...DEFAULT_NOTIFICATION,
+    ...payload,
+    url: payload?.url || payload?.link || "/",
+  };
+
+  return self.registration.showNotification(data.title, {
+    body: data.body,
+    icon: "/pwa-192.png",
+    badge: "/favicon-32x32.png",
+    tag: data.tag,
+    data: { url: data.url },
+  });
+};
+
+const loadFcmConfig = async () => {
+  try {
+    const response = await fetch("/api/auth/fcm/config", { cache: "no-store" });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
+const initFirebaseMessaging = async () => {
+  try {
+    importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
+    importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
+
+    const config = await loadFcmConfig();
+    if (!config?.apiKey || !config?.projectId || !config?.messagingSenderId || !config?.appId) {
+      return;
+    }
+
+    if (!self.firebase?.apps?.length) {
+      self.firebase.initializeApp({
+        apiKey: config.apiKey,
+        authDomain: config.authDomain,
+        projectId: config.projectId,
+        storageBucket: config.storageBucket,
+        messagingSenderId: config.messagingSenderId,
+        appId: config.appId,
+        measurementId: config.measurementId,
+      });
+    }
+
+    const messaging = self.firebase.messaging();
+    messaging.onBackgroundMessage((payload) => {
+      const notification = {
+        title: payload?.notification?.title || payload?.data?.title,
+        body: payload?.notification?.body || payload?.data?.body,
+        url: payload?.data?.url || payload?.fcmOptions?.link || "/",
+        tag: payload?.data?.tag || "ces-update",
+      };
+
+      self.registration.showNotification(notification.title || DEFAULT_NOTIFICATION.title, {
+        body: notification.body || DEFAULT_NOTIFICATION.body,
+        icon: "/pwa-192.png",
+        badge: "/favicon-32x32.png",
+        tag: notification.tag,
+        data: { url: notification.url },
+      });
+    });
+  } catch {
+    // Firebase messaging is optional; keep SW functional when unavailable.
+  }
+};
+
+initFirebaseMessaging();
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
@@ -67,12 +146,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let payload = {
-    title: "Civil Elite Update",
-    body: "You have a new notification.",
-    url: "/",
-    tag: "ces-update",
-  };
+  let payload = { ...DEFAULT_NOTIFICATION };
 
   try {
     payload = { ...payload, ...(event.data ? event.data.json() : {}) };
@@ -80,15 +154,7 @@ self.addEventListener("push", (event) => {
     // Ignore malformed payloads and fall back to defaults.
   }
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      icon: "/pwa-192.png",
-      badge: "/favicon-32x32.png",
-      tag: payload.tag,
-      data: { url: payload.url || "/" },
-    })
-  );
+  event.waitUntil(showPortalNotification(payload));
 });
 
 self.addEventListener("notificationclick", (event) => {
