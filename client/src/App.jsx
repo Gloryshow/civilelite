@@ -195,6 +195,27 @@ const GoldBtn = ({ children, onClick, outline = false, disabled = false, style =
   <button onClick={onClick} disabled={disabled} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: disabled ? "rgba(201,149,42,0.35)" : outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.75 : 1, transition: "all .2s ease", ...style }}>{children}</button>
 );
 
+const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false, isLight = true }) => {
+  const textColor = isLight ? "#0f172a" : "#e6eef8";
+  const mutedColor = isLight ? "#64748b" : "#9aa7bb";
+
+  return (
+  <div style={{ marginBottom: 14 }}>
+    <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
+    {options ? (
+      <select value={value} onChange={onChange} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? textColor : mutedColor, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? "not-allowed" : "pointer" }}>
+        <option value="">Select {label.toLowerCase()}</option>
+        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    ) : multiline ? (
+      <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: textColor, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", cursor: readOnly ? "not-allowed" : "text" }} />
+    ) : (
+      <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: textColor, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? "not-allowed" : "text" }} />
+    )}
+  </div>
+  );
+};
+
 const PaymentNotice = ({ settings, light = false }) => {
   const payment = settings?.manualPayment || {};
   const feeAmount = payment.feeAmount ?? 5000;
@@ -2307,22 +2328,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   const [publicSettings, setPublicSettings] = useState(createDefaultSettings());
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
-
-  const LegacyField = useCallback(({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
-      {options ? (
-        <select value={value} onChange={onChange} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? t.text : t.muted, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'pointer' }}>
-          <option value="">Select {label.toLowerCase()}</option>
-          {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-      ) : multiline ? (
-        <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", cursor: readOnly ? 'not-allowed' : 'text' }} />
-      ) : (
-        <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'text' }} />
-      )}
-    </div>
-  ), [isLight, t]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
