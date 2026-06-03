@@ -2230,6 +2230,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
               )}
             </div>
           )}
+
+          {/* ─ LEGACY UPDATE FORM ─ */}
+          {tab === "update" && (
+            <div>
+              <LegacyUpdateForm user={user} onLogout={onLogout} theme={theme} />
+            </div>
+          )}
         </div>
       </div>
     </div>
