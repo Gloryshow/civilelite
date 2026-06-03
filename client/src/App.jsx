@@ -1668,7 +1668,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
               <MenuIcon />
             </button>
             <div>
-              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Applicant Portal</div>
+              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Legacy Portal</div>
               <div style={{ color: faintText, fontSize: 12 }}>Welcome back, {user.name}</div>
             </div>
           </div>
