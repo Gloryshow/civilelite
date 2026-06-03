@@ -2295,6 +2295,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     parentEmail: "",
     parentSignature: "",
     passportPhotoDataUrl: "",
+    guarantorPassportPhotoDataUrl: "",
     birthCertificateDataUrl: "",
     schoolCertificateDataUrl: "",
     attestationLetterDataUrl: "",
@@ -2363,6 +2364,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: applicant.parentEmail || current.parentEmail,
             parentSignature: applicant.parentSignature || applicant.parentName || current.parentSignature,
             passportPhotoDataUrl: applicant.passportPhotoDataUrl || current.passportPhotoDataUrl,
+            guarantorPassportPhotoDataUrl: applicant.guarantorPassportPhotoDataUrl || current.guarantorPassportPhotoDataUrl,
             birthCertificateDataUrl: applicant.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: applicant.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
             attestationLetterDataUrl: applicant.attestationLetterDataUrl || current.attestationLetterDataUrl,
@@ -2401,6 +2403,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: profile.parentEmail || current.parentEmail,
             parentSignature: profile.parentSignature || profile.parentName || current.parentSignature,
             passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
+            guarantorPassportPhotoDataUrl: profile.guarantorPassportPhotoDataUrl || current.guarantorPassportPhotoDataUrl,
             birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
             attestationLetterDataUrl: profile.attestationLetterDataUrl || current.attestationLetterDataUrl,
@@ -2501,20 +2504,20 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     showToast("QR image downloaded.");
   };
 
-  const onPassportChange = (event) => {
+  const onPassportChange = (field, label) => (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showToast("Passport must be an image file.", "error");
+      showToast(`${label} must be an image file.`, "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      setForm((current) => ({ ...current, passportPhotoDataUrl: dataUrl }));
-      showToast("Passport uploaded.");
+      setForm((current) => ({ ...current, [field]: dataUrl }));
+      showToast(`${label} uploaded.`);
     };
-    reader.onerror = () => showToast("Unable to read passport image.", "error");
+    reader.onerror = () => showToast(`Unable to read ${label.toLowerCase()}.`, "error");
     reader.readAsDataURL(file);
   };
 
@@ -2586,6 +2589,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         parentEmail: form.parentEmail,
         parentSignature: form.parentSignature,
         passportPhotoDataUrl: form.passportPhotoDataUrl,
+        guarantorPassportPhotoDataUrl: form.guarantorPassportPhotoDataUrl,
         birthCertificateDataUrl: form.birthCertificateDataUrl,
         schoolCertificateDataUrl: form.schoolCertificateDataUrl,
         attestationLetterDataUrl: form.attestationLetterDataUrl,
@@ -2692,18 +2696,34 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
                 <div style={{ border: `1px dashed ${isLight ? "#cdbb98" : "rgba(255,255,255,0.2)"}`, borderRadius: 16, padding: 18, background: isLight ? "#fff" : "rgba(255,255,255,0.03)", marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                     <div>
-                      <div style={{ fontWeight: 900, marginBottom: 4 }}>Passport</div>
-                      <div style={{ color: t.muted, fontSize: 13 }}>Upload a recent passport photograph</div>
+                      <div style={{ fontWeight: 900, marginBottom: 4 }}>Passports</div>
+                      <div style={{ color: t.muted, fontSize: 13 }}>Upload a passport for you and one for your guarantor</div>
                     </div>
                     <div style={{ width: 18, height: 18, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, borderRadius: 4, display: "grid", placeItems: "center", color: t.muted, fontSize: 11 }}>2</div>
                   </div>
-                  <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
-                    <input type="file" accept="image/*" onChange={onPassportChange} />
-                    {form.passportPhotoDataUrl ? (
-                      <img src={form.passportPhotoDataUrl} alt="Passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
-                    ) : (
-                      <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>Passport</div>
-                    )}
+                  <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: isLight ? "#475569" : "#cbd5e1" }}>Your Passport</div>
+                      <input type="file" accept="image/*" onChange={onPassportChange("passportPhotoDataUrl", "User passport")} />
+                      <div style={{ marginTop: 10 }}>
+                        {form.passportPhotoDataUrl ? (
+                          <img src={form.passportPhotoDataUrl} alt="Passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
+                        ) : (
+                          <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>User passport</div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: isLight ? "#475569" : "#cbd5e1" }}>Guarantor Passport</div>
+                      <input type="file" accept="image/*" onChange={onPassportChange("guarantorPassportPhotoDataUrl", "Guarantor passport")} />
+                      <div style={{ marginTop: 10 }}>
+                        {form.guarantorPassportPhotoDataUrl ? (
+                          <img src={form.guarantorPassportPhotoDataUrl} alt="Guarantor passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
+                        ) : (
+                          <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>Guarantor passport</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
