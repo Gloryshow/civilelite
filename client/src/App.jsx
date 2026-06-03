@@ -1269,7 +1269,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
   const softText = isLight ? "#475569" : "#8899aa";
   const faintText = isLight ? "#64748b" : "#556";
   const isPendingLegacy = Boolean(user && String(user.registrationStatus || "").toLowerCase() === "pending" && !user.legacyApproved);
-  const initialTab = isPendingLegacy ? "apply" : legacyMode ? "overview" : "overview";
+  const initialTab = isPendingLegacy ? "update" : legacyMode ? "overview" : (user?.legacyApproved ? "apply" : "overview");
   const [tab, setTab] = useState(initialTab);
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
@@ -1583,7 +1583,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     { id: "update", icon: "📝", label: "Officer Form" },
   ];
 
-  const menuItems = isPendingLegacy ? [{ id: "apply", icon: "📋", label: "Application Form" }] : (legacyMode ? legacyMenu : fullMenu);
+  const menuItems = isPendingLegacy ? legacyMenu : (legacyMode ? legacyMenu : fullMenu);
 
   const S2 = {
     card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
