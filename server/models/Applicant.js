@@ -62,6 +62,7 @@ const applicantSchema = new mongoose.Schema(
     declarationName: String,
     declarationDate: String,
     passportPhotoDataUrl: String,
+    guarantorPassportPhotoDataUrl: String,
     birthCertificateDataUrl: String,
     schoolCertificateDataUrl: String,
     attestationLetterDataUrl: String,

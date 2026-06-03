@@ -1281,7 +1281,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     profession: "", professionAddress: "", educationQualification: "", disability: "",
     convictedBefore: "", convictionReasons: "", paramilitaryMember: "", paramilitaryName: "",
     paramilitaryRank: "", paramilitaryPost: "", paramilitaryYears: "", leavingReasons: "",
-    declarationName: "", declarationDate: "", passportPhotoDataUrl: "",
+    declarationName: "", declarationDate: "", passportPhotoDataUrl: "", guarantorPassportPhotoDataUrl: "",
     guardianName: "", guardianSignatureDate: "", witnessName: "", witnessSignatureDate: "",
     state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
@@ -1362,6 +1362,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
           declarationName: profile.declarationName || profile.fullName || d.declarationName,
           declarationDate: profile.declarationDate || "",
           passportPhotoDataUrl: profile.passportPhotoDataUrl || "",
+          guarantorPassportPhotoDataUrl: profile.guarantorPassportPhotoDataUrl || "",
           guardianName: profile.guardianName || "",
           guardianSignatureDate: profile.guardianSignatureDate || profile.guardianName || d.guardianSignatureDate,
           witnessName: profile.witnessName || profile.kinName || profile.fullName || d.witnessName,
@@ -1429,6 +1430,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
         declarationName: appData.declarationName,
         declarationDate: appData.declarationDate,
         passportPhotoDataUrl: appData.passportPhotoDataUrl,
+        guarantorPassportPhotoDataUrl: appData.guarantorPassportPhotoDataUrl,
         guardianName: appData.guardianName,
         guardianSignatureDate: appData.guardianSignatureDate,
         witnessName: appData.witnessName,
@@ -1478,20 +1480,20 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     }
   };
 
-  const onPassportChange = (event) => {
+  const onPassportChange = (field, label) => (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showToast("Passport must be an image file.", "error");
+      showToast(`${label} must be an image file.`, "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      setAppData((d) => ({ ...d, passportPhotoDataUrl: dataUrl }));
-      showToast("Passport uploaded.");
+      setAppData((d) => ({ ...d, [field]: dataUrl }));
+      showToast(`${label} uploaded.`);
     };
-    reader.onerror = () => showToast("Unable to read passport image.", "error");
+    reader.onerror = () => showToast(`Unable to read ${label.toLowerCase()}.`, "error");
     reader.readAsDataURL(file);
   };
 
@@ -1855,12 +1857,21 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
                       { value: "O+", label: "O+" },
                       { value: "O-", label: "O-" },
                     ]} />
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Passport Photograph</label>
-                    <input type="file" accept="image/*" onChange={onPassportChange} style={{ display: "block", marginBottom: 8 }} />
-                    {appData.passportPhotoDataUrl && (
-                      <img src={appData.passportPhotoDataUrl} alt="Passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
-                    )}
+                  <div style={{ marginBottom: 16, display: "grid", gap: 14 }}>
+                    <div>
+                      <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>User Passport Photograph</label>
+                      <input type="file" accept="image/*" onChange={onPassportChange("passportPhotoDataUrl", "User passport")} style={{ display: "block", marginBottom: 8 }} />
+                      {appData.passportPhotoDataUrl && (
+                        <img src={appData.passportPhotoDataUrl} alt="User passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
+                      )}
+                    </div>
+                    <div>
+                      <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Guarantor Passport Photograph</label>
+                      <input type="file" accept="image/*" onChange={onPassportChange("guarantorPassportPhotoDataUrl", "Guarantor passport")} style={{ display: "block", marginBottom: 8 }} />
+                      {appData.guarantorPassportPhotoDataUrl && (
+                        <img src={appData.guarantorPassportPhotoDataUrl} alt="Guarantor passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
+                      )}
+                    </div>
                   </div>
                   <Input light={isLight} label="Nationality" value={appData.nationality} onChange={e => setAppData(d => ({ ...d, nationality: e.target.value }))} />
                   <Input light={isLight} label="Profession (Optional)" value={appData.profession} onChange={e => setAppData(d => ({ ...d, profession: e.target.value }))} />
@@ -2061,8 +2072,15 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
 
                   {appData.passportPhotoDataUrl && (
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ marginBottom: 6 }}><strong>Passport Photograph</strong></div>
+                      <div style={{ marginBottom: 6 }}><strong>User Passport Photograph</strong></div>
                       <img src={appData.passportPhotoDataUrl} alt="Passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
+                    </div>
+                  )}
+
+                  {appData.guarantorPassportPhotoDataUrl && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ marginBottom: 6 }}><strong>Guarantor Passport Photograph</strong></div>
+                      <img src={appData.guarantorPassportPhotoDataUrl} alt="Guarantor passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
                     </div>
                   )}
 
