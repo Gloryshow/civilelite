@@ -306,6 +306,36 @@ const StatusBadge = ({ s }) => {
   return <span style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}44`, borderRadius: 999, padding: "3px 12px", fontSize: 12, fontWeight: 700 }}>{m.label}</span>;
 };
 
+const getCurrentStage = (status, submitted) => {
+  if (!submitted) return "Registration Pending";
+  switch (status) {
+    case "under_review":
+      return "Under Review";
+    case "approved":
+      return "Approved";
+    case "rejected":
+      return "Rejected";
+    case "pending":
+    default:
+      return "Awaiting Review";
+  }
+};
+
+const getStageColor = (status, submitted) => {
+  if (!submitted) return "#c9952a";
+  switch (status) {
+    case "under_review":
+      return "#64b5f6";
+    case "approved":
+      return "#81c784";
+    case "rejected":
+      return "#e57373";
+    case "pending":
+    default:
+      return "#c9952a";
+  }
+};
+
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
   "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
@@ -1022,7 +1052,6 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
     name: "",
     confirm: "",
     phone: "",
-    identifier: "",
     legacyServiceNumber: "",
   });
   const [registrationRole, setRegistrationRole] = useState("applicant");
@@ -1048,26 +1077,14 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
   const submit = async () => {
     setError("");
-    if (isLogin) {
-      if (!form.identifier || !form.password) { setError("Please fill all required fields."); return; }
-    } else {
-      if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
-      if (!form.phone) { setError("Phone number is required."); return; }
-    }
+    if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
+    if (!form.phone) { setError("Phone number is required."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
     setLocalLoading(true);
     try {
       if (isLogin) {
-        // allow signing in with either email or phone in a single field
-        let email = "";
-        let phone = "";
-        if ((form.identifier || "").includes("@")) {
-          email = form.identifier;
-        } else {
-          phone = form.identifier;
-        }
-        const result = await authAPI.login(email, form.password, phone);
+        const result = await authAPI.login(form.email, form.password, form.phone);
         onAuth(result);
       } else {
         if (isLegacyClaim) {
@@ -1172,14 +1189,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         )}
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
-        {isLogin ? (
-          <Input light={isLight} label="Email or Phone" value={form.identifier} onChange={set("identifier")} placeholder="you@example.com or 08012345678" required />
-        ) : (
-          <>
-            <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-            <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
-          </>
-        )}
+        <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
+        <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
@@ -2108,6 +2119,34 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
             </div>
           )}
 
+          {/* ─ CAMP REQUIREMENTS ─ */}
+          {tab === "camp" && (
+            <div>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Camp Requirements</h2>
+              <PaymentNotice settings={publicSettings} light={isLight} />
+              <div style={{ ...S2.card }}>
+                <div style={{ color: t.muted, marginBottom: 14 }}>All intending applicants are to come with forms and camp requirements.</div>
+                <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.9, color: t.text }}>
+                  <li>Birth certificate</li>
+                  <li>Educational results</li>
+                  <li>Medical report (B/G, Genotype and urinary test)</li>
+                  <li>Passport photography (not less than 3 months) - 2 copies</li>
+                  <li>Training fees (camping, ID card & certificate) - 25,000 naira</li>
+                  <li>Document files (1)</li>
+                  <li>Office flat file (1)</li>
+                  <li>Blue short knickers (2)</li>
+                  <li>White vest (round neck) - 2</li>
+                  <li>White canvas or trainers with socks</li>
+                  <li>Bucket (1)</li>
+                  <li>Torch light (1)</li>
+                  <li>Food</li>
+                  <li>Writing materials</li>
+                </ul>
+                <div style={{ marginTop: 16, color: t.muted }}>Note: All intending applicants are to come with their forms and camp requirements. Thanks.</div>
+              </div>
+            </div>
+          )}
+
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
             <div>
@@ -2457,48 +2496,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         whyJoin: "",
       });
       showToast("Update form submitted successfully.");
-      // refresh profile from server so the form reflects saved values
-      try {
-        const profile = await applicantAPI.getProfile();
-        if (profile) {
-          setForm((current) => ({
-            ...current,
-            fullName: profile.fullName || current.fullName,
-            contactAddress: profile.contactAddress || profile.address || current.contactAddress,
-            serviceStatus: profile.serviceStatus || current.serviceStatus,
-            age: profile.age || current.age,
-            placeOfBirth: profile.placeOfBirth || current.placeOfBirth,
-            gender: profile.gender || current.gender,
-            height: profile.height || current.height,
-            bloodGroup: profile.bloodGroup || current.bloodGroup,
-            genotype: profile.genotype || current.genotype,
-            schoolOccupation: profile.schoolOccupation || profile.profession || current.schoolOccupation,
-            state: profile.state || current.state,
-            homeTown: profile.homeTown || current.homeTown,
-            lga: profile.lga || current.lga,
-            phone: profile.phone || current.phone,
-            phone2: profile.phone2 || current.phone2,
-            email: profile.email || current.email,
-            email2: profile.email2 || current.email2,
-            serviceNumber: profile.serviceNumber || current.serviceNumber,
-            department: profile.department || current.department,
-            parentName: profile.parentName || current.parentName,
-            parentContactAddress: profile.parentContactAddress || current.parentContactAddress,
-            parentOccupation: profile.parentOccupation || current.parentOccupation,
-            parentPhone1: profile.parentPhone1 || current.parentPhone1,
-            parentPhone2: profile.parentPhone2 || current.parentPhone2,
-            parentEmail: profile.parentEmail || current.parentEmail,
-            parentSignature: profile.parentSignature || profile.parentName || current.parentSignature,
-            passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
-            birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
-            schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
-            attestationLetterDataUrl: profile.attestationLetterDataUrl || current.attestationLetterDataUrl,
-          }));
-        }
-      } catch (err) {
-        // non-fatal: just show toast if reload fails
-        showToast("Failed to refresh profile: " + (err.message || err), "error");
-      }
     } catch (error) {
       showToast("Submit failed: " + error.message, "error");
     } finally {
