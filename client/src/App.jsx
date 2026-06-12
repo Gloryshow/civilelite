@@ -2457,6 +2457,48 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         whyJoin: "",
       });
       showToast("Update form submitted successfully.");
+      // refresh profile from server so the form reflects saved values
+      try {
+        const profile = await applicantAPI.getProfile();
+        if (profile) {
+          setForm((current) => ({
+            ...current,
+            fullName: profile.fullName || current.fullName,
+            contactAddress: profile.contactAddress || profile.address || current.contactAddress,
+            serviceStatus: profile.serviceStatus || current.serviceStatus,
+            age: profile.age || current.age,
+            placeOfBirth: profile.placeOfBirth || current.placeOfBirth,
+            gender: profile.gender || current.gender,
+            height: profile.height || current.height,
+            bloodGroup: profile.bloodGroup || current.bloodGroup,
+            genotype: profile.genotype || current.genotype,
+            schoolOccupation: profile.schoolOccupation || profile.profession || current.schoolOccupation,
+            state: profile.state || current.state,
+            homeTown: profile.homeTown || current.homeTown,
+            lga: profile.lga || current.lga,
+            phone: profile.phone || current.phone,
+            phone2: profile.phone2 || current.phone2,
+            email: profile.email || current.email,
+            email2: profile.email2 || current.email2,
+            serviceNumber: profile.serviceNumber || current.serviceNumber,
+            department: profile.department || current.department,
+            parentName: profile.parentName || current.parentName,
+            parentContactAddress: profile.parentContactAddress || current.parentContactAddress,
+            parentOccupation: profile.parentOccupation || current.parentOccupation,
+            parentPhone1: profile.parentPhone1 || current.parentPhone1,
+            parentPhone2: profile.parentPhone2 || current.parentPhone2,
+            parentEmail: profile.parentEmail || current.parentEmail,
+            parentSignature: profile.parentSignature || profile.parentName || current.parentSignature,
+            passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
+            birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
+            schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
+            attestationLetterDataUrl: profile.attestationLetterDataUrl || current.attestationLetterDataUrl,
+          }));
+        }
+      } catch (err) {
+        // non-fatal: just show toast if reload fails
+        showToast("Failed to refresh profile: " + (err.message || err), "error");
+      }
     } catch (error) {
       showToast("Submit failed: " + error.message, "error");
     } finally {
