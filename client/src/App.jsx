@@ -1048,6 +1048,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const isLight = theme === "light";
   const [form, setForm] = useState({
     email: "",
+    identifier: "",
     password: "",
     name: "",
     confirm: "",
@@ -1077,14 +1078,16 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
   const submit = async () => {
     setError("");
-    if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
-    if (!form.phone) { setError("Phone number is required."); return; }
+    if (isLogin) {
+      if (!form.identifier || !form.password) { setError("Please enter your email or phone number and password."); return; }
+    } else if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
+    if (!isLogin && !form.phone) { setError("Phone number is required."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
     setLocalLoading(true);
     try {
       if (isLogin) {
-        const result = await authAPI.login(form.email, form.password, form.phone);
+        const result = await authAPI.login(form.identifier, form.password);
         onAuth(result);
       } else {
         if (isLegacyClaim) {
@@ -1189,8 +1192,12 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         )}
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
-        <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-        <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
+        {isLogin ? (
+          <Input light={isLight} label="Email or Phone Number" value={form.identifier} onChange={set("identifier")} placeholder="you@example.com or 08012345678" required />
+        ) : (
+          <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
+        )}
+        {!isLogin && <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />}
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}

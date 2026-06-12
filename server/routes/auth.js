@@ -6,7 +6,7 @@ import User from "../models/User.js";
 import LegacyClaim from "../models/LegacyClaim.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { sendMail } from "../utils/mailer.js";
-import { getFcmPublicConfig, getPushPublicKey, isFcmEnabled, isPushEnabled, sendPushToRole } from "../utils/push.js";
+import { getPushPublicKey, isPushEnabled, sendPushToRole } from "../utils/push.js";
 
 const router = express.Router();
 
@@ -31,75 +31,6 @@ const normalizeSubscription = (subscription = {}) => {
     keys: { p256dh, auth },
   };
 };
-
-const normalizeFcmToken = (token) => {
-  const parsed = String(token || "").trim();
-  if (!parsed || parsed.length < 20) return "";
-  return parsed;
-};
-
-router.get("/fcm/config", (req, res) => {
-  const config = getFcmPublicConfig();
-  if (!config) {
-    return res.status(503).json({ error: "Firebase Cloud Messaging is not configured" });
-  }
-  return res.json(config);
-});
-
-router.post("/fcm/register", authMiddleware, async (req, res) => {
-  try {
-    if (!isFcmEnabled()) {
-      return res.status(503).json({ error: "Firebase Cloud Messaging is not configured" });
-    }
-
-    const token = normalizeFcmToken(req.body?.token);
-    if (!token) return res.status(400).json({ error: "Invalid FCM token" });
-
-    await User.updateMany(
-      { _id: { $ne: req.user.id }, "fcmTokens.token": token },
-      { $pull: { fcmTokens: { token } } }
-    );
-
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const existing = (user.fcmTokens || []).find((item) => item.token === token);
-    if (existing) {
-      existing.lastSeenAt = new Date();
-      existing.userAgent = String(req.headers["user-agent"] || "").slice(0, 200);
-    } else {
-      user.fcmTokens.push({
-        token,
-        userAgent: String(req.headers["user-agent"] || "").slice(0, 200),
-        createdAt: new Date(),
-        lastSeenAt: new Date(),
-      });
-    }
-
-    await user.save();
-    return res.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return res.status(503).json({ error: "Unable to save FCM token" });
-  }
-});
-
-router.post("/fcm/unregister", authMiddleware, async (req, res) => {
-  try {
-    const token = normalizeFcmToken(req.body?.token);
-    if (!token) return res.status(400).json({ error: "Invalid FCM token" });
-
-    await User.updateOne(
-      { _id: req.user.id },
-      { $pull: { fcmTokens: { token } } }
-    );
-
-    return res.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return res.status(503).json({ error: "Unable to remove FCM token" });
-  }
-});
 
 router.get("/push/public-key", (req, res) => {
   if (!isPushEnabled()) {
@@ -457,47 +388,39 @@ router.post("/legacy-claim", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password, phone } = req.body;
+    const identifier = String(req.body?.identifier || req.body?.email || "").trim();
+    const { password } = req.body;
 
-    const normalizedEmail = String(email || "").trim().toLowerCase();
-    const normalizedPhone = normalizeDigits(phone);
-
-    if (!password || (!normalizedEmail && !normalizedPhone)) {
-      return res.status(400).json({ error: "Provide password and either email or phone" });
+    if (!identifier || !password) {
+      return res
+        .status(400)
+        .json({ error: "Email or phone number and password are required" });
     }
 
-    let user = null;
-    let applicant = null;
+    const normalizedEmail = identifier.toLowerCase();
+    const normalizedPhone = normalizeDigits(identifier);
+    const looksLikeEmail = identifier.includes("@");
 
-    if (normalizedEmail) {
-      user = await User.findOne({ email: normalizedEmail });
-      if (!user) return res.status(401).json({ error: "Invalid credentials" });
-      applicant = await Applicant.findOne({ userId: user._id }).lean();
+    let user = looksLikeEmail ? await User.findOne({ email: normalizedEmail }) : null;
 
-      // if phone was provided, verify it matches stored phone
-      if (normalizedPhone) {
-        const storedPhone = normalizeDigits(user.phone || applicant?.phone || "");
-        if (!storedPhone || storedPhone !== normalizedPhone) {
-          return res.status(401).json({ error: "Invalid credentials" });
-        }
-      }
-    } else {
-      // login by phone only: try to locate user by phone or via applicant record
-      user = await User.findOne({ phone: { $regex: normalizedPhone } });
-      if (!user) {
-        applicant = await Applicant.findOne({ phone: { $regex: normalizedPhone } }).lean();
-        if (applicant) user = await User.findById(applicant.userId);
-      };
+    if (!user && normalizedPhone) {
+      const usersWithPhones = await User.find({ phone: { $exists: true, $ne: "" } });
+      user = usersWithPhones.find((candidate) => normalizeDigits(candidate.phone) === normalizedPhone) || null;
+    }
 
-      if (!user) return res.status(401).json({ error: "Invalid credentials" });
-
-      if (!applicant) applicant = await Applicant.findOne({ userId: user._id }).lean();
-
-      const storedPhone = normalizeDigits(user.phone || applicant?.phone || "");
-      if (!storedPhone || storedPhone !== normalizedPhone) {
-        return res.status(401).json({ error: "Invalid credentials" });
+    if (!user && normalizedPhone) {
+      const applicantsWithPhones = await Applicant.find({ phone: { $exists: true, $ne: "" } }).lean();
+      const applicantMatch = applicantsWithPhones.find((candidate) => normalizeDigits(candidate.phone) === normalizedPhone);
+      if (applicantMatch?.userId) {
+        user = await User.findById(applicantMatch.userId);
       }
     }
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const applicant = await Applicant.findOne({ userId: user._id }).lean();
 
     // Allow legacy claimers to log in while they are in the update/approval flow.
     if (user.registrationStatus !== "approved" && !user.legacyApproved) {

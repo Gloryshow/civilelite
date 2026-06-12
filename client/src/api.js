@@ -47,12 +47,9 @@ export const authAPI = {
     apiCall("/auth/register", "POST", { email, password, name, role, phone }),
   submitLegacyClaim: (payload) =>
     apiCall("/auth/legacy-claim", "POST", payload),
-  login: (email, password, phone = "") =>
-    apiCall("/auth/login", "POST", { email, password, phone }),
+  login: (identifier, password) =>
+    apiCall("/auth/login", "POST", { identifier, password }),
   me: () => apiCall("/auth/me"),
-  getFcmConfig: () => apiCall("/auth/fcm/config"),
-  registerFcmToken: (token) => apiCall("/auth/fcm/register", "POST", { token }),
-  unregisterFcmToken: (token) => apiCall("/auth/fcm/unregister", "POST", { token }),
   getPushPublicKey: () => apiCall("/auth/push/public-key"),
   subscribePush: (subscription) =>
     apiCall("/auth/push/subscribe", "POST", { subscription }),
