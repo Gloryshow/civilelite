@@ -58,24 +58,6 @@ const SERVICE_STATUS_OPTIONS = ["active", "dismissed", "retired"];
 // Application status options used by the admin assessment UI
 const APPLICATION_STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
 
-const getCurrentStage = (status = "pending", submitted = false) => {
-  if (!submitted) return "Draft";
-  const normalized = String(status || "pending").toLowerCase();
-  if (normalized === "approved") return "Approved";
-  if (normalized === "rejected") return "Rejected";
-  if (normalized === "under_review") return "Under Review";
-  return "Pending";
-};
-
-const getStageColor = (status = "pending", submitted = false) => {
-  if (!submitted) return "#c9952a";
-  const normalized = String(status || "pending").toLowerCase();
-  if (normalized === "approved") return "#4caf50";
-  if (normalized === "rejected") return "#f44336";
-  if (normalized === "under_review") return "#64b5f6";
-  return "#c9952a";
-};
-
 // Simple currency formatter used by the UI
 const formatCurrency = (amount = 0, currency = "NGN") => {
   try {
@@ -155,6 +137,15 @@ const parseQrPayload = (raw) => {
   return null;
 };
 
+const base64UrlToUint8Array = (base64String) => {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const normalized = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = window.atob(normalized);
+  const output = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
+  return output;
+};
+
 // ── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 20, cls = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cls}>
@@ -185,27 +176,6 @@ const Badge = ({ label, color = "#c9952a" }) => (
 const GoldBtn = ({ children, onClick, outline = false, disabled = false, style = {} }) => (
   <button onClick={onClick} disabled={disabled} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "12px 20px", border: outline ? "2px solid #c9952a" : "none", background: disabled ? "rgba(201,149,42,0.35)" : outline ? "transparent" : "linear-gradient(135deg,#c9952a,#f0c060)", color: outline ? "#c9952a" : "#0f172a", fontWeight: 800, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.75 : 1, transition: "all .2s ease", ...style }}>{children}</button>
 );
-
-const LegacyField = ({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false, isLight = true }) => {
-  const textColor = isLight ? "#0f172a" : "#e6eef8";
-  const mutedColor = isLight ? "#64748b" : "#9aa7bb";
-
-  return (
-  <div style={{ marginBottom: 14 }}>
-    <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
-    {options ? (
-      <select value={value} onChange={onChange} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? textColor : mutedColor, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? "not-allowed" : "pointer" }}>
-        <option value="">Select {label.toLowerCase()}</option>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-    ) : multiline ? (
-      <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: textColor, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", cursor: readOnly ? "not-allowed" : "text" }} />
-    ) : (
-      <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: textColor, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? "not-allowed" : "text" }} />
-    )}
-  </div>
-  );
-};
 
 const PaymentNotice = ({ settings, light = false }) => {
   const payment = settings?.manualPayment || {};
@@ -1048,7 +1018,6 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
   const isLight = theme === "light";
   const [form, setForm] = useState({
     email: "",
-    identifier: "",
     password: "",
     name: "",
     confirm: "",
@@ -1078,24 +1047,14 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
   const submit = async () => {
     setError("");
-    if (!form.password) { setError("Password is required."); return; }
-    if (isLogin) {
-      if (!form.identifier && !form.email && !form.phone) { setError("Enter email or phone to sign in."); return; }
-    } else {
-      // registration / legacy claim still require phone
-      if (!form.email) { setError("Please fill all required fields."); return; }
-      if (!form.phone) { setError("Phone number is required."); return; }
-    }
+    if (!form.email || !form.password) { setError("Please fill all required fields."); return; }
+    if (!form.phone) { setError("Phone number is required."); return; }
     if (!isLogin && form.password !== form.confirm) { setError("Passwords do not match."); return; }
     if (!isLogin && !form.name) { setError("Full name is required."); return; }
     setLocalLoading(true);
     try {
       if (isLogin) {
-        const identifier = (form.identifier || form.email || form.phone || "").trim();
-        const looksLikeEmail = identifier.includes("@");
-        const emailArg = looksLikeEmail ? identifier : "";
-        const phoneArg = looksLikeEmail ? "" : identifier;
-        const result = await authAPI.login(emailArg, form.password, phoneArg);
+        const result = await authAPI.login(form.email, form.password, form.phone);
         onAuth(result);
       } else {
         if (isLegacyClaim) {
@@ -1200,14 +1159,8 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
         )}
 
         {!isLogin && <Input light={isLight} label="Full Name" value={form.name} onChange={set("name")} placeholder="John Adebayo" required />}
-        {isLogin ? (
-          <Input light={isLight} label="Email / Phone number" type="text" value={form.identifier} onChange={set("identifier")} placeholder="you@example.com or 08012345678" required />
-        ) : (
-          <>
-            <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
-            <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
-          </>
-        )}
+        <Input light={isLight} label="Email Address" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" required />
+        <Input light={isLight} label="Phone Number" value={form.phone} onChange={set("phone")} placeholder="08012345678" required />
         {!isLogin && isLegacyClaim && <Input light={isLight} label="Service Number (optional)" value={form.legacyServiceNumber} onChange={set("legacyServiceNumber")} placeholder="Old officer or service number" />}
         <PasswordInput light={isLight} label="Password" value={form.password} onChange={set("password")} placeholder="••••••••" required />
         {!isLogin && <PasswordInput light={isLight} label="Confirm Password" value={form.confirm} onChange={set("confirm")} placeholder="••••••••" required />}
@@ -1271,7 +1224,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 };
 
 // ── APPLICANT DASHBOARD ───────────────────────────────────────────────────────
-const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = false }) => {
+const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
   const t = getTheme(theme);
   const isLight = theme === "light";
   const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
@@ -1280,9 +1233,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
   const topBarBg = isLight ? "rgba(255,255,255,0.9)" : "rgba(6,10,18,0.9)";
   const softText = isLight ? "#475569" : "#8899aa";
   const faintText = isLight ? "#64748b" : "#556";
-  const isPendingLegacy = Boolean(user && String(user.registrationStatus || "").toLowerCase() === "pending" && !user.legacyApproved);
-  const initialTab = isPendingLegacy ? "update" : legacyMode ? "overview" : (user?.legacyApproved ? "apply" : "overview");
-  const [tab, setTab] = useState(initialTab);
+  const [tab, setTab] = useState(user?.legacyApproved ? "apply" : "overview");
   const [toast, setToast] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
@@ -1293,7 +1244,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     profession: "", professionAddress: "", educationQualification: "", disability: "",
     convictedBefore: "", convictionReasons: "", paramilitaryMember: "", paramilitaryName: "",
     paramilitaryRank: "", paramilitaryPost: "", paramilitaryYears: "", leavingReasons: "",
-    declarationName: "", declarationDate: "", passportPhotoDataUrl: "", guarantorPassportPhotoDataUrl: "",
+    declarationName: "", declarationDate: "", passportPhotoDataUrl: "",
     guardianName: "", guardianSignatureDate: "", witnessName: "", witnessSignatureDate: "",
     state: "", lga: "", address: "", qualification: "",
     kinName: "", kinPhone: "", medInfo: "", whyJoin: "",
@@ -1374,7 +1325,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
           declarationName: profile.declarationName || profile.fullName || d.declarationName,
           declarationDate: profile.declarationDate || "",
           passportPhotoDataUrl: profile.passportPhotoDataUrl || "",
-          guarantorPassportPhotoDataUrl: profile.guarantorPassportPhotoDataUrl || "",
           guardianName: profile.guardianName || "",
           guardianSignatureDate: profile.guardianSignatureDate || profile.guardianName || d.guardianSignatureDate,
           witnessName: profile.witnessName || profile.kinName || profile.fullName || d.witnessName,
@@ -1442,7 +1392,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
         declarationName: appData.declarationName,
         declarationDate: appData.declarationDate,
         passportPhotoDataUrl: appData.passportPhotoDataUrl,
-        guarantorPassportPhotoDataUrl: appData.guarantorPassportPhotoDataUrl,
         guardianName: appData.guardianName,
         guardianSignatureDate: appData.guardianSignatureDate,
         witnessName: appData.witnessName,
@@ -1492,20 +1441,20 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     }
   };
 
-  const onPassportChange = (field, label) => (event) => {
+  const onPassportChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showToast(`${label} must be an image file.`, "error");
+      showToast("Passport must be an image file.", "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      setAppData((d) => ({ ...d, [field]: dataUrl }));
-      showToast(`${label} uploaded.`);
+      setAppData((d) => ({ ...d, passportPhotoDataUrl: dataUrl }));
+      showToast("Passport uploaded.");
     };
-    reader.onerror = () => showToast(`Unable to read ${label.toLowerCase()}.`, "error");
+    reader.onerror = () => showToast("Unable to read passport image.", "error");
     reader.readAsDataURL(file);
   };
 
@@ -1581,23 +1530,13 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
     loadProfile();
   }, []);
 
-  const fullMenu = [
+  const menuItems = [
     { id: "overview", icon: "🏠", label: "Overview" },
     { id: "apply", icon: "📋", label: "Application Form" },
     { id: "status", icon: "📊", label: "Track Status" },
     { id: "camp", icon: "🧰", label: "Camp Requirements" },
     { id: "announcements", icon: "📢", label: "Announcements" },
   ];
-  const legacyMenu = [
-    { id: "overview", icon: "🏠", label: "Overview" },
-    { id: "update", icon: "📝", label: "Officer Form" },
-    { id: "qr", icon: "🔳", label: "QR" },
-    { id: "announcements", icon: "📢", label: "Announcements" },
-    { id: "camp", icon: "🧰", label: "Camp Requirements" },
-    { id: "socials", icon: "🔗", label: "Join Socials" },
-  ];
-
-  const menuItems = isPendingLegacy ? legacyMenu : (legacyMode ? legacyMenu : fullMenu);
 
   const S2 = {
     card: { background: surface, border: `1px solid ${surfaceBorder}`, borderRadius: 14, padding: 24 },
@@ -1682,7 +1621,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
               <MenuIcon />
             </button>
             <div>
-              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>{legacyMode ? "Legacy Portal" : "Applicant Portal"}</div>
+              <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Applicant Portal</div>
               <div style={{ color: faintText, fontSize: 12 }}>Welcome back, {user.name}</div>
             </div>
           </div>
@@ -1792,32 +1731,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
             </div>
           )}
 
-          {/* ─ QR ─ */}
-          {tab === "qr" && (
-            <div>
-              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Your QR / Verification Link</h2>
-              <div style={{ ...S2.card, display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ minWidth: 220 }}>
-                  {qrDataUrl ? (
-                    <img src={qrDataUrl} alt="Applicant QR" style={{ width: 220, height: 220, objectFit: "contain", borderRadius: 12, background: "#fff" }} />
-                  ) : (
-                    <div style={{ width: 220, height: 220, borderRadius: 12, display: "grid", placeItems: "center", color: t.muted, border: `1px dashed ${t.border}` }}>No QR available</div>
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, marginBottom: 8 }}>Applicant ID</div>
-                  <div style={{ color: "#c9952a", fontWeight: 800, marginBottom: 12 }}>{appData.id || "Not assigned"}</div>
-                  <div style={{ color: t.muted, marginBottom: 12 }}>{qrPayload}</div>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <GoldBtn onClick={shareQr}>Share / Copy</GoldBtn>
-                    <GoldBtn outline onClick={downloadQrImage}>Download QR</GoldBtn>
-                    <GoldBtn onClick={() => { setPrintSlipType("application"); requestAnimationFrame(() => window.print()); }}>Print</GoldBtn>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ─ APPLICATION FORM ─ */}
           {tab === "apply" && (
             <div>
@@ -1869,21 +1782,12 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
                       { value: "O+", label: "O+" },
                       { value: "O-", label: "O-" },
                     ]} />
-                  <div style={{ marginBottom: 16, display: "grid", gap: 14 }}>
-                    <div>
-                      <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>User Passport Photograph</label>
-                      <input type="file" accept="image/*" onChange={onPassportChange("passportPhotoDataUrl", "User passport")} style={{ display: "block", marginBottom: 8 }} />
-                      {appData.passportPhotoDataUrl && (
-                        <img src={appData.passportPhotoDataUrl} alt="User passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
-                      )}
-                    </div>
-                    <div>
-                      <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Guarantor Passport Photograph</label>
-                      <input type="file" accept="image/*" onChange={onPassportChange("guarantorPassportPhotoDataUrl", "Guarantor passport")} style={{ display: "block", marginBottom: 8 }} />
-                      {appData.guarantorPassportPhotoDataUrl && (
-                        <img src={appData.guarantorPassportPhotoDataUrl} alt="Guarantor passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
-                      )}
-                    </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: "block", color: isLight ? "#475569" : "#aab", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Passport Photograph</label>
+                    <input type="file" accept="image/*" onChange={onPassportChange} style={{ display: "block", marginBottom: 8 }} />
+                    {appData.passportPhotoDataUrl && (
+                      <img src={appData.passportPhotoDataUrl} alt="Passport preview" style={{ width: 110, height: 130, objectFit: "cover", borderRadius: 8, border: `1px solid ${t.border}` }} />
+                    )}
                   </div>
                   <Input light={isLight} label="Nationality" value={appData.nationality} onChange={e => setAppData(d => ({ ...d, nationality: e.target.value }))} />
                   <Input light={isLight} label="Profession (Optional)" value={appData.profession} onChange={e => setAppData(d => ({ ...d, profession: e.target.value }))} />
@@ -2084,15 +1988,8 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
 
                   {appData.passportPhotoDataUrl && (
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ marginBottom: 6 }}><strong>User Passport Photograph</strong></div>
+                      <div style={{ marginBottom: 6 }}><strong>Passport Photograph</strong></div>
                       <img src={appData.passportPhotoDataUrl} alt="Passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
-                    </div>
-                  )}
-
-                  {appData.guarantorPassportPhotoDataUrl && (
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ marginBottom: 6 }}><strong>Guarantor Passport Photograph</strong></div>
-                      <img src={appData.guarantorPassportPhotoDataUrl} alt="Guarantor passport" style={{ width: 120, height: 150, objectFit: "cover", borderRadius: 8, border: "1px solid #d1d5db" }} />
                     </div>
                   )}
 
@@ -2192,53 +2089,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
             </div>
           )}
 
-          {/* ─ CAMP REQUIREMENTS ─ */}
-          {tab === "camp" && (
-            <div>
-              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Camp Requirements</h2>
-              <PaymentNotice settings={publicSettings} light={isLight} />
-              <div style={{ ...S2.card }}>
-                <div style={{ color: t.muted, marginBottom: 14 }}>All intending applicants are to come with forms and camp requirements.</div>
-                <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.9, color: t.text }}>
-                  <li>Birth certificate</li>
-                  <li>Educational results</li>
-                  <li>Medical report (B/G, Genotype and urinary test)</li>
-                  <li>Passport photography (not less than 3 months) - 2 copies</li>
-                  <li>Training fees (camping, ID card & certificate) - 25,000 naira</li>
-                  <li>Document files (1)</li>
-                  <li>Office flat file (1)</li>
-                  <li>Blue short knickers (2)</li>
-                  <li>White vest (round neck) - 2</li>
-                  <li>White canvas or trainers with socks</li>
-                  <li>Bucket (1)</li>
-                  <li>Torch light (1)</li>
-                  <li>Food</li>
-                  <li>Writing materials</li>
-                </ul>
-                <div style={{ marginTop: 16, color: t.muted }}>Note: All intending applicants are to come with their forms and camp requirements. Thanks.</div>
-              </div>
-            </div>
-          )}
-
-          {/* ─ JOIN SOCIALS ─ */}
-          {tab === "socials" && (
-            <div>
-              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Join our Socials</h2>
-              <div style={{ ...S2.card }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-                  {SOCIAL_LINKS.map((social) => (
-                    <a key={social.label} href={social.href} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                      <div style={{ padding: 14, borderRadius: 10, border: `1px solid ${t.border}`, background: isLight ? "#fff" : "rgba(255,255,255,0.02)", color: t.text }}>
-                        <div style={{ fontWeight: 800, marginBottom: 6 }}>{social.label}</div>
-                        <div style={{ color: t.muted, fontSize: 13 }}>{social.description || social.href}</div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ─ ANNOUNCEMENTS ─ */}
           {tab === "announcements" && (
             <div>
@@ -2258,13 +2108,6 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light", legacyMode = fals
               {announcements.length === 0 && (
                 <div style={{ color: t.muted, fontSize: 13 }}>No announcements available.</div>
               )}
-            </div>
-          )}
-
-          {/* ─ LEGACY UPDATE FORM ─ */}
-          {tab === "update" && (
-            <div>
-              <LegacyUpdateForm user={user} onLogout={onLogout} theme={theme} />
             </div>
           )}
         </div>
@@ -2307,7 +2150,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     parentEmail: "",
     parentSignature: "",
     passportPhotoDataUrl: "",
-    guarantorPassportPhotoDataUrl: "",
     birthCertificateDataUrl: "",
     schoolCertificateDataUrl: "",
     attestationLetterDataUrl: "",
@@ -2316,9 +2158,24 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tab, setTab] = useState("update");
   const [announcements, setAnnouncements] = useState([]);
-  const [publicSettings, setPublicSettings] = useState(createDefaultSettings());
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
+
+  const LegacyField = useCallback(({ label, value, onChange, placeholder = "", type = "text", options = null, rows = 1, multiline = false, required = false, readOnly = false }) => (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ color: isLight ? "#475569" : "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{label}{required ? " *" : ""}</div>
+      {options ? (
+        <select value={value} onChange={onChange} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: value ? t.text : t.muted, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'pointer' }}>
+          <option value="">Select {label.toLowerCase()}</option>
+          {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      ) : multiline ? (
+        <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", cursor: readOnly ? 'not-allowed' : 'text' }} />
+      ) : (
+        <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'text' }} />
+      )}
+    </div>
+  ), [isLight, t]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -2360,7 +2217,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: applicant.parentEmail || current.parentEmail,
             parentSignature: applicant.parentSignature || applicant.parentName || current.parentSignature,
             passportPhotoDataUrl: applicant.passportPhotoDataUrl || current.passportPhotoDataUrl,
-            guarantorPassportPhotoDataUrl: applicant.guarantorPassportPhotoDataUrl || current.guarantorPassportPhotoDataUrl,
             birthCertificateDataUrl: applicant.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: applicant.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
             attestationLetterDataUrl: applicant.attestationLetterDataUrl || current.attestationLetterDataUrl,
@@ -2399,7 +2255,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             parentEmail: profile.parentEmail || current.parentEmail,
             parentSignature: profile.parentSignature || profile.parentName || current.parentSignature,
             passportPhotoDataUrl: profile.passportPhotoDataUrl || current.passportPhotoDataUrl,
-            guarantorPassportPhotoDataUrl: profile.guarantorPassportPhotoDataUrl || current.guarantorPassportPhotoDataUrl,
             birthCertificateDataUrl: profile.birthCertificateDataUrl || current.birthCertificateDataUrl,
             schoolCertificateDataUrl: profile.schoolCertificateDataUrl || current.schoolCertificateDataUrl,
             attestationLetterDataUrl: profile.attestationLetterDataUrl || current.attestationLetterDataUrl,
@@ -2426,19 +2281,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
       }
     };
 
-    const loadSettings = async () => {
-      try {
-        const s = await publicAPI.getSettings();
-        if (!active) return;
-        setPublicSettings({ ...createDefaultSettings(), ...(s || {}) });
-      } catch {
-        if (!active) return;
-        setPublicSettings(createDefaultSettings());
-      }
-    };
-
     loadLegacyAnnouncements();
-    loadSettings();
     return () => {
       active = false;
     };
@@ -2471,13 +2314,12 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     };
   }, [qrPayload]);
 
-  const baseMenu = [
+  const menuItems = [
+    { id: "overview", icon: "🏠", label: "Overview" },
     { id: "qr", icon: "🔳", label: "QR" },
     { id: "announcements", icon: "📢", label: "Announcements" },
-    { id: "camp", icon: "🧰", label: "Camp Requirements" },
-    { id: "socials", icon: "🔗", label: "Join Socials" },
+    { id: "update", icon: "📝", label: "Update Form" },
   ];
-  const menuItems = adminView ? [...baseMenu, { id: "update", icon: "📝", label: "Update Form" }] : baseMenu;
 
   const copyQrLink = async () => {
     try {
@@ -2500,20 +2342,20 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     showToast("QR image downloaded.");
   };
 
-  const onPassportChange = (field, label) => (event) => {
+  const onPassportChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showToast(`${label} must be an image file.`, "error");
+      showToast("Passport must be an image file.", "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      setForm((current) => ({ ...current, [field]: dataUrl }));
-      showToast(`${label} uploaded.`);
+      setForm((current) => ({ ...current, passportPhotoDataUrl: dataUrl }));
+      showToast("Passport uploaded.");
     };
-    reader.onerror = () => showToast(`Unable to read ${label.toLowerCase()}.`, "error");
+    reader.onerror = () => showToast("Unable to read passport image.", "error");
     reader.readAsDataURL(file);
   };
 
@@ -2585,7 +2427,6 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         parentEmail: form.parentEmail,
         parentSignature: form.parentSignature,
         passportPhotoDataUrl: form.passportPhotoDataUrl,
-        guarantorPassportPhotoDataUrl: form.guarantorPassportPhotoDataUrl,
         birthCertificateDataUrl: form.birthCertificateDataUrl,
         schoolCertificateDataUrl: form.schoolCertificateDataUrl,
         attestationLetterDataUrl: form.attestationLetterDataUrl,
@@ -2692,34 +2533,18 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
                 <div style={{ border: `1px dashed ${isLight ? "#cdbb98" : "rgba(255,255,255,0.2)"}`, borderRadius: 16, padding: 18, background: isLight ? "#fff" : "rgba(255,255,255,0.03)", marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                     <div>
-                      <div style={{ fontWeight: 900, marginBottom: 4 }}>Passports</div>
-                      <div style={{ color: t.muted, fontSize: 13 }}>Upload a passport for you and one for your guarantor</div>
+                      <div style={{ fontWeight: 900, marginBottom: 4 }}>Passport</div>
+                      <div style={{ color: t.muted, fontSize: 13 }}>Upload a recent passport photograph</div>
                     </div>
                     <div style={{ width: 18, height: 18, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, borderRadius: 4, display: "grid", placeItems: "center", color: t.muted, fontSize: 11 }}>2</div>
                   </div>
-                  <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: isLight ? "#475569" : "#cbd5e1" }}>Your Passport</div>
-                      <input type="file" accept="image/*" onChange={onPassportChange("passportPhotoDataUrl", "User passport")} />
-                      <div style={{ marginTop: 10 }}>
-                        {form.passportPhotoDataUrl ? (
-                          <img src={form.passportPhotoDataUrl} alt="Passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
-                        ) : (
-                          <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>User passport</div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: isLight ? "#475569" : "#cbd5e1" }}>Guarantor Passport</div>
-                      <input type="file" accept="image/*" onChange={onPassportChange("guarantorPassportPhotoDataUrl", "Guarantor passport")} />
-                      <div style={{ marginTop: 10 }}>
-                        {form.guarantorPassportPhotoDataUrl ? (
-                          <img src={form.guarantorPassportPhotoDataUrl} alt="Guarantor passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
-                        ) : (
-                          <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>Guarantor passport</div>
-                        )}
-                      </div>
-                    </div>
+                  <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
+                    <input type="file" accept="image/*" onChange={onPassportChange} />
+                    {form.passportPhotoDataUrl ? (
+                      <img src={form.passportPhotoDataUrl} alt="Passport preview" style={{ width: "100%", maxWidth: 220, height: 260, objectFit: "cover", borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}` }} />
+                    ) : (
+                      <div style={{ width: "100%", maxWidth: 220, height: 260, borderRadius: 12, border: `1px solid ${isLight ? "#d6ccb6" : "rgba(255,255,255,0.2)"}`, display: "grid", placeItems: "center", color: t.muted, background: isLight ? "#f9f4e7" : "rgba(255,255,255,0.02)" }}>Passport</div>
+                    )}
                   </div>
                 </div>
 
@@ -4371,7 +4196,7 @@ export default function App() {
       if (typeof window === "undefined") return;
       if (pushSubscriptionAttemptedRef.current) return;
       if (page !== "dashboard" || !user?.id) return;
-      if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
       pushSubscriptionAttemptedRef.current = true;
 
@@ -4382,43 +4207,22 @@ export default function App() {
         }
         if (permission !== "granted") return;
 
-        const fcmConfig = await authAPI.getFcmConfig();
-        if (!fcmConfig?.apiKey || !fcmConfig?.messagingSenderId || !fcmConfig?.appId || !fcmConfig?.projectId || !fcmConfig?.vapidKey) {
-          return;
-        }
-
-        const [{ getApps, initializeApp }, { getMessaging, getToken, isSupported }] = await Promise.all([
-          import("firebase/app"),
-          import("firebase/messaging"),
-        ]);
-
-        const supported = await isSupported().catch(() => false);
-        if (!supported) return;
-
-        const existing = getApps();
-        const firebaseApp = existing.length
-          ? existing[0]
-          : initializeApp({
-              apiKey: fcmConfig.apiKey,
-              authDomain: fcmConfig.authDomain,
-              projectId: fcmConfig.projectId,
-              storageBucket: fcmConfig.storageBucket,
-              messagingSenderId: fcmConfig.messagingSenderId,
-              appId: fcmConfig.appId,
-              measurementId: fcmConfig.measurementId,
-            });
+        const { publicKey } = await authAPI.getPushPublicKey();
+        if (!publicKey) return;
 
         const registration = await navigator.serviceWorker.ready;
-        const messaging = getMessaging(firebaseApp);
-        const token = await getToken(messaging, {
-          vapidKey: fcmConfig.vapidKey,
-          serviceWorkerRegistration: registration,
-        });
+        let subscription = await registration.pushManager.getSubscription();
 
-        if (!token) return;
-        await authAPI.registerFcmToken(token);
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: base64UrlToUint8Array(publicKey),
+          });
+        }
+
+        await authAPI.subscribePush(subscription.toJSON());
       } catch (error) {
-        console.warn("FCM token registration skipped:", error?.message || error);
+        console.warn("Push subscription skipped:", error?.message || error);
       }
     };
 
@@ -4540,7 +4344,7 @@ export default function App() {
     }
 
     if (user.legacyApproved) {
-      return <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} legacyMode={true} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
+      return <><LegacyUpdateForm user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
     }
 
     return <><ApplicantDashboard user={user} onLogout={handleLogout} theme={theme} /><ThemeToggle theme={theme} onToggle={toggleTheme} /><FloatingHelpButton /><InstallPromptWidget visible={installToastVisible} onInstall={runInstallPrompt} onDismiss={() => setInstallToastVisible(false)} enabled={installAvailable && !isInstalled} /></>;
