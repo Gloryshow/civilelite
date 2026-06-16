@@ -2221,7 +2221,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [tab, setTab] = useState("update");
+  const [tab, setTab] = useState("overview");
   const [announcements, setAnnouncements] = useState([]);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
@@ -2382,8 +2382,8 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
   const menuItems = [
     { id: "overview", icon: "🏠", label: "Overview" },
     { id: "qr", icon: "🔳", label: "QR" },
+    { id: "social", icon: "🔗", label: "Social Media" },
     { id: "announcements", icon: "📢", label: "Announcements" },
-    { id: "update", icon: "📝", label: "Update Form" },
   ];
 
   const copyQrLink = async () => {
@@ -2526,9 +2526,126 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
     margin: "18px 0 12px",
   };
 
+  const sidebarBg = isLight ? "#ffffff" : "#060a12";
+  const topBarBg = isLight ? "rgba(255,255,255,0.88)" : "rgba(6,10,18,0.88)";
+  const softText = isLight ? "#475569" : "#aab4c4";
+  const faintText = isLight ? "#64748b" : "#778399";
+  const dashboardCard = {
+    background: isLight ? "#fffdf8" : "rgba(255,255,255,0.04)",
+    border: `1px solid ${isLight ? "#e0d3bc" : "rgba(255,255,255,0.08)"}`,
+    borderRadius: 14,
+    padding: 24,
+  };
+
   return (
-    <div style={{ minHeight: "100vh", background: isLight ? "linear-gradient(180deg, #f7f1e4 0%, #f0eadf 100%)" : t.page, color: t.text, padding: 24 }}>
+    <div style={{
+      minHeight: adminView ? "auto" : "100vh",
+      background: adminView ? "transparent" : (isLight ? "linear-gradient(180deg, #f7f1e4 0%, #f0eadf 100%)" : t.page),
+      color: t.text,
+      fontFamily: "'Segoe UI',sans-serif",
+      display: adminView ? "block" : "flex",
+    }}>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+      {!adminView && (
+        <div style={{
+          width: sidebarOpen ? 240 : 0,
+          minHeight: "100vh",
+          overflow: "hidden",
+          background: sidebarBg,
+          borderRight: `1px solid ${t.border}`,
+          transition: "width .3s",
+          flexShrink: 0,
+        }}>
+          <div style={{ padding: "24px 20px", minWidth: 240 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
+              <img src="/logo.png" alt="Civil Elite Service logo" style={{ width: 28, height: 28, objectFit: "cover", borderRadius: 6 }} />
+              <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1, whiteSpace: "nowrap" }}>
+                CES <span style={{ color: "#c9952a" }}>LEGACY</span>
+              </span>
+            </div>
+            {menuItems.map((m) => (
+              <button key={m.id} onClick={() => { setTab(m.id); setSidebarOpen(false); }} style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 14px",
+                borderRadius: 10,
+                marginBottom: 4,
+                width: "100%",
+                textAlign: "left",
+                background: tab === m.id ? "rgba(201,168,76,0.1)" : "transparent",
+                border: tab === m.id ? "1px solid rgba(201,168,76,0.25)" : "1px solid transparent",
+                color: tab === m.id ? "#c9952a" : softText,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: tab === m.id ? 700 : 400,
+                whiteSpace: "nowrap",
+                transition: "all .2s",
+              }}>
+                <span style={{ minWidth: 22 }}>{m.icon}</span> {m.label}
+              </button>
+            ))}
+            <button onClick={onLogout} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 14px",
+              borderRadius: 10,
+              marginTop: 20,
+              width: "100%",
+              textAlign: "left",
+              background: "transparent",
+              border: "1px solid transparent",
+              color: softText,
+              cursor: "pointer",
+              fontSize: 14,
+            }}>
+              <LogOut /> Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={adminView ? { width: "100%" } : { flex: 1, overflow: "auto" }}>
+        {!adminView && (
+          <div style={{
+            background: topBarBg,
+            borderBottom: `1px solid ${t.border}`,
+            padding: "16px 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+            backdropFilter: "blur(12px)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", color: softText, cursor: "pointer" }}>
+                <MenuIcon />
+              </button>
+              <div>
+                <div style={{ fontWeight: 700, color: t.text, fontSize: 16 }}>Legacy Dashboard</div>
+                <div style={{ color: faintText, fontSize: 12 }}>Welcome back, {user.name}</div>
+              </div>
+            </div>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg,#c9952a,#f0c060)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#0a0e1a",
+              fontWeight: 900,
+              fontSize: 14,
+            }}>{user.name?.[0]?.toUpperCase() || "L"}</div>
+          </div>
+        )}
+
+        <div style={{ padding: adminView ? 0 : "32px 28px" }}>
+          {tab === "overview" && (
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
           <div>
@@ -2536,7 +2653,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
             <h1 style={{ margin: "10px 0 4px", fontSize: 30, fontWeight: 900 }}>UPDATE FORM (I'M STILL ALIVE)</h1>
             
           </div>
-          <GoldBtn outline onClick={onLogout} style={{ alignSelf: "center" }}>Sign Out</GoldBtn>
+          {adminView && <GoldBtn outline onClick={onLogout} style={{ alignSelf: "center" }}>Sign Out</GoldBtn>}
         </div>
 
         <div style={paper}>
@@ -2647,6 +2764,70 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
               <GoldBtn outline onClick={() => showToast("Draft retained on this device.")}>Save Draft</GoldBtn>
             </div>
           </div>
+        </div>
+      </div>
+          )}
+
+          {!adminView && tab === "qr" && (
+            <div style={{ maxWidth: 760, margin: "0 auto" }}>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Identity QR</h2>
+              <p style={{ color: t.muted, marginBottom: 24 }}>Use this QR for quick verification and check-ins.</p>
+              <div style={{ ...dashboardCard, textAlign: "center" }}>
+                <div style={{ color: t.muted, fontSize: 13, marginBottom: 10 }}>Verification ID</div>
+                <div style={{ color: "#c9952a", fontWeight: 900, fontSize: 18, marginBottom: 18 }}>{qrIdentifier}</div>
+                {qrLoading ? (
+                  <div style={{ color: t.muted, padding: 40 }}>Generating QR...</div>
+                ) : qrDataUrl ? (
+                  <img src={qrDataUrl} alt="Legacy verification QR" style={{ width: 220, height: 220, borderRadius: 12, background: "#fff", padding: 10, border: `1px solid ${t.border}` }} />
+                ) : (
+                  <div style={{ color: t.muted, padding: 40 }}>QR image not ready.</div>
+                )}
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 18 }}>
+                  <GoldBtn outline onClick={copyQrLink} style={{ padding: "10px 16px" }}>Copy QR Link</GoldBtn>
+                  <GoldBtn outline onClick={downloadQrImage} style={{ padding: "10px 16px" }}>Download QR</GoldBtn>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!adminView && tab === "social" && (
+            <div style={{ maxWidth: 960, margin: "0 auto" }}>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Social Media</h2>
+              <p style={{ color: t.muted, marginBottom: 24 }}>Follow official channels for updates and notices.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
+                {SOCIAL_LINKS.map((social) => (
+                  <a key={social.label} href={social.href} target="_blank" rel="noreferrer" style={{ ...dashboardCard, textDecoration: "none", color: t.text, display: "flex", gap: 14, alignItems: "center" }}>
+                    <div style={{ fontSize: 28 }}>{social.icon}</div>
+                    <div>
+                      <div style={{ fontWeight: 900, marginBottom: 4 }}>{social.label}</div>
+                      <div style={{ color: t.muted, fontSize: 13 }}>{social.note}</div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!adminView && tab === "announcements" && (
+            <div style={{ maxWidth: 880, margin: "0 auto" }}>
+              <h2 style={{ color: t.text, fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Announcements</h2>
+              {announcements.map((a, i) => (
+                <div key={i} style={{ ...dashboardCard, marginBottom: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <Badge label="NOTICE" />
+                    <span style={{ color: faintText, fontSize: 12 }}>
+                      {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 800, color: t.text, fontSize: 16, marginBottom: 8 }}>{a.title}</div>
+                  <div style={{ color: t.muted, lineHeight: 1.7 }}>{a.body}</div>
+                </div>
+              ))}
+              {announcements.length === 0 && (
+                <div style={{ ...dashboardCard, color: t.muted, fontSize: 13 }}>No announcements available.</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
