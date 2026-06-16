@@ -185,6 +185,8 @@ router.post("/submit", authMiddleware, async (req, res) => {
       medInfo,
       whyJoin,
       serviceStatus,
+      serviceNumber,
+      department,
       parentName,
       parentContactAddress,
       parentOccupation,
@@ -275,6 +277,8 @@ router.post("/submit", authMiddleware, async (req, res) => {
     applicant.medInfo = medInfo;
     applicant.whyJoin = whyJoin;
     applicant.serviceStatus = serviceStatus || applicant.serviceStatus || req.user.serviceStatus;
+    applicant.serviceNumber = serviceNumber || applicant.serviceNumber;
+    applicant.department = department || applicant.department;
     applicant.parentName = parentName;
     applicant.parentContactAddress = parentContactAddress;
     applicant.parentOccupation = parentOccupation;

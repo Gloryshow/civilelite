@@ -33,10 +33,43 @@ router.get("/applicants", authMiddleware, adminMiddleware, async (req, res) => {
       serviceStatus: app.serviceStatus,
       fullName: app.fullName || "N/A",
       phone: app.phone || "N/A",
+      phone2: app.phone2 || "",
+      email2: app.email2 || "",
+      contactAddress: app.contactAddress || app.address || "",
+      age: app.age || "",
       gender: app.gender || "N/A",
+      dob: app.dob || "",
+      religion: app.religion || "",
+      maritalStatus: app.maritalStatus || "",
+      placeOfBirth: app.placeOfBirth || "",
+      height: app.height || "",
       bloodGroup: app.bloodGroup || "",
       genotype: app.genotype || "",
       urinaryTest: app.urinaryTest || "",
+      nationality: app.nationality || "",
+      profession: app.profession || "",
+      professionAddress: app.professionAddress || "",
+      educationQualification: app.educationQualification || "",
+      disability: app.disability || "",
+      convictedBefore: app.convictedBefore || "",
+      convictionReasons: app.convictionReasons || "",
+      paramilitaryMember: app.paramilitaryMember || "",
+      paramilitaryName: app.paramilitaryName || "",
+      paramilitaryYears: app.paramilitaryYears || "",
+      leavingReasons: app.leavingReasons || "",
+      declarationName: app.declarationName || "",
+      declarationDate: app.declarationDate || "",
+      guardianName: app.guardianName || "",
+      guardianSignatureDate: app.guardianSignatureDate || "",
+      witnessName: app.witnessName || "",
+      witnessSignatureDate: app.witnessSignatureDate || "",
+      lga: app.lga || "",
+      address: app.address || "",
+      qualification: app.qualification || "",
+      kinName: app.kinName || "",
+      kinPhone: app.kinPhone || "",
+      medInfo: app.medInfo || "",
+      whyJoin: app.whyJoin || "",
       generalAptitudeScore: app.generalAptitudeScore || "",
       vocationalAptitudeScore: app.vocationalAptitudeScore || "",
       oralTestScore: app.oralTestScore || "",
@@ -115,27 +148,44 @@ router.get("/legacy-claims", authMiddleware, adminMiddleware, async (req, res) =
       .sort({ createdAt: -1 })
       .lean();
 
+    const claimUserIds = claims.map((claim) => claim.userId).filter(Boolean);
+    const applicants = claimUserIds.length
+      ? await Applicant.find({ userId: { $in: claimUserIds } }).lean()
+      : [];
+    const applicantByUserId = new Map(
+      applicants.map((applicant) => [String(applicant.userId), applicant])
+    );
+
     res.json(
-      claims.map((c) => ({
+      claims.map((c) => {
+        const applicant = applicantByUserId.get(String(c.userId));
+        return ({
         id: c._id,
         userId: c.userId,
         applicantId: c.applicantId,
-        fullName: c.fullName,
-        email: c.email,
-        phone: c.phone,
-        state: c.state,
-        dob: c.dob,
-        legacyServiceNumber: c.legacyServiceNumber,
+        fullName: applicant?.fullName || c.fullName,
+        email: applicant?.email || c.email,
+        phone: applicant?.phone || c.phone,
+        state: applicant?.state || c.state,
+        lga: applicant?.lga || "",
+        dob: applicant?.dob || c.dob,
+        legacyServiceNumber: applicant?.serviceNumber || c.legacyServiceNumber,
+        department: applicant?.department || "",
+        serviceStatus: applicant?.serviceStatus || "",
         lastUnit: c.lastUnit,
         approvalYear: c.approvalYear,
         status: c.status,
+        applicationStatus: applicant?.status || "",
+        formSubmitted: Boolean(applicant?.submitted),
+        formUpdatedAt: applicant?.updatedAt || null,
         adminNote: c.adminNote || "",
         reviewedBy: c.reviewedBy
           ? { id: c.reviewedBy._id, name: c.reviewedBy.name, email: c.reviewedBy.email }
           : null,
         reviewedAt: c.reviewedAt,
         createdAt: c.createdAt,
-      }))
+        });
+      })
     );
   } catch (error) {
     console.error(error);

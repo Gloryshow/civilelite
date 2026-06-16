@@ -2925,7 +2925,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       const data = await adminAPI.getApplicants();
       setApplicants(data || []);
     } catch (err) {
-      setApplicants([]);
       if (!silent) showToast("Failed to load applicants: " + err.message, "error");
     }
   };
@@ -2955,7 +2954,6 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
       const data = await adminAPI.getLegacyClaims(status);
       setLegacyClaims(data || []);
     } catch (err) {
-      setLegacyClaims([]);
       showToast("Failed to load legacy claims: " + err.message, "error");
     }
   };
@@ -3727,6 +3725,37 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                       />
                     </div>
 
+                    <div style={{ border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 14, background: isLight ? "#fff" : "rgba(255,255,255,0.03)" }}>
+                      <div style={{ color: isLight ? "#9a6b1a" : "#e8d8a0", fontWeight: 800, fontSize: 13, letterSpacing: 1, marginBottom: 12 }}>SUBMITTED FORM DETAILS</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 10 }}>
+                        {[
+                          ["Email", selectedApplicant.email],
+                          ["Phone", selectedApplicant.phone],
+                          ["Phone 2", selectedApplicant.phone2],
+                          ["State", selectedApplicant.state],
+                          ["LGA", selectedApplicant.lga],
+                          ["Address", selectedApplicant.contactAddress || selectedApplicant.address],
+                          ["Date of Birth", selectedApplicant.dob],
+                          ["Age", selectedApplicant.age],
+                          ["Gender", selectedApplicant.gender],
+                          ["Religion", selectedApplicant.religion],
+                          ["Marital Status", selectedApplicant.maritalStatus],
+                          ["Nationality", selectedApplicant.nationality],
+                          ["Qualification", selectedApplicant.qualification || selectedApplicant.educationQualification],
+                          ["Profession", selectedApplicant.profession],
+                          ["Place of Birth", selectedApplicant.placeOfBirth],
+                          ["Height", selectedApplicant.height],
+                          ["Next of Kin", selectedApplicant.kinName],
+                          ["Kin Phone", selectedApplicant.kinPhone],
+                        ].map(([label, value]) => (
+                          <div key={label} style={{ border: `1px solid ${t.border}`, borderRadius: 10, padding: "9px 10px" }}>
+                            <div style={{ color: t.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+                            <div style={{ color: t.text, fontSize: 13, fontWeight: 700, overflowWrap: "anywhere" }}>{value || "Not provided"}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
                       <Input light={isLight} label="Blood Group" value={assessmentDraft.bloodGroup} onChange={e => setAssessmentDraft(d => ({ ...d, bloodGroup: e.target.value }))} placeholder="e.g. O+" />
                       <Input light={isLight} label="Genotype" value={assessmentDraft.genotype} onChange={e => setAssessmentDraft(d => ({ ...d, genotype: e.target.value }))} placeholder="e.g. AA" />
@@ -3846,18 +3875,19 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
               <div style={{ ...S2.card, overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1180, tableLayout: "fixed" }}>
                   <colgroup>
-                    <col style={{ width: "18%" }} />
-                    <col style={{ width: "18%" }} />
-                    <col style={{ width: "12%" }} />
                     <col style={{ width: "16%" }} />
-                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "11%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "11%" }} />
                     <col style={{ width: "8%" }} />
-                    <col style={{ width: "8%" }} />
-                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "9%" }} />
+                    <col style={{ width: "7%" }} />
+                    <col style={{ width: "7%" }} />
                   </colgroup>
                   <thead>
                     <tr>
-                      {["Name", "Email", "Phone", "Existing Service No.", "Unit", "Year", "Status", "Actions"].map((h) => (
+                      {["Name", "Email", "Phone", "Service No.", "Department", "Form", "Status", "Year", "Actions"].map((h) => (
                         <th key={h} style={{ textAlign: h === "Actions" ? "center" : "left", padding: "10px 10px", color: "#64748b", fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${t.border}`, whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
@@ -3869,9 +3899,12 @@ const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</td>
                         <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.phone || "-"}</td>
                         <td style={{ padding: "12px 10px", color: c.legacyServiceNumber ? "#c9952a" : t.muted, fontSize: 13, fontWeight: 700 }}>{c.legacyServiceNumber || "Not provided"}</td>
-                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.lastUnit || "-"}</td>
-                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.approvalYear || "-"}</td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.department || c.lastUnit || "-"}</td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <Badge label={c.formSubmitted ? "Submitted" : "Claim only"} color={c.formSubmitted ? "#22c55e" : "#c9952a"} />
+                        </td>
                         <td style={{ padding: "12px 10px" }}><StatusBadge s={c.status} /></td>
+                        <td style={{ padding: "12px 10px", color: t.muted, fontSize: 13 }}>{c.approvalYear || "-"}</td>
                         <td style={{ padding: "12px 10px" }}>
                           <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
                             <button
