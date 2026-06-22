@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { authAPI, applicantAPI, adminAPI, publicAPI, tokenManager } from "./api.js";
 // Hero image imported
@@ -525,7 +525,7 @@ const InstallPromptWidget = ({ visible, onInstall, onDismiss, enabled }) => {
 };
 
 const VerificationPage = ({ applicantId, onNavigate, theme = "light" }) => {
-  const t = getTheme(theme);
+  const t = useMemo(() => getTheme(theme), [theme]);
   const isLight = theme === "light";
   const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState(null);
@@ -1044,7 +1044,7 @@ const LandingPage = ({ onNavigate, theme = "light" }) => {
 
 // ── AUTH PAGE ─────────────────────────────────────────────────────────────────
 const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }) => {
-  const t = getTheme(theme);
+  const t = useMemo(() => getTheme(theme), [theme]);
   const isLight = theme === "light";
   const [form, setForm] = useState({
     email: "",
@@ -1262,7 +1262,7 @@ const AuthPage = ({ mode, onAuth, onNavigate, theme = "light", loading = false }
 
 // ── APPLICANT DASHBOARD ───────────────────────────────────────────────────────
 const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
-  const t = getTheme(theme);
+  const t = useMemo(() => getTheme(theme), [theme]);
   const isLight = theme === "light";
   const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
   const surfaceBorder = isLight ? "rgba(15,23,42,0.1)" : "rgba(255,255,255,0.07)";
@@ -2183,7 +2183,7 @@ const ApplicantDashboard = ({ user, onLogout, theme = "light" }) => {
 
 // ── LEGACY UPDATE FORM ───────────────────────────────────────────────────────
 const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null, adminView = false, onAdminSave = null }) => {
-  const t = getTheme(theme);
+  const t = useMemo(() => getTheme(theme), [theme]);
   const isLight = theme === "light";
   const [toast, setToast] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -2240,7 +2240,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
         <input value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} disabled={readOnly} style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${isLight ? "#cbd5e1" : "rgba(255,255,255,0.18)"}`, padding: "8px 0", color: t.text, fontSize: 14, outline: "none", boxSizing: "border-box", cursor: readOnly ? 'not-allowed' : 'text' }} />
       )}
     </div>
-  ), [isLight, t]);
+  ), [isLight, t.text, t.muted]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -2836,7 +2836,7 @@ const LegacyUpdateForm = ({ user, onLogout, theme = "light", initialData = null,
 
 // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────────
 const AdminDashboard = ({ user, onLogout, theme = "light" }) => {
-  const t = getTheme(theme);
+  const t = useMemo(() => getTheme(theme), [theme]);
   const isLight = theme === "light";
   const surface = isLight ? "#ffffff" : "rgba(255,255,255,0.04)";
   const surfaceBorder = isLight ? "rgba(15,23,42,0.1)" : "rgba(255,255,255,0.07)";
