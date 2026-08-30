@@ -43,6 +43,16 @@ const legacyClaimSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    paramilitaryRank: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    paramilitaryPost: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     lastUnit: {
       type: String,
       default: "",
